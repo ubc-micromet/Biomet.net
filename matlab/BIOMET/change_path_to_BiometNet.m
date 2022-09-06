@@ -28,7 +28,7 @@ function [newPath,oldPath] = change_path_to_BiometNet(newPathPat)
 % Store the current full path
 oldPath = path;
 
-% Make sure that the newPathPat has a proper folder separator
+% Make sure that the newPathPat uses proper folder separators
 newPathPat = setFolderSeparator(char(newPathPat));
 % Make sure that newPath ends with filesep
 if ~strcmp(newPathPat(end),filesep)
