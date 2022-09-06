@@ -1,0 +1,73 @@
+function x = DB_create_eddy
+
+pth = 'c:\cd-rom\junk\'
+siteID = 'PA';
+hhours_per_hour = 2;
+st = datenum(1996,1,1,0,0,0);
+ed = datenum(1999,1,1,0,0,0);
+
+% AvgMinMax Before rotation
+fileName = 'avgbr';
+maxFiles = 80;
+[DB_len] = DB_create(siteID,pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+% AvgMinMax After rotation
+fileName = 'avgar';
+maxFiles = 80;
+[DB_len] = DB_create(siteID,pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+% AvgMinMax RawData counts
+fileName = 'avgrc';
+maxFiles = 80;
+[DB_len] = DB_create(siteID,pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+% AvgMinMax RawData voltages
+fileName = 'avgrv';
+maxFiles = 80;
+[DB_len] = DB_create(siteID,pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+% Cov Before Rot LinDtr
+fileName = 'covbl';
+maxFiles = 12*12;
+[DB_len] = DB_create(siteID,pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+% Cov Before Rot AvgDtr
+fileName = 'covba';
+maxFiles = 12*12;
+[DB_len] = DB_create(siteID,pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+% Cov After Rot LinDtr
+fileName = 'coval';
+maxFiles = 12*12;
+[DB_len] = DB_create(siteID,pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+% Cov After Rot AvgDtr
+fileName = 'covaa';
+maxFiles = 12*12;
+[DB_len] = DB_create(siteID,pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+% Fluxes LinDtr
+fileName = 'flxld';
+maxFiles = 20;
+[DB_len] = DB_create(siteID,pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+% Fluxes AvgDtr
+fileName = 'flxad';
+maxFiles = 20;
+[DB_len] = DB_create(siteID,pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+% Misc
+fileName = 'misc';
+maxFiles = 30;
+[DB_len] = DB_create(siteID,pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+% Angles
+fileName = 'angle';
+maxFiles = 3;
+[DB_len] = DB_create(siteID,pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+% Time vector (DOUBLE!!)
+
+
+% Recalc Time vector (DOUBLE!!)
+

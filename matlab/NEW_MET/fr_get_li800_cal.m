@@ -1,0 +1,110 @@
+function [CO2_cal,H2O_cal,cal_voltages,CalTimes,LicorNum] = fr_get_li800_cal(CalFilePath,DateIn,...
+                                                                     c_range,v_range,c_offset,cal_conc)
+%Program that returns Licor 800 calibrations from the calibration file
+%
+%David Gaumont-Guay        created on: 2002.12.03 (from Zoran Nezic's work - fr_get_Licor_cal)
+%                          revised on: June 29, 2007
+
+% Revisions:
+%   June 29, 2007
+%       -used index to extract only needed values of cal_conc when not
+%        supplied as an argument (Zoran and Nick)
+
+VB2MatlabDateOffset = 693960;
+
+%extract calibration data from the calibration file
+if exist(CalFilePath,'file') == 2
+   CalFileName = CalFilePath;
+   fid = fopen(CalFileName,'r');
+   if fid < 3
+      error(['Cannot open file: ' CalFileName])
+   end        
+end
+
+if exist('c_range') ~= 1 | isempty(c_range)
+   c_range = 1000;
+end
+if exist('v_range') ~= 1 | isempty(v_range)
+   v_range = 5000;
+end
+if exist('c_offset') ~= 1 | isempty(c_offset)
+   c_offset = 25;
+end
+
+cal_voltages = fread(fid,[30 inf],'float32');
+fclose(fid);
+[n,m] = size(cal_voltages);
+
+if exist('cal_conc') ~= 1 | isempty(cal_conc)
+   cal_conc = cal_voltages(4,:)';
+end
+
+%convert calibration times to a time vector
+CalTimes = (cal_voltages(1,:)+cal_voltages(2,:))'+VB2MatlabDateOffset;       
+
+%find matching dates
+if exist('DateIn')~=1 | isempty(DateIn)                      %if DateIn not given use DateIn = CalTimes
+    DateIn = CalTimes;                                       %in that case all the cal values are returned
+end
+
+ind = find(CalTimes >= DateIn(1) & CalTimes <= DateIn(end)); %find all calibrations for the given dates
+
+%index matching dates
+if isempty(ind)
+    if length(DateIn) == 1
+        [junk, ind] = min(abs(DateIn-CalTimes));
+    else
+        ind = zeros(2,1);
+        [junk, ind(1)] = min(abs(DateIn(1)-CalTimes));
+        [junk, ind(2)] = min(abs(DateIn(end)-CalTimes));
+        ind = unique(ind);
+    end
+end
+
+if ind(1) > 1                                                %for proper interpolation grab
+    ind = [ind(1)-1;ind];                                    %one point before
+end
+if ind(end) < length(CalTimes)                               %and one point after
+    ind = [ind;ind(end)+1];                                  %the selected indexes
+end
+
+%extract the requested range
+cal_voltages = cal_voltages(:,ind);                                       
+CalTimes = CalTimes(ind);                                    
+LicorNum = cal_voltages(3,:)';                                           
+CO2_cal1 = NaN*zeros(size(ind));     
+switch length(cal_conc)
+    case 1
+    otherwise    
+        cal_conc = cal_conc(ind(end)); % June 29, 2007: bug: added the index to stop the whole
+%                                          vector from being used with
+%                                          single gains and offsets!
+end
+
+%tranform CO2 voltages into ppm
+RawData_mV = cal_voltages([10 12],:);
+CO2_cal1 = fr_LI800_calc(RawData_mV,c_range,v_range,c_offset)';
+
+%CO2_cal1 has properly calculated values at the *calibration times*.
+%if one wants the calibration values at any arbitrary point in time 
+%these calibrations need to be interpolated (using a table look-up)
+CO2_cal = interp1(CalTimes,CO2_cal1,DateIn);
+
+OutsideInd = find(DateIn < CalTimes(1));                     %find dateIn values outside of calTime range
+CO2_cal(OutsideInd,1) = CO2_cal1(1,1);                       %and use first or last cal. time instead.
+CO2_cal(OutsideInd,2) = CO2_cal1(1,2);                       % 
+OutsideInd = find(DateIn > CalTimes(end));                   %this will remove NaNs put there by interp1
+CO2_cal(OutsideInd,1) = CO2_cal1(end,1);                     %for all the points outside of existing range
+CO2_cal(OutsideInd,2) = CO2_cal1(end,2);                     % 
+
+%calculate CO2 gain (after correcting the measured span value with zero offset)
+CO2_span_OffSetCorr = CO2_cal(:,2) - CO2_cal(:,1);
+CO2_gain = cal_conc./CO2_span_OffSetCorr;
+
+%output structure (gain and offset)
+CO2_cal = [CO2_gain CO2_cal(:,1)];
+
+%the Li800 does not measure H2O (so there is no calibration for H2O) but to avoid any problems
+%with other programs, I left the following line in the program: Gain = 1, Offset = 0.
+H2O_cal = [1 0];
+

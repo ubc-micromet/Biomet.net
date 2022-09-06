@@ -1,0 +1,127 @@
+function [cal_values_new,HF_data,cal_values] = extract_LI7000_calibrations(dateIn,instrumentNum, CAL_ind,CAL_ppm,saveHF_flag,overwriteCal_flag)
+
+if length(dateIn) > 1
+    error Date argument cannot be a vector.  Scalars only.
+end
+
+dateIn         = fr_round_hhour(dateIn,2);        % Round to end of hhours
+configIn        = fr_get_init(fr_current_siteID,dateIn(1)); % Get the configuration file
+[fullFileName,fileName] = fr_find_data_file(dateIn,configIn,instrumentNum);
+
+funName = ['fr_read_' configIn.Instrument(instrumentNum).FileType];                 % function name
+try
+    [EngUnits_tmp,headers_tmp] = feval(funName,dateIn,configIn,instrumentNum);          % call the function
+catch
+    disp(sprintf('Could not find file: %s',fileName));
+    return
+end
+
+% Find position of channels
+[dum,ind,ind_chan] = intersect(upper({'CO2','H2O','Tbench','Plicor','Aux','Diag'}),...
+    upper(configIn.Instrument(instrumentNum).ChanNames) );
+[dum,ind_new] = sort(ind); % Intersect sorts the output, this can be used to undo the sort
+ind_chan = ind_chan(ind_new);
+
+HF_data = EngUnits_tmp(CAL_ind(1,1):CAL_ind(1,2),:);
+
+cal_values_new.TimeVector = dateIn;
+tempCell = num2cell(mean(EngUnits_tmp(CAL_ind(2,1):CAL_ind(2,2),ind_chan)));
+cal_values_new.Cal0 = cell2struct(tempCell,{'CO2','H2O','Tbench','Plicor','Aux','Diag'},2);
+tempCell = num2cell(mean(EngUnits_tmp(CAL_ind(3,1):CAL_ind(3,2),ind_chan)));
+cal_values_new.Cal1 = cell2struct(tempCell,{'CO2','H2O','Tbench','Plicor','Aux','Diag'},2);
+tempCell = num2cell(mean(EngUnits_tmp(CAL_ind(4,1):CAL_ind(4,2),ind_chan)));
+cal_values_new.Cal2 = cell2struct(tempCell,{'CO2','H2O','Tbench','Plicor','Aux','Diag'},2);
+tempCell = num2cell(mean(EngUnits_tmp(CAL_ind(5,1):CAL_ind(5,2),ind_chan)));
+cal_values_new.Ambient = cell2struct(tempCell,{'CO2','H2O','Tbench','Plicor','Aux','Diag'},2);
+
+cal_values_new.Cal1.CAL_ppm = CAL_ppm;
+
+%cal_values.ambient = mean(EngUnits_tmp(CAL_ind(5,1):CAL_ind(5,2),:))
+if saveHF_flag ~= 0
+    try
+        fid = fopen([fullFileName '_cal'],'wb');
+        fwrite(fid,HF_data,'float32');
+        fclose(fid);
+    catch
+        disp('Error writing HF calibration data file');
+    end
+end
+
+extTmp = configIn.ext;
+extTmp(2) = 'c';            % replace "d" with "c" for calibration
+calFileName = fullfile(configIn.hhour_path,['calibrations' extTmp configIn.Instrument(instrumentNum).FileID]);
+
+
+% Load old calibration data
+try
+    load(calFileName,'-mat');
+catch
+    cal_values = cal_values_new;
+    save(calFileName,'cal_values','-mat');
+    return
+end
+
+ind = find (cal_values_new.TimeVector == get_stats_field(cal_values,'TimeVector')); 
+if ~isempty(ind)
+    if overwriteCal_flag ~= 0 
+        cal_values(ind)=cal_values_new;
+    end
+else
+    ind = find (cal_values_new.TimeVector > get_stats_field(cal_values,'TimeVector')); 
+    N = size(cal_values,2);
+    if isempty(ind)
+        % new value goes first
+        cal_values = [cal_values_new cal_values];
+    elseif ind(end) == N
+        % new value goes last
+        cal_values = [cal_values cal_values_new];
+    else
+        % new value goes in the middle
+        cal_values = [cal_values(ind) cal_values_new cal_values(ind(end)+1:end)];
+    end
+end
+save(calFileName,'cal_values','-mat');
+
+
+%calRecord key table for LI7000 calibration files:
+%
+%1. Date serial number (in Matlab format)
+%2. 
+%3. Licor serial number
+%4. CO2 calibration concentration (CAL_1)
+%5. CO2 calibration concentration (CAL_2)
+%6.
+%7.
+%8.
+%9.
+%10. CO2_ppm    (N2)     Corrected
+%11. H2O_ppm    (N2)     Corrected
+%12. CO2_ppm    (Cal_1)  Corrected
+%13. H2O_ppm    (Cal_1)  Corrected
+%14. CO2_ppm    (CAL_2)  Corrected
+%15. H2O_ppm    (CAL_2)  Corrected
+%16. CO2        (N2)
+%17. H2O        (N2)
+%18. Tbench     (N2)
+%19. Plicor     (N2)
+%20. Pgauge     (N2)
+%21. CO2        (CAL_1)
+%22. H2O        (CAL_1)
+%23. Tbench     (CAL_1)
+%24. Plicor     (CAL_1)
+%25. Pgauge     (CAL_1)
+%26. CO2_mV     (CAL_2)
+%27. H2O_mV     (CAL_2)
+%28. Tbench     (CAL_2)
+%29. Plicor     (CAL_2)
+%30. Pgauge     (CAL_2)
+%31. CO2_mV     (CAL_2)
+%32. H2O_mV     (CAL_2)
+%33. Tbench     (CAL_2)
+%34. Plicor     (CAL_2)
+%35. Pgauge     (CAL_2)
+%36.
+%37.
+%38.
+%39.
+%40.

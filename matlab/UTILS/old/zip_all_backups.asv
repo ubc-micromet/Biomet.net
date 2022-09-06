@@ -1,0 +1,17 @@
+function 
+
+lstfold = dir(pth_zip);
+n=[lstfold.isdir]';
+ind=find(n==1);
+xx= {lstfold(ind).name}';
+
+
+for i=1:length(xx)
+    if length(char(xx{i})) == 8
+        dbfldr = char(xx{i});
+        dosCmdStr = ['"C:\Program Files\7-Zip\7z.exe" a -tzip d:\temp\'...
+                      dbfldr '.zip '  pth_zip ' ' dbfldr ' '\ -r -wd:\temp'];
+        disp(dosCmdStr);
+        dos(dosCmdStr);
+    end
+end

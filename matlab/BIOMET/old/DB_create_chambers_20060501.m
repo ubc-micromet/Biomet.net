@@ -1,0 +1,144 @@
+function x = DB_create_chambers(pth,year,siteFlag)
+% x = DB_create_chambers(pth,year,siteFlag)
+%
+% Function that creates database files for automated chamber systems
+%
+%   pth  - output path for the data base
+%   year - selects the year 
+%   
+% dgg 2002.02.15
+% Revisions:
+% Mar 15, 2005, kai* - changed order of outputs to confirm with db_create_profile
+
+hhours_per_hour = 2;
+
+if year <= 2000
+    st = datenum(year,1,1,0,0,0);
+    ed = datenum(year,12,31,23,30,0);
+else
+    st = datenum(year,1,1,0.5,0,0);
+    ed = datenum(year+1,1,1,0,0,0);
+end
+
+c = fr_get_init(siteFlag,now);
+
+maxFiles = c.chamber.chNbr;
+
+%----------------
+%Fluxes variables
+%chamber dcdt half hour from short slope measurements
+fileName = 'dcdt_short';
+[DB_len] = DB_create(pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+%chamber dcdt half hour from long slope measurements
+fileName = 'dcdt_long';
+[DB_len] = DB_create(pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+%chamber flux rsquare half hour from short slope measurements
+fileName = 'r2_short';
+[DB_len] = DB_create(pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+%chamber flux rsquare half hour from long slope measurements
+fileName = 'r2_long';
+[DB_len] = DB_create(pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+%chamber flux standard error half hour from short slope measurements
+fileName = 'se_short';
+[DB_len] = DB_create(pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+%chamber flux standard error half hour from long slope measurements
+fileName = 'se_long';
+[DB_len] = DB_create(pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+%chamber efflux half hour from short slope measurements
+fileName = 'efflux_short';
+[DB_len] = DB_create(pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+%chamber efflux half hour from short long measurements
+fileName = 'efflux_long';
+[DB_len] = DB_create(pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+%chamber daily effective volume averages from short slope measurements
+fileName = 'ev_short';
+[DB_len] = DB_create(pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+%chamber daily effective volume averages from long slope measurements
+fileName = 'ev_long';
+[DB_len] = DB_create(pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+%chamber mean water vapor mixing ratio from short slope measurements
+fileName = 'wv_short';
+[DB_len] = DB_create(pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+%chamber mean water vapor mixing ratio from long slope measurements
+fileName = 'wv_long';
+[DB_len] = DB_create(pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+%-----------------
+%Climate variables
+%chamber chamber air temperature half hour averages
+fileName = 'temp_air';
+[DB_len] = DB_create(pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+%chamber surface temperature half hour averages
+fileName = 'temp_soil';
+[DB_len] = DB_create(pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+if siteFlag == 'BS'
+
+	%vwc1 half hour averages
+	fileName = 'vwc';
+	[DB_len] = DB_create(pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+	%par1 half hour averages
+	fileName = 'par';
+	[DB_len] = DB_create(pth,fileName,st,ed,hhours_per_hour,maxFiles);
+
+end
+
+if siteFlag == 'PA'
+
+    %soil CO2 concentrations
+    fileName = 'soil_CO2_conc';
+	[DB_len] = DB_create(pth,fileName,st,ed,hhours_per_hour,6);
+
+end
+
+if siteFlag == 'YF'
+
+    %soil CO2 concentrations
+    fileName = 'soil_CO2_conc';
+	[DB_len] = DB_create(pth,fileName,st,ed,hhours_per_hour,8);
+   
+    %par branch chamber
+    fileName = 'parBC';
+	[DB_len] = DB_create(pth,fileName,st,ed,hhours_per_hour,1);
+   
+    %Ta inside branch chamber
+    fileName = 'Ta_insBC';
+	[DB_len] = DB_create(pth,fileName,st,ed,hhours_per_hour,1);
+   
+    %Ta outside branch chamber
+    fileName = 'Ta_outBC';
+	[DB_len] = DB_create(pth,fileName,st,ed,hhours_per_hour,1);
+
+end
+
+%Recalc time vector (DOUBLE!!)
+ZeroFile = zeros(DB_len,1);                           % create a full size zero array
+fileName = [pth 'reclc.1'];                           % recalc time vector
+fid = fopen(fileName,'w');                            % create time vector file
+file_err_chk(fid)                                     % check if file opened properly
+x = fwrite(fid,ZeroFile,'float64');                   % save TimeVector
+fclose(fid);
+
+% ================
+% LOCAL FUNCTIONS
+% ================
+
+function x = file_err_chk(fid)
+    if fid == -1
+        error 'File opening error'
+    end
+
+

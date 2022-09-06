@@ -1,0 +1,23 @@
+% Run_matlab_1.m.bak
+%
+%   This script is run at the midnight (GMT time) on the site
+%   PC to recalculate previous days fluxes. The file name needs to
+%   be set up in "UBC_DAQ.INI" and "startup.m". Check these files
+%   for more info.
+%
+% (c) Zoran Nesic           File created:       Jul 12, 1998
+%                           Last modification:  Jul 12, 1998
+%
+
+% Revisions:
+%
+
+fileName = which('run_matlab_1');           % find file name of this file
+c = ['dos(' 39 'del ' fileName 39 ');' ];   % and delete it so Matlab can bootup 
+eval(c)                                     % properly next time
+
+siteID = fr_current_siteID;                 % current site ID
+[Y,M,D,H,MI,S] = DATEVEC(now-1);            % previous day date   
+st = fr_calc_and_save(siteID,Y,M,D,0);      % run hhour calculations for the previous day
+                                            % when done
+exit                                        % close this instance of Matlab

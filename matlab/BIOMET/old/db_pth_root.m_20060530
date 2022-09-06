@@ -1,0 +1,6 @@
+function pth = db_pth_root
+% pth = db_pth_root
+%
+% Returns the database path that updates will be written to.
+
+pth = 'y:\database\';

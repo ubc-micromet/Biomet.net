@@ -1,0 +1,3 @@
+global DATA_PATH_1996_PA_1 DATA_PATH_1996_PA_2
+DATA_PATH_1996_PA_1 = '\\CLASS\PAOA\newdata';
+DATA_PATH_1996_PA_2 = 'h:\zoran\paoa';

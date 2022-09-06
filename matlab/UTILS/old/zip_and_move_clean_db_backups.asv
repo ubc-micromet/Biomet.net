@@ -1,0 +1,19 @@
+function zip_and_move_clean_db_backups(pth_zip,fnstr,flag_sync);
+
+pth_archive = '\\Annex001\clean_db_backups';
+
+dbfldr = char(xx{i});
+
+% run batch file to create zip archive and delete if no issues
+fnzip = fullfile(pth_zip,[dbfldr '.zip']);
+dosCmdStr = ['zip_clean_db  ' fnzip ' ' ...
+    fullfile(pth_zip,dbfldr) ' ' pth_zip];
+disp(dosCmdStr);
+dos(dosCmdStr);
+
+
+if flag_sync
+% sync local zip archive with that on Annex001
+   disp(['robocopy ' pth_zip ' ' pth_archive ' '  '/COPYALL /E /NP /R:0']);
+   dos(['robocopy ' pth_zip ' ' pth_archive ' '  '/COPYALL /E /NP /R:0']);
+end

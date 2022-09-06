@@ -1,0 +1,21 @@
+start =1 ;
+stop=2;
+
+ind = find(~isnan(data)& (t >= start & t <= stop));
+t = t(ind);
+data = data(ind);
+clear ind;
+
+for i = start:stop;
+        
+        ind = find(i < i+1 & i >= i);
+        doy(i-(start-1)) = i;
+        avg(i-(start-1)) = mean(data(ind));
+        if i ~= stop;
+                lowwindow = t(ind)+1;
+                upwindow = t(ind) + 50;
+                ind = find(lowwindow < i+1 & upwindow >= i);
+                doy(i-(start-1)) = i;
+                avg(i-(start-1)) = mean(data(ind));
+        end;
+end;        

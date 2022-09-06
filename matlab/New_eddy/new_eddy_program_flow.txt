@@ -1,0 +1,15 @@
+
+new_eddy program flow
+
+- new_calc_and_save
+	- calls yf_calc_module_main for each day of data
+	- saves long and short files (calls local function make_short_files.m)
+- yf_calc_module_main
+ 	- loads the ini file
+	- fr_read_and_convert
+	- fr_calc_instrument_stats
+	- fr_create_miscVariables
+	- fr_create_system_data
+	- do_eddy_calc
+	- Perform extra calculations on System data (isfield(configIn.ExtraCalculations,'SystemLevel'))
+

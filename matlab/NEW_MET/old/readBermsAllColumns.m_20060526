@@ -1,0 +1,18 @@
+function sectionRead = readBermsAllColumns( fileName, columnNum )
+
+if exist('fileName') & ~isempty(fileName)  
+   
+   %set lines to the max there can be to 2000 (or dlmread will stop at the end of the file)
+   lines = 2000;
+   
+   range = [2 0 lines columnNum-1 ];
+   
+   sectionRead = dlmread(fileName,',',2,0); 
+   rowNum = floor(length(sectionRead)/columnNum);
+   if rowNum ~= length(sectionRead)/columnNum
+      disp('File not read completely.');
+   end
+   
+   sectionRead = reshape(sectionRead(1:columnNum*rowNum),columnNum,rowNum)';
+   
+end

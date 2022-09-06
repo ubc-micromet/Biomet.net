@@ -1,0 +1,19 @@
+function [precip , Pgeonor,tv,tv_GMT] = fr_OY_Daily_Precip(singleDay)
+
+% pth = biomet_path('yyyy','oy','cl');        % find data base path for year = 'yyyy' 
+%                                             % and fill in the defaults (site name, data type)
+% Year = ???
+
+
+Pgeonor = read_bor('\\annex001\database\2008\oy\climate\oy_climt\pre_avg');
+tv_GMT = read_bor('\\annex001\database\2008\oy\climate\oy_climt\oy_climt_tv',8);
+tv =  tv_GMT - 8/24;
+lastDay = floor(singleDay)-1;
+ind48 = find(tv > lastDay & tv <= lastDay+1);
+tv = tv(ind48);
+Pgeonor = Pgeonor(ind48);
+precip = Pgeonor(end) - Pgeonor(1);
+if precip < 0
+tv_GMT = tv_GMT(ind48);
+plot(tv(ind48),Pgeonor(ind48));datetick('x')
+

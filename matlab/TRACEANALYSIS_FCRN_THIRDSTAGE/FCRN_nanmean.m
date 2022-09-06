@@ -1,0 +1,1 @@
+	function y = mynanmean(x)%	y = mynanmean(x); %	%	mynanmean is identical to mean except that %	NaN elements are treated as missing %	and are not included in the mean. 	if isempty(x); y = NaN; return; end; 		fNaN=isnan(x); iNaN=find(fNaN); 	fYaN=~isnan(x); 	x(iNaN)=0; 	y=sum(fYaN.*x)./sum(fYaN); 		iAllNaN=sum(fYaN)==0; 	y(iAllNaN)=NaN; 	

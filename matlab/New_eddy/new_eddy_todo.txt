@@ -1,0 +1,31 @@
+Things to improve in the new_eddy folder:
+
+- modify fr_licor_calc to include filtering for the pressure signal from an li6262
+- make new_calc_and_save a generic program (ie. do not look for 'MainEddy' when making short files)
+- allow fr_read_database to read in more than a single number (ie. use fr_round_hhour)
+
+
+Changes made to Elyn's version:
+
+-yf_calc_module_main:  now only config info gets saved into first halfhour of each day rather than 48 times which 			makes the files huge
+-March 31, 2003:fr_calc_instrument_stats: wind direction calculations were causing errors when halfhours were 			missing.  Added a try/end statement.
+-April 14, 2003: added Stats_New into fr_calc_extraCalculations(configIn,num,level,dataIn,miscVariables,stats);
+-May 24, 2003:	-allow slaveChan == 1 in fr_instrument_align.m
+-May 25, 2003:	-made a small change to yf_calc_module_main.m which determines the number of extraCalculation fields 			in a different way
+		-introduced a line in fr_calc_extraCalculations.m to check for output before setting field
+-May 26, 2003:	-fixed chi miscalculation in fr_Tair_Chi_Iteration.m
+-July 8, 2003:	-fr_align and fr_instrument_align set to take more than 2 instruments... slave and master settings are no longer important for this set of routines but are still used in fr_resample_instruments
+-Aug 1, 2003:   - fr_calc_eddy with improved spe_heat (input dry mix ratio and convert to mass mix ratio within)
+-Aug 5, 2003:   - fr_instrument_align accepts System level channel info to align traces as the priority and goes to instrument level channel info 2nd
+-Aug 20, 2003:   - new_calc_and_save now outputs shortfiles with ini input
+-Aug 21, 2003:   - changed fr_calc_spectra output to include Flog but not fPsd and fCsd
+-Aug 25, 2003:   - set Spectra frequency in do_eddy_calc rather than in ini file to be system dependent
+
+
+-Aug 25, 2003:   - reinstated  fPsd and fCsd to fr_calc_spectra output (still includes Flog)
+-Aug 29, 2003:   - fr_create_system_data partially passes alignment output to miscVariables (these are not passed to final stats yet)
+-Aug 29, 2003:   - using partial pressure of dry air in conversions in fr_calc_eddy
+
+-Sept 17, 2003:  - fixed bug where spectra was not being done on delayed signals
+-Sept 22, 2003:  - allow calculated delays to be implemented if 'overide' is set to 1 in ini file
+-Sept 23, 2003:  - fixed another bug in the fr_Tair_Chi_iteration program ... was dividing by 1000 one too many times

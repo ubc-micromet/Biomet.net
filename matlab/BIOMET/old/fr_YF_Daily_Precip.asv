@@ -1,0 +1,38 @@
+function [precipOut , Precip_24h,tv,tv_GMT] = fr_YF_Daily_Precip(singleDay,standardTime)
+%
+% [precipOut , Precip_24h,tv,tv_GMT] = fr_YF_Daily_Precip(now,4)
+%     will return total precip for for 4am local STANDARD time (4 am
+%     yesterday to 4 am today)
+%
+% (c) Zoran Nesic           File created:       Feb 25, 2008
+%                           Last modification:  Feb 25, 2008
+%
+
+% Revisions:
+
+% pth = biomet_path('yyyy','oy','cl');        % find data base path for year = 'yyyy' 
+%                                             % and fill in the defaults (site name, data type)
+% Year = ???
+
+yearX = str2double(datestr(singleDay-1,'yyyy'));
+pth = biomet_path(yearX,'yf','cl');
+
+Precip_24h = read_bor(fullfile(pth,'oy_climt\pre_avg'));
+
+
+tv_GMT = read_bor(fullfile(pth,'oy_climt\oy_climt_tv'),8,yearX);
+%tv_GMT = read_bor('\\annex001\database\2008\oy\climate\oy_climt\oy_climt_tv',8);
+
+tv =  tv_GMT - 8/24;
+lastDay = floor(singleDay)-1 + standardTime/24;            % data for period 4am - 4am
+ind48 = find(tv > lastDay & tv <= lastDay+1);
+tv = tv(ind48);
+tv_GMT = tv_GMT(ind48);
+Pgeonor = Pgeonor(ind48);
+precipOut = Pgeonor(end) - Pgeonor(1);
+if precipOut < 0
+    precipOut = 0;
+end
+
+%plot(tv,Pgeonor);datetick('x')
+

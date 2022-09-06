@@ -1,0 +1,15 @@
+Instructions for OY flux data base creation an updating
+(Zoran Jan 29, 2003)
+
+To create year 2003:
+   DB_create_oy_eddy('y:\database\2003\OY\Flux\',2003);
+
+To update year 2003, DOYs 1 to 30
+   OY_DB_UPDATE('OY',1:30,2003,'y:\')
+
+
+NOTE:
+
+Drive y:\ is \\annex001\d.  If running these programs on the \\annex001 PC,
+replace y:\ with d:\.  Other PCs on the network do not have write permision for this disk.
+

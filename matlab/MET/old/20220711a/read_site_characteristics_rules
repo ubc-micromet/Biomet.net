@@ -1,0 +1,9 @@
+Rules for Site Characteristics Table
+- Variable name and additional information in a string, then tabs
+- Variable value as number or string in quotes ('string')
+- Units after a space (no quotes)
+- no spaces afterwards!
+
+Output structure:
+Element names are taken from the string with space and dash replaced by 
+underscore. Units are stored in field units.

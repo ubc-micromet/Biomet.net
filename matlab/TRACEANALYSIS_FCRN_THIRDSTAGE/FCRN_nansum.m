@@ -1,0 +1,1 @@
+	function y = mynansum(x); %	y = mynansum(x); %	mynansum is identical to sum except that %	NaN elements are treated as zeros. 	if isempty(x); y = NaN; return; end; 	fNaN=isnan(x); 	fYaN=~isnan(x); 	iNaN=find(fNaN); 	x(iNaN)=0; % replace iNaN elements with zero.	y=sum(x); %	if all x data are NaN, set sum to NaN.		fAllNaN=sum(fYaN)==0; 	y(fAllNaN)=NaN; 	

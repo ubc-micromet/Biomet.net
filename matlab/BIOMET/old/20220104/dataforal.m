@@ -1,0 +1,225 @@
+function [output] = dataforal;
+%Data for Al Algaard
+%
+%
+%E.Humphreys    April 23, 2001
+%Revisions:     
+%   Aug 11, 2005
+%       - corrections for missing HMP data in July/Aug 2005 (Dominic)
+%   April 24, 2003 - Changed year input (David)
+%   May 12, 2001
+%   Aug 11, 2003 - including trace_fill function and now in 'stand-alone' mode 
+
+format short g;
+
+[yyyy,mm, dd] = datevec(now);
+years   = yyyy;
+%years  = [2003];
+%years  = [2002];
+%years  = [1999];
+
+ptha  = biomet_path('yyyy','oy','cl');
+
+GMT_shift = 8/24;       %shift grenich mean time to 24hr day
+tv        = read_bor([ptha 'oy_clim1_tv'],8,[],years);
+tv = tv-GMT_shift;
+hrmin     = read_bor([ptha 'oy_clim1.4'],[],[],years);
+start     = datenum(years,1,1,13,0,0); %start it at 1 pm PST
+
+indOut1    = find(tv >= start);
+P1         = read_bor([ptha 'oy_clim1.33'],[],[],years,indOut1);
+P2         = read_bor([ptha 'oy_clim1.34'],[],[],years,indOut1);
+ind  = find(tv >= datenum(2002,8,17, 0, 0, 0) & tv <= datenum(2002,8,18, 0, 0, 0));
+P1(ind) = 0;
+%all_P      = dailysum_number(tv(indOut1)-start, P1, 200, -1, 1);
+[x_time, foo, all_P] = dailystats_number(tv(indOut1)-start+datenum(years,1,1), P1, 200, -1, 1);
+%x_time = x_time+1;
+
+all_u      = read_bor([ptha 'oy_clim1.26'],[],[],years,indOut1);
+all_u_dir  = read_bor([ptha 'oy_clim1.31'],[],[],years,indOut1);
+all_T      = read_bor([ptha 'oy_clim1.48'],[],[],years,indOut1);
+all_RH     = read_bor([ptha 'oy_clim1.49'],[],[],years,indOut1);
+
+indOut = find(tv >= start & hrmin == 1300+800);
+
+u          = read_bor([ptha 'oy_clim1.26'],[],[],years,indOut);
+u_dir      = read_bor([ptha 'oy_clim1.31'],[],[],years,indOut);
+T          = read_bor([ptha 'oy_clim1.48'],[],[],years,indOut);
+RH         = read_bor([ptha 'oy_clim1.49'],[],[],years,indOut);
+tv_1pm     = read_bor([ptha 'oy_clim1_tv'],8,[],years,indOut);
+tvtv_1pm = tv_1pm-GMT_shift;
+
+%-------------------------------------------------------------------------------------------
+%clean data
+ind     = find(RH >1.10 | RH<0.15);
+RH(ind) = NaN; 
+clear ind;
+ind     = find(RH >1.00);
+RH(ind) = 1.00; clear ind;
+
+ind     = find(T <-10 | T>45 |  T == 0 | T < -40);
+T(ind)  = NaN;clear ind;
+
+ind     = find(u < 0 | u > 15);
+u(ind)  = NaN;
+
+u       = trace_fill(u);
+u_dir   = trace_fill(u_dir);
+RH      = trace_fill(RH);
+T       = trace_fill(T);
+
+
+%-------------------------------------------------------------------------------------------
+%output data
+week    = tv(indOut);
+%st      = datenum(2003,4,1);
+%ind     = find(week >= datenum(now)-15);
+ind     = find(week >= datenum(now)-30);
+%ind     = find(week >= st & week < datenum(now));
+
+%for precip data:
+for i = 1:length(ind);
+    indP(i) = find(x_time == floor(week(ind(i))));
+end
+
+
+datevector = datevec(tv(indOut));
+fix        = find(datevector(:,5) >= 59 & datevector(:,5) < 60);
+datevector(fix,5) = 0;
+datevector(fix,4) = datevector(fix,4)+1;
+
+datevector = datevector(ind,1:4);
+T = T(ind);
+RH = RH(ind);
+u_dir = u_dir(ind);
+u = u(ind);
+all_P = all_P(indP);
+
+
+if now >= datenum(2005,7,21,0,0,0) & now <= datenum(2006,7,21,0,0,0)
+
+    [T, RH] = OYH2O_Correct_HMP( datenum(...
+                                 datevector(:,1),datevector(:,2),...
+                                 datevector(:,3),datevector(:,4),...
+                                 zeros(size(datevector,1),1),zeros(size(datevector,1),1)) + GMT_shift);
+end
+
+output = [datevector T RH u_dir u all_P];
+
+%save D:\Elyn\data_out\al\oy_weather.txt output -ascii;
+fname = (['\\paoa001\web_page_wea\oy_weather.txt']);
+%fname = (['oy_weather.txt']);
+
+string_mat = strvcat('    Year', '  Month', '  Day', ' Hr',...
+   'Temp', '  RH', '    Dir', '    u', '     P');
+
+FID = fopen(fname, 'wt+');
+fprintf(FID, '%s\n',string_mat');
+fprintf(FID, '%8.0f %4.0f %6.0f %6.0f %8.2f %8.2f %8.0f %8.2f %8.2f\n',output(:,1:end)');
+fclose(FID);
+
+return
+
+figon = 1;
+if figon == 1
+fig = 0;
+fig = fig +1; figure(fig);clf;
+plot(tv(indOut1),all_T,tv(indOut),T,'o');
+datetick('x');
+ylabel('temperature (degC)');
+zoom on;
+
+fig = fig +1; figure(fig);clf;
+plot(tv(indOut1)-datenum(2001,1,1)+1,all_T,tv(indOut)-datenum(2001,1,1)+1,T,'o');
+ylabel('temperature (degC)');
+zoom on;
+
+fig = fig +1; figure(fig);clf;
+plot(tv(indOut1),all_RH,tv(indOut),RH,'o');
+datetick('x');
+ylabel('rel humidity (%)');
+zoom on;
+
+fig = fig +1; figure(fig);clf;
+plot(tv(indOut1),all_u,tv(indOut),u,'o');
+datetick('x');
+ylabel('wind speed (m/s)');
+zoom on;
+
+fig = fig +1; figure(fig);clf;
+plot(tv(indOut1),all_u_dir, tv(indOut),u_dir,'o');
+datetick('x');
+ylabel('wind direction');
+zoom on;
+
+fig = fig +1; figure(fig);clf;
+plot(x_time,all_P, x_time(indP),all_P(indP),'o');
+datetick('x');
+ylabel('rain (mm)');
+zoom on;
+
+%fig = fig +1; figure(fig);clf;
+%ind = find(tv(indOut1) > st & datenum(now));
+%plot(tv(indOut1(ind)),P1(ind))
+%hold on; plot(x_time(indP),all_P(indP),'ro-')
+%datetick('x');
+%ylabel('rain (mm)');
+%zoom on;
+
+
+%fig = fig +1; figure(fig);clf;
+%ind = find(tv(indOut1) > st & datenum(now));
+%plot(tv(indOut1(ind)),cumsum(P1(ind)));
+%hold on; plot(x_time(indP),cumsum(all_P(indP)),'ro-')
+%datetick('x');
+%ylabel('rain (mm)');
+%zoom on;
+
+end
+
+exit
+
+%--------------------------------------------------------------------
+function [out, n] = trace_fill(in, method);
+
+%program fills in NaN with interpolation method chosen
+%
+% in = trace to fill
+% method = none is linear
+%     or = 'nearest', 'linear', 'spline', 'cubic'
+%
+% E.Humphreys Feb 17, 2000
+% Aug 2001 - added rough NaN replacement for begin and end values missed with interp1
+
+if nargin <2;
+   method = 'linear';
+end
+
+ind_bad   = find(isnan(in));
+ind_good  = find(~isnan(in));
+x = [1:length(in)];
+j = interp1(x(ind_good), in(ind_good), x(ind_bad),method);
+if ~isempty(j);
+   in(ind_bad) = j;
+else
+   in(ind_bad) = NaN;
+end
+
+n = size(ind_bad);
+out = in;
+
+%pick up end NaNs that were not filled
+ind_bad   = find(isnan(out));
+out(ind_bad) = mean(clean(out,1));
+
+
+
+
+return
+%test rain summary
+ ind = find(tv(indOut1) > st & datenum(now));
+ sum(P1(ind))
+ sum(all_P(indP))
+ 
+ ind = find(tv(indOut1) >= datenum(2003,3,31,13,0,0) & tv(indOut1) < datenum(2003,4,1,13,0,0));
+ sum(P1(ind))

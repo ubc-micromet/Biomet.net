@@ -1,0 +1,8 @@
+Example loading data from DB
+
+First stage data:
+read_data(1999, 'BS', '\\ANNEX001\DATABASE\Calculation_Procedures\TraceAnalysis_ini\BS\BS_FirstStage.ini')
+
+Second stage data:
+read_data(1999, 'BS', '\\ANNEX001\DATABASE\Calculation_Procedures\TraceAnalysis_ini\BS\BS_SecondStage.ini')
+

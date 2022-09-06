@@ -1,0 +1,10 @@
+function run_MPB_db_update(year);
+
+sites = {'09'};
+
+
+
+%cd('C:\Ubc_flux\Matlab\MPB_Network');
+db_update_HP_sites(year,sites);
+
+exit

@@ -1,0 +1,5 @@
+web_plots30
+outfile30
+outfile30_solar
+ubc_rain05_now
+exit

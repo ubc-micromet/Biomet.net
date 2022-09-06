@@ -1,0 +1,277 @@
+function h = fcrn_plot_spectra(Stats_all,ind_exclude,system_names,include_flag)
+% h = fcrn_plot_spectra(Stats_all,ind_exclude,system_names)
+
+plotting_setup
+
+if exist('ind_exclude') ~= 1 | isempty(ind_exclude)
+   ind_exclude = [];
+end
+
+if exist('system_names') ~= 1 | isempty(system_names)
+   system_names   = {'XSITE_CP','XSITE_OP'};
+end
+
+arg_default('include_flag',0);
+
+if include_flag == 0
+    ind_include = setdiff(1:length(Stats_all),ind_exclude);
+else
+    ind_include = ind_exclude;
+end
+Stats_all = Stats_all(ind_include);
+
+variable_info = [...
+      {'Spectra.Flog','f','Hz'}',...
+   ];
+[var_names] = fcrn_extract_var('Stats_all',system_names,variable_info,{'s1' 's2'});
+
+ind_f = find(f_s1(:,1)~=0 & f_s2(:,1)~=0);
+Stats_all = Stats_all(ind_f);
+
+%ind_spec  = find(Fc_s1<-1 & Hs_s1>10 & LE_s1>10 );
+%Stats_all = Stats_all(ind_spec);
+
+%----------------------------------------------------
+% Define variables to be extracted for both systems
+%----------------------------------------------------
+% This is the list of variables that will be plotted, 
+% four at a time in a four panel graph in the order 
+% given below
+% The three entries per variable are 
+% the fieldName, the variableName and the variableUnit
+variable_info = [...
+      {'Spectra.fPsd(:,3)','fPw','1'}',...
+      {'Spectra.fPsd(:,4)','fPT','1'}',...
+      {'Spectra.fPsd(:,5)','fPC','1'}',...
+      {'Spectra.fPsd(:,6)','fPH','1'}',...
+      {'Spectra.fCsd(:,1)','fCu','1'}',...
+      {'Spectra.fCsd(:,3)','fCT','1'}',...
+      {'Spectra.fCsd(:,4)','fCC','1'}',...
+      {'Spectra.fCsd(:,5)','fCH','1'}',...
+      {'Spectra.Flog','f','Hz'}',...
+      {'Spectra.Psd_norm(3)','Pnw','1'}',...
+      {'Spectra.Psd_norm(4)','PnT','1'}',...
+      {'Spectra.Psd_norm(5)','PnC','1'}',...
+      {'Spectra.Psd_norm(6)','PnH','1'}',...
+      {'Spectra.Csd_norm(1)','Cnu','1'}',...
+      {'Spectra.Csd_norm(3)','CnT','1'}',...
+      {'Spectra.Csd_norm(4)','CnC','1'}',...
+      {'Spectra.Csd_norm(5)','CnH','1'}',...
+      {'Three_Rotations.Avg(1)','u','1'}',...
+   ];
+
+%----------------------------------------------------
+% Extract variables for both systems
+%----------------------------------------------------
+[var_names] = fcrn_extract_var('Stats_all',system_names,variable_info,{'s1','s2'});
+
+% Simplify freq.
+f_s1 = f_s1(1,:);
+f_s2 = f_s2(1,:);
+
+% Blow up normalization constants
+Pn = whos('Pn*');
+for i = 1:length(Pn)
+   eval([Pn(i).name ' = ' Pn(i).name '*ones(1,100);']);
+end
+Cn = whos('Cn*');
+for i = 1:length(Pn)
+   eval([Cn(i).name ' = ' Cn(i).name '*ones(1,100);']);
+end
+
+%----------------------------------------------------
+% caculate transfer functions
+%----------------------------------------------------
+tf_PC     = mean(fPC_s1)./mean(fPC_s2);
+tf_PCT_s1 = mean(fPC_s1./PnC_s1)./mean(fPT_s1./PnT_s1);
+tf_PCT_s2 = mean(fPC_s2./PnC_s2)./mean(fPT_s2./PnT_s2);
+
+tf_CC     = mean(fCC_s1)./mean(fCC_s2);
+tf_CCT_s1 = mean(fCC_s1./CnC_s1)./mean(fCT_s1./CnT_s1);
+tf_CCT_s2 = mean(fCC_s2./CnC_s2)./mean(fCT_s2./CnT_s2);
+
+tf_PH     = mean(fPH_s1)./mean(fPH_s2);
+tf_PHT_s1 = mean(fPH_s1./PnH_s1)./mean(fPT_s1./PnT_s1);
+tf_PHT_s2 = mean(fPH_s2./PnH_s2)./mean(fPT_s2./PnT_s2);
+
+tf_CH     = mean(fCH_s1)./mean(fCH_s2);
+tf_CHT_s1 = mean(fCH_s1./CnH_s1)./mean(fCT_s1./CnT_s1);
+tf_CHT_s2 = mean(fCH_s2./CnH_s2)./mean(fCT_s2./CnT_s2);
+
+% Theory
+%[t_cp,t_op] = fcrn_tf_xsite(f_s1,u_s1);
+%t_cp = mean(t_cp);
+%t_op = mean(t_op);
+
+%----------------------------------------------------
+% Prepare plots
+%----------------------------------------------------
+% Frequency range
+f_rng = [(floor(log10(min([f_s1(:);f_s2(:)])))): ...
+         (ceil(log10(max([f_s1(:);f_s2(:)]))))];
+
+fsize_txorg = get(0,'DefaultTextFontSize');
+fsize_axorg = get(0,'DefaultAxesFontSize'); 
+set(0,'DefaultAxesFontSize',10) 
+set(0,'DefaultTextFontSize',10);
+
+%----------------------------------------------------
+% Panel of normalized power spectra
+%----------------------------------------------------
+h(1).name = 'All_selected_spectra';
+h(1).hand = figure;
+set(h(1).hand,'Name',h(1).name);
+set(h(1).hand,'NumberTitle','off');
+
+subplot('Position',subplot_position(2,2,1))
+%loglog(f_s1,fPw_s1./Pnw_s1,'b.',f_s2,fPw_s2./Pnw_s2,'r.')
+loglog(f_s1,fPw_s1,'b.',f_s2,fPw_s2,'r.')
+subplot_label(gca,2,2,1,10.^[f_rng],10.^[-5:1],1)
+text(1.1,1,'w','Fontsize',16)
+
+subplot('Position',subplot_position(2,2,2))
+%loglog(f_s1,fPT_s1./PnT_s1,'b.',f_s2,fPT_s2./PnT_s2,'r.')
+loglog(f_s1,fPT_s1,'b.',f_s2,fPT_s2,'r.')
+subplot_label(gca,2,2,2,10.^[f_rng],10.^[-5:1],1)
+text(1.1,1,'T_a','Fontsize',16)
+
+subplot('Position',subplot_position(2,2,3))
+%loglog(f_s1,fPC_s1./PnC_s1,'b.',f_s2,fPC_s2./PnC_s2,'r.')
+loglog(f_s1,fPC_s1,'b.',f_s2,fPC_s2,'r.')
+subplot_label(gca,2,2,3,10.^[f_rng],10.^[-5:1],1)
+text(1.1,1,'CO_2','Fontsize',16)
+
+subplot('Position',subplot_position(2,2,4))
+%loglog(f_s1,fPH_s1./PnH_s1,'b.',f_s2,fPH_s2./PnH_s2,'r.')
+loglog(f_s1,fPH_s1,'b.',f_s2,fPH_s2,'r.')
+subplot_label(gca,2,2,4,10.^[f_rng],10.^[-5:1],1)
+text(1.1,1,'H_2O','Fontsize',16)
+
+set_descriptors('Frequency (Hz)','fP(x)','Power Spectra')
+
+%----------------------------------------------------
+% Panel of non-normalized power spectra
+%----------------------------------------------------
+h(2).name = 'Avg_power_spectra';
+h(2).hand = figure;
+set(h(2).hand,'Name',h(2).name);
+set(h(2).hand,'NumberTitle','off');
+
+subplot('Position',subplot_position(2,2,1))
+%loglog(f_s1,nanmean(fPw_s1./Pnw_s1),'b',f_s2,nanmean(fPw_s2./Pnw_s2),'r')
+loglog(f_s1,nanmean(fPw_s1),'b',f_s2,nanmean(fPw_s2),'r')
+subplot_label(gca,2,2,1,10.^[f_rng],10.^[-5:1],1)
+text(1.1,1,'w','Fontsize',16)
+legend(system_names)
+
+subplot('Position',subplot_position(2,2,2))
+%loglog(f_s1,nanmean(fPT_s1./PnT_s1),'b',f_s2,nanmean(fPT_s2./PnT_s2),'r')
+loglog(f_s1,nanmean(fPT_s1),'b',f_s2,nanmean(fPT_s2),'r')
+subplot_label(gca,2,2,2,10.^[f_rng],10.^[-5:1],1)
+text(1.1,1,'T_a','Fontsize',16)
+
+subplot('Position',subplot_position(2,2,3))
+%loglog(f_s1,nanmean(fPC_s1./PnC_s1),'b',f_s2,nanmean(fPC_s2./PnC_s2),'r')
+loglog(f_s1,nanmean(fPC_s1),'b',f_s2,nanmean(fPC_s2),'r')
+subplot_label(gca,2,2,3,10.^[f_rng],10.^[-5:1],1)
+text(1.1,1,'CO_2','Fontsize',16)
+
+subplot('Position',subplot_position(2,2,4))
+%loglog(f_s1,nanmean(fPH_s1./PnH_s1),'b',f_s2,nanmean(fPH_s2./PnH_s2),'r')
+loglog(f_s1,nanmean(fPH_s1),'b',f_s2,nanmean(fPH_s2),'r')
+subplot_label(gca,2,2,4,10.^[f_rng],10.^[-5:1],1)
+text(1.1,1,'H_2O','Fontsize',16)
+
+set_descriptors('Frequency (Hz)','fP(x)','Averaged Power Spectra')
+
+%----------------------------------------------------
+% Panel of co-spectra
+%----------------------------------------------------
+h(3).name = 'Avg_co_spectra';
+h(3).hand = figure;
+set(h(3).hand,'Name',h(3).name);
+set(h(3).hand,'NumberTitle','off');
+
+subplot('Position',subplot_position(2,2,1))
+%semilogx(f_s1,nanmean(fCu_s1./Cnu_s1),'b',f_s2,nanmean(fCu_s2./Cnu_s2),'r')
+semilogx(f_s1,nanmean(fCu_s1),'b',f_s2,nanmean(fCu_s2),'r')
+line(10.^10.^f_rng([1 end]),[0 0],'LineStyle',':','Color','k')
+subplot_label(gca,2,2,1,10.^[f_rng],[-Inf Inf],1)
+text(1.1,0.45,'(w,u)','Fontsize',16,'HorizontalA','center')
+legend(system_names)
+
+subplot('Position',subplot_position(2,2,2))
+%semilogx(f_s1,nanmean(fCT_s1./CnT_s1),'b',f_s2,nanmean(fCT_s2./CnT_s2),'r')
+semilogx(f_s1,nanmean(fCT_s1),'b',f_s2,nanmean(fCT_s2),'r')
+line(10.^f_rng([1 end]),[0 0],'LineStyle',':','Color','k')
+subplot_label(gca,2,2,2,10.^[f_rng],[-Inf Inf],1)
+text(1.1,0.45,'(w,T_a)','Fontsize',16,'HorizontalA','center')
+
+subplot('Position',subplot_position(2,2,3))
+%semilogx(f_s1,nanmean(fCC_s1./CnC_s1),'b',f_s2,nanmean(fCC_s2./CnC_s2),'r')
+semilogx(f_s1,nanmean(fCC_s1),'b',f_s2,nanmean(fCC_s2),'r')
+line(10.^f_rng([1 end]),[0 0],'LineStyle',':','Color','k')
+subplot_label(gca,2,2,3,10.^[f_rng],[-Inf Inf],1)
+text(1.1,0.45,'(w,CO_2)','Fontsize',16,'HorizontalA','center')
+
+subplot('Position',subplot_position(2,2,4))
+%semilogx(f_s1,nanmean(fCH_s1./CnH_s1),'b',f_s2,nanmean(fCH_s2./CnH_s2),'r')
+semilogx(f_s1,nanmean(fCH_s1),'b',f_s2,nanmean(fCH_s2),'r')
+line(10.^f_rng([1 end]),[0 0],'LineStyle',':','Color','k')
+subplot_label(gca,2,2,4,10.^[f_rng],[-Inf Inf],1)
+text(1.1,0.45,'(w,H_2O)','Fontsize',16,'HorizontalA','center')
+
+set_descriptors('Frequency (Hz)','fC(x)','Co-Spectra')
+
+%----------------------------------------------------
+% Panel of transfer functions
+%----------------------------------------------------
+h(4).name = 'Avg_transfer_functions';
+h(4).hand = figure;
+set(h(4).hand,'Name',h(4).name);
+set(h(4).hand,'NumberTitle','off');
+
+subplot('Position',subplot_position(2,2,1))
+semilogx(f_s1,[tf_PC; tf_PCT_s1; tf_PCT_s2])
+line(10.^f_rng([1 end]),[0 0],'LineStyle',':','Color','k')
+subplot_label(gca,2,2,1,10.^[f_rng],-0.2:0.2:1.4,1)
+text(0.0005,0.2,'Power spec CO_2','Fontsize',16)
+
+subplot('Position',subplot_position(2,2,3))
+semilogx(f_s1,[tf_CC; tf_CCT_s1; tf_CCT_s2])
+line(10.^f_rng([1 end]),[0 0],'LineStyle',':','Color','k')
+%semilogx(f_s1,[tf_CC; tf_CCT_s1; tf_CCT_s2; t_cp; t_op])
+subplot_label(gca,2,2,3,10.^[f_rng],-0.2:0.2:1.4,1)
+text(0.0005,0.2,'Co-spec CO_2','Fontsize',16)
+
+subplot('Position',subplot_position(2,2,2))
+semilogx(f_s1,[tf_PH; tf_PHT_s1; tf_PHT_s2])
+line(10.^f_rng([1 end]),[0 0],'LineStyle',':','Color','k')
+subplot_label(gca,2,2,2,10.^[f_rng],-0.2:0.2:1.4,1)
+text(0.0005,0.2,'Power spec H_2O','Fontsize',16)
+
+subplot('Position',subplot_position(2,2,4))
+semilogx(f_s1,[tf_CH; tf_CHT_s1; tf_CHT_s2])
+line(10.^f_rng([1 end]),[0 0],'LineStyle',':','Color','k')
+subplot_label(gca,2,2,4,10.^[f_rng],-0.2:0.2:1.4,1)
+text(0.0005,0.2,'Co-spec H_2O','Fontsize',16)
+
+set_descriptors('Transfer functions','fP(x) / var(x)','Transfer functions')
+
+return
+
+function set_descriptors(xlabel_str,ylabel_str,title_str)
+
+axes('Position',subplot_position(1,1,1),'Visible','off');
+
+text(0.5,-0.05,xlabel_str,'HorizontalA','center','VerticalA','top')
+
+text(-0.1,0.5, ylabel_str ,'HorizontalA','center','VerticalA','bottom','Rot',90)
+
+hx = title(title_str); 
+pos = get(hx,'Position');
+hy = text(0,0,title_str,'HorizontalA','center'); 
+set(hy,'Position',pos)
+
+hf = get(gcf,'Children');
+set(gcf,'Children',hf([2:end 1]))

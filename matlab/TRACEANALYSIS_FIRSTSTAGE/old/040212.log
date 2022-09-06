@@ -1,0 +1,520 @@
+********************************************************************************
+Start at: 14:41
+********************************************************************************
+ta_firststage(2004,'pa')
+Loading Trace: air_temperature_hmp_ventilated_36m
+Loading Trace: wind_speed_38m
+Loading Trace: radiation_net_31m
+Loading Trace: barometric_pressure
+Loading Trace: bench_temperature_licor_profile
+Loading Trace: internal_pressure_licor_profile
+Loading Trace: co2_avg_licor_profile_39m
+Loading Trace: co2_avg_licor_profile_28m
+Loading Trace: co2_avg_licor_profile_22m
+Loading Trace: co2_avg_licor_profile_18m
+Loading Trace: co2_avg_licor_profile_10m
+Loading Trace: co2_avg_licor_profile_4m
+Loading Trace: co2_avg_licor_profile_2m
+Loading Trace: co2_avg_licor_profile_50cm
+Loading Trace: h2o_avg_licor_profile_39m
+Loading Trace: h2o_avg_licor_profile_28m
+Loading Trace: h2o_avg_licor_profile_22m
+Loading Trace: h2o_avg_licor_profile_18m
+Loading Trace: h2o_avg_licor_profile_10m
+Loading Trace: h2o_avg_licor_profile_4m
+Loading Trace: h2o_avg_licor_profile_2m
+Loading Trace: h2o_avg_licor_profile_50cm
+Loading Trace: samples_daq
+Loading Trace: temperature_avg_tc1
+Loading Trace: temperature_avg_tc2
+Loading Trace: temperature_std_tc1
+Loading Trace: temperature_std_tc2
+Loading Trace: bench_temperature_licor_eddy
+Loading Trace: internal_pressure_licor_eddy
+Loading Trace: gauge_pressure_licor_eddy
+Loading Trace: co2_avg_licor_eddy
+Loading Trace: co2_std_licor_eddy
+Loading Trace: h2o_avg_licor_eddy
+Loading Trace: h2o_std_licor_eddy
+Loading Trace: barometric_pressure_avg_high_freq
+Loading Trace: barometric_pressure_std_high_freq
+Loading Trace: wind_speed_w_avg_before_rot_gill
+Loading Trace: wind_speed_w_std_before_rot_gill
+Loading Trace: temperature_avg_gill
+Loading Trace: temperature_std_gill
+Loading Trace: wind_speed_u_avg_after_rot_gill
+Loading Trace: wind_speed_u_std_after_rot_gill
+Loading Trace: wind_speed_u_avg_before_rot_gill
+Loading Trace: wind_speed_u_std_before_rot_gill
+Loading Trace: wind_speed_v_avg_before_rot_gill
+Loading Trace: wind_speed_v_std_before_rot_gill
+Loading Trace: wind_speed_v_std_after_rot_gill
+Loading Trace: wind_speed_w_std_after_rot_gill
+Loading Trace: le_lin_detrend_rotated_39m
+Loading Trace: le_blockavg_rotated_39m
+Loading Trace: h_sonic_lin_detrend_rotated_39m
+Loading Trace: h_sonic_blockavg_rotated_39m
+Loading Trace: h_tc1_lin_detrend_rotated_39m
+Loading Trace: h_tc1_blockavg_rotated_39m
+Loading Trace: h_tc2_lin_detrend_rotated_39m
+Loading Trace: h_tc2_blockavg_rotated_39m
+Loading Trace: fc_lin_detrend_rotated_39m
+Loading Trace: fc_blockavg_rotated_39m
+Loading Trace: ustar_blockavg_rotated_39m
+Loading Trace: fc_blockavg_rotated_39m
+
+ans = 
+
+1x60 struct array with fields:
+    Site_name
+    variableName
+    ini
+    SiteID
+    Year
+    Diff_GMT_to_local_time
+    Last_Updated
+    ind_depend
+    stats
+    ind_toView
+    pts_removed
+    pts_restored
+    interpolated
+
+ta_firststage(2004,'pa')
+Loading Trace: wind_speed_w_avg_before_rot_gill
+
+ans = 
+
+1x60 struct array with fields:
+    Site_name
+    variableName
+    ini
+    SiteID
+    Year
+    Diff_GMT_to_local_time
+    Last_Updated
+    ind_depend
+    stats
+    interpolated
+    pts_removed
+    pts_restored
+    ind_toView
+
+ta_firststage(2004,'pa')
+Loading Trace: temperature_avg_gill
+
+ans = 
+
+1x60 struct array with fields:
+    Site_name
+    variableName
+    ini
+    SiteID
+    Year
+    Diff_GMT_to_local_time
+    Last_Updated
+    ind_depend
+    stats
+    interpolated
+    pts_removed
+    pts_restored
+    ind_toView
+
+edit linregression
+dbstack
+;
+disp(which('linregression'));
+\\PAOA001\matlab\BIOMET\linregression.m
+mdbstatus '\\paoa001\matlab\biomet\linregression.m'
+edit lin_regression
+File 'lin_regression' not found.
+edit lin_reg
+File 'lin_reg' not found.
+edit linreg
+dbstack
+;
+disp(which('linreg'));
+\\PAOA001\matlab\BIOMET\linreg.m
+mdbstatus '\\paoa001\matlab\biomet\linreg.m'
+eval( 'if exist(''Only'',''var''), mauifunc(Only), end', '');
+eval( 'if exist(''regression'',''var''), mauifunc(regression), end', '');
+eval( 'if exist(''x'',''var''), mauifunc(x), end', '');
+eval( 'if exist(''app'',''var''), mauifunc(app), end', '');
+eval( 'if exist(''x_bar'',''var''), mauifunc(x_bar), end', '');
+edit corrcoeff
+File 'corrcoeff' not found.
+edit corcoeff
+File 'corcoeff' not found.
+edit corrcoef
+dbstack
+;
+disp(which('corrcoef'));
+C:\MATLABR11\toolbox\matlab\datafun\corrcoef.m
+mdbstatus 'c:\matlabr11\toolbox\matlab\datafun\corrcoef.m'
+x = randn(1e4,1);
+std(x)
+
+ans =
+
+    1.0011
+
+corrcoef(x)
+
+ans =
+
+     1
+
+corrcoef(x,x)
+
+ans =
+
+     1     1
+     1     1
+
+x = randn(1e4,1)/.5;
+corrcoef(x,x)
+
+ans =
+
+     1     1
+     1     1
+
+y = randn(1e4,1);
+corrcoef(x,y)
+
+ans =
+
+    1.0000    0.0093
+    0.0093    1.0000
+
+cov(x,y)
+
+ans =
+
+    4.0291    0.0187
+    0.0187    1.0098
+
+ta_firststage(2004,'bs')
+??? Error using ==> read_bor
+File: (\\annex001\DATABASE\2004\BS\BERMS\al1clean_tv) does not exist!
+
+dbstack
+> In \\PAOA001\matlab\BIOMET\READ_BOR.M at line 99
+  In D:\kai\Projects\UnifyCleaning\TraceAnalysis_Tool\TA_load_from_db.m at line 60
+  In D:\kai\Projects\UnifyCleaning\TraceAnalysis_Tool\clean_all_Dependents.m (get_trace_info) at line 69
+  In D:\kai\Projects\UnifyCleaning\TraceAnalysis_Tool\clean_all_Dependents.m at line 27
+  In D:\kai\Projects\UnifyCleaning\TraceAnalysis_Tool\TA_FirstStage.m at line 211
+dbstack
+> In \\PAOA001\matlab\BIOMET\READ_BOR.M at line 99
+  In D:\kai\Projects\UnifyCleaning\TraceAnalysis_Tool\TA_load_from_db.m at line 60
+  In D:\kai\Projects\UnifyCleaning\TraceAnalysis_Tool\clean_all_Dependents.m (get_trace_info) at line 69
+  In D:\kai\Projects\UnifyCleaning\TraceAnalysis_Tool\clean_all_Dependents.m at line 27
+  In D:\kai\Projects\UnifyCleaning\TraceAnalysis_Tool\TA_FirstStage.m at line 211
+;
+disp(which('read_bor'));
+\\PAOA001\matlab\BIOMET\READ_BOR.M
+mdbstatus '\\paoa001\matlab\biomet\read_bor.m'
+dbclear if error
+dbstatus
+
+Breakpoint for D:\kai\Projects\UnifyCleaning\TraceAnalysis_Read\clean_trace (clean_one_trace) is on line 262.
+eval( 'if exist(''year'',''var''), mauifunc(year), end', '');
+        2004
+
+eval( 'if exist(''all'',''var''), mauifunc(all), end', '');
+eval( 'if exist(''requested'',''var''), mauifunc(requested), end', '');
+dbcont
+While cleaning dependents could not find the data file: wind_speed_26m!
+Invalid Site identification 'BERMS' for trace: air_temperature_hmp_ventilated_24m!
+Warning: One or more output arguments not assigned during call to 'ta_firststage (load_single_trace)'.
+> In D:\kai\Projects\UnifyCleaning\TraceAnalysis_Tool\TA_FirstStage.m at line 344
+Invalid Site identification 'BERMS' for trace: relative_humidity_hmp_ventilated_24m!
+Warning: One or more output arguments not assigned during call to 'ta_firststage (load_single_trace)'.
+> In D:\kai\Projects\UnifyCleaning\TraceAnalysis_Tool\TA_FirstStage.m at line 344
+Invalid Site identification 'BERMS' for trace: air_temperature_tc_25m!
+Warning: One or more output arguments not assigned during call to 'ta_firststage (load_single_trace)'.
+> In D:\kai\Projects\UnifyCleaning\TraceAnalysis_Tool\TA_FirstStage.m at line 344
+Invalid Site identification 'BERMS' for trace: air_temperature_tc_ventilated_24m!
+Warning: One or more output arguments not assigned during call to 'ta_firststage (load_single_trace)'.
+> In D:\kai\Projects\UnifyCleaning\TraceAnalysis_Tool\TA_FirstStage.m at line 344
+Invalid Site identification 'BERMS' for trace: wind_speed_26m!
+Warning: One or more output arguments not assigned during call to 'ta_firststage (load_single_trace)'.
+> In D:\kai\Projects\UnifyCleaning\TraceAnalysis_Tool\TA_FirstStage.m at line 344
+Invalid Site identification 'BERMS' for trace: wind_direction_wheighted_26m!
+Warning: One or more output arguments not assigned during call to 'ta_firststage (load_single_trace)'.
+> In D:\kai\Projects\UnifyCleaning\TraceAnalysis_Tool\TA_FirstStage.m at line 344
+Invalid Site identification 'BERMS' for trace: radiation_net_20m!
+Warning: One or more output arguments not assigned during call to 'ta_firststage (load_single_trace)'.
+> In D:\kai\Projects\UnifyCleaning\TraceAnalysis_Tool\TA_FirstStage.m at line 344
+Invalid Site identification 'BERMS' for trace: barometric_pressure!
+Warning: One or more output arguments not assigned during call to 'ta_firststage (load_single_trace)'.
+> In D:\kai\Projects\UnifyCleaning\TraceAnalysis_Tool\TA_FirstStage.m at line 344
+Invalid Site identification 'BERMS' for trace: precipitation_tipping_bucket!
+Warning: One or more output arguments not assigned during call to 'ta_firststage (load_single_trace)'.
+> In D:\kai\Projects\UnifyCleaning\TraceAnalysis_Tool\TA_FirstStage.m at line 344
+Invalid Site identification 'BERMS' for trace: precipitation_belfort!
+Warning: One or more output arguments not assigned during call to 'ta_firststage (load_single_trace)'.
+> In D:\kai\Projects\UnifyCleaning\TraceAnalysis_Tool\TA_FirstStage.m at line 344
+Loading Trace: pressure_reference_gas
+
+ans = 
+
+1x64 struct array with fields:
+    Site_name
+    variableName
+    ini
+    SiteID
+    Year
+    Diff_GMT_to_local_time
+    Last_Updated
+    ind_depend
+    stats
+    interpolated
+    pts_removed
+    pts_restored
+    ind_toView
+
+
+» eval( 'if exist(''sig_a'',''var''), mauifunc(sig_a), end', '');
+eval( 'if exist(''soilchambers'',''var''), mauifunc(soilchambers), end', '');
+eval( 'if exist(''path'',''var''), mauifunc(path), end', '');
+eval( 'if exist(''cleaning'',''var''), mauifunc(cleaning), end', '');
+eval( 'if exist(''cleaning'',''var''), mauifunc(cleaning), end', '');
+startup
+
+Biomet network toolbox connected!
+
+********************************************************************************
+Start at: 15:41
+********************************************************************************
+cd D:\kai_data\Material_Backed_up\Projects_finished\PaperCR
+papercr
+Entering papercr
+Regression of transformed data against soil temperature
+Reg. param.: Q_10 = 4.88 R_10 = 5.31
+             R^2  = 0.69 N    = 2197
+Regression of transformed data against air temperature
+Reg. param.: Q_10 = 3.44 R_10 = 4.72
+             R^2  = 0.64 N    = 2197
+Error in ==> D:\kai_data\Material_Backed_up\Projects_finished\PaperCR\biomet.net\matlab\new_met\fr_function_fit.m (minimizer)
+On line 332  ==>     f = sum((y_hat-obs).^2); 
+
+Error in ==> D:\kai_data\Material_Backed_up\Projects_finished\PaperCR\biomet.net\matlab\new_met\fr_function_fit.m
+On line 217  ==>             fxc = minimizer(funfcn,param,obs,options,varargin{:});
+
+Error in ==> D:\kai_data\Material_Backed_up\Projects_finished\PaperCR\matlab_analysis\generatefig_demo_fit_methods.m
+On line 83  ==> [p_lloyd,fit_lloyd,s_lloyd] = fr_function_fit(f_lloyd,[1 53e3],nee_main_unfilled(ind_select),[],soil_temperature_main(ind_select));
+
+Error in ==> D:\kai_data\Material_Backed_up\Projects_finished\PaperCR\matlab_analysis\generatefig_all.m
+On line 14  ==> generatefig_demo_fit_methods(print_flag)
+
+Error in ==> D:\kai_data\Material_Backed_up\Projects_finished\PaperCR\PaperCR.m
+On line 67  ==> 
+
+generate_demo_fitmethod
+??? Undefined function or variable 'generate_demo_fitmethod'.
+
+generatefig_demo_fit_methods
+Regression of transformed data against soil temperature
+Reg. param.: Q_10 = 4.88 R_10 = 5.31
+             R^2  = 0.69 N    = 2197
+Regression of transformed data against air temperature
+Reg. param.: Q_10 = 3.44 R_10 = 4.72
+             R^2  = 0.64 N    = 2197
+
+Optimization terminated successfully:
+ the current param satisfies the termination criteria using OPTIONS.TolX of 1.000000e-004 
+ and F(param) satisfies the convergence criteria using OPTIONS.TolFun of 1.000000e-004 
+
+Regression using Lloyd and Taylor
+Reg. param.: Q_10 = 6.60104972.31
+             R^2  = 0.40 N    = 2197
+
+Optimization terminated successfully:
+ the current param satisfies the termination criteria using OPTIONS.TolX of 1.000000e-004 
+ and F(param) satisfies the convergence criteria using OPTIONS.TolFun of 1.000000e-004 
+
+Regression using exponential
+Reg. param.: Q_10 = 4.84
+             R^2  = 0.40 N    = 2197
+
+Optimization terminated successfully:
+ the current param satisfies the termination criteria using OPTIONS.TolX of 1.000000e-004 
+ and F(param) satisfies the convergence criteria using OPTIONS.TolFun of 1.000000e-004 
+
+Regression using exponential against air temp.
+Reg. param.: Q_10 = 2.77
+             R^2  = 0.41 N    = 2197
+0.4^2
+
+ans =
+
+    0.1600
+
+help fr_function_fit
+
+ FR_FUNCTION_FIT Fitting of a function to observations using various methods.
+    PARAM = FR_FUNCTION_FIT(FUN,PARAM0,OBS,[],X) returns a vector PARAM that is a local
+    minimizer of the parameters used in FUN to the observations provided in OBS 
+    (usually FUN is an M-file: FUN.M). The minimazation is local, i.e. PARAM may depend
+    on starting the vector PARAM0. FUN should return a scalar function value when 
+    called with feval: F=feval(FUN,PARAM,X1,X2,...).  See below for more options for FUN.
+ 
+    PARAM = FR_FUNCTION_FIT(FUN,PARAM0,OBS,OPTIONS)  minimizes with the default optimization
+    parameters replaced by values in the structure OPTIONS, created
+    with the FR_OPTIMSET function.  See FR_OPTIMSET for details.  FR_FUNCTION_FIT uses
+    these options: Display, TolX, TolFun, MaxFunEvals, MaxIter, and Method. 
+ 
+    PARAM = FR_FUNCTION_FIT(FUN,PARAM0,OBS,OPTIONS,X1,X2,...) provides for the 
+    arguments which are passed to the objective function, F=feval(FUN,PARAM,X1,X2,...).
+    Pass an empty matrix for OPTIONS to use the default values.
+    (Use OPTIONS = [] as a place holder if no options are set.)
+ 
+    [PARAM,FVAL]= FR_FUNCTION_FIT(...) returns a vector of values of the fitted 
+    function FUN(PARAM,X1,X2,...)
+ 
+    [PARAM,FVAL,OUTPUT] = FR_FUNCTION_FIT(...) returns a structure
+    OUTPUT with the number of iterations taken in OUTPUT.iterations. Other statistics
+    provided include the minimized M estimate, the sum of squared deviation from the fitted
+    function (in the OLS case that is the same as the M estimate), and R2 in an OLS sense.
+ 
+    [PARAM,FVAL,OUTPUT,EXITFLAG] = FR_FUNCTION_FIT(...) returns a string EXITFLAG that 
+    describes the exit condition of FR_FUNCTION_FIT.  
+    If EXITFLAG is:
+      1 then FR_FUNCTION_FIT converged with a solution PARAM.
+      0 then the maximum number of iterations was reached.
+    
+    The argument FUN can be an inline function:
+       f = inline('param(1).*x + param(2).*y','param','x');
+       x = fr_function_fit(f,param0,obs,options,x);
+ 
+    FR_FUNCTION_FIT uses the Nelder-Mead simplex (direct search) method to minimze the 
+    deviation of the desired M-estimate. M-estimates implemented are ordinary least square
+    fit (option.Method = 'OLS', the default), mean average deviation (option.Method = 'MAD')
+    and the assumption of Cauchy distributed errors (option.Method = 'CAUCHY')
+ 
+    See also FMINBND, FR_OPTIMSET, OPTIMGET. 
+
+0.64^2
+
+ans =
+
+    0.4096
+
+0.69^2
+
+ans =
+
+    0.4761
+
+path(path)
+generatefig_demo_fit_methods
+Regression of transformed data against soil temperature
+Reg. param.: Q_10 = 4.88 R_10 = 5.31
+             R^2  = 0.69 N    = 2197
+Regression of transformed data against air temperature
+Reg. param.: Q_10 = 3.44 R_10 = 4.72
+             R^2  = 0.64 N    = 2197
+
+Optimization terminated successfully:
+ the current param satisfies the termination criteria using OPTIONS.TolX of 1.000000e-004 
+ and F(param) satisfies the convergence criteria using OPTIONS.TolFun of 1.000000e-004 
+
+Regression using Lloyd and Taylor
+Reg. param.: Q_10 = 6.60104972.31
+             R^2  = 0.40 N    = 2197
+
+Optimization terminated successfully:
+ the current param satisfies the termination criteria using OPTIONS.TolX of 1.000000e-004 
+ and F(param) satisfies the convergence criteria using OPTIONS.TolFun of 1.000000e-004 
+
+Regression using exponential
+Reg. param.: Q_10 = 4.84
+             R^2  = 0.40 N    = 2197
+
+Optimization terminated successfully:
+ the current param satisfies the termination criteria using OPTIONS.TolX of 1.000000e-004 
+ and F(param) satisfies the convergence criteria using OPTIONS.TolFun of 1.000000e-004 
+
+Regression using exponential against air temp.
+Reg. param.: Q_10 = 2.77
+             R^2  = 0.41 N    = 2197
+generatefig_demo_fit_methods
+Regression of transformed data against soil temperature
+Reg. param.: Q_10 = 4.88 R_10 = 5.31
+             R^2  = 0.47 N    = 2197
+Regression of transformed data against air temperature
+Reg. param.: Q_10 = 3.44 R_10 = 4.72
+             R^2  = 0.41 N    = 2197
+
+Optimization terminated successfully:
+ the current param satisfies the termination criteria using OPTIONS.TolX of 1.000000e-004 
+ and F(param) satisfies the convergence criteria using OPTIONS.TolFun of 1.000000e-004 
+
+Regression using Lloyd and Taylor
+Reg. param.: Q_10 = 6.60104972.31
+             R^2  = 0.40 N    = 2197
+
+Optimization terminated successfully:
+ the current param satisfies the termination criteria using OPTIONS.TolX of 1.000000e-004 
+ and F(param) satisfies the convergence criteria using OPTIONS.TolFun of 1.000000e-004 
+
+Regression using exponential
+Reg. param.: Q_10 = 4.84
+             R^2  = 0.40 N    = 2197
+
+Optimization terminated successfully:
+ the current param satisfies the termination criteria using OPTIONS.TolX of 1.000000e-004 
+ and F(param) satisfies the convergence criteria using OPTIONS.TolFun of 1.000000e-004 
+
+Regression using exponential against air temp.
+Reg. param.: Q_10 = 2.77
+             R^2  = 0.41 N    = 2197
+;
+generatefig_demo_fit_methods
+Regression of transformed data against soil temperature
+Reg. param.: Q_10 = 4.88 R_10 = 5.31
+             R^2  = 0.47 N    = 2197
+Regression of transformed data against air temperature
+Reg. param.: Q_10 = 3.44 R_10 = 4.72
+             R^2  = 0.41 N    = 2197
+
+Optimization terminated successfully:
+ the current param satisfies the termination criteria using OPTIONS.TolX of 1.000000e-004 
+ and F(param) satisfies the convergence criteria using OPTIONS.TolFun of 1.000000e-004 
+
+Regression using Lloyd and Taylor
+Reg. param.: Q_10 = 6.60104972.31
+             R^2  = 0.40 N    = 2197
+
+Optimization terminated successfully:
+ the current param satisfies the termination criteria using OPTIONS.TolX of 1.000000e-004 
+ and F(param) satisfies the convergence criteria using OPTIONS.TolFun of 1.000000e-004 
+
+Regression using exponential
+Reg. param.: Q_10 = 4.84
+             R^2  = 0.40 N    = 2197
+
+Optimization terminated successfully:
+ the current param satisfies the termination criteria using OPTIONS.TolX of 1.000000e-004 
+ and F(param) satisfies the convergence criteria using OPTIONS.TolFun of 1.000000e-004 
+
+Regression using exponential against air temp.
+Reg. param.: Q_10 = 2.77
+             R^2  = 0.41 N    = 2197
+unifycleaning
+??? Input argument 'version' is undefined.
+
+Error in ==> D:\kai\matlab\unifycleaning.m
+On line 17  ==> switch upper(version)
+
+unifycleaning('new')
+??? Undefined function or variable 'unifycleaning'.
+
+unifyclean('new')
+??? Undefined function or variable 'unifyclean'.
+
+startup
+
+Biomet network toolbox connected!
+

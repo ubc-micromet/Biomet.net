@@ -1,0 +1,45 @@
+function [t_shift,sample_shift] = xsite_bc_hdf89_shift(tv);
+% [t_shift,sample_shift] = xsite_bc_hdf89_shift;
+%
+% The default tv shows that before the adjustment the xsite clock was
+% about 135 sec ahead of the yf clock
+
+arg_default('tv',datenum(2004,10,2,12:2:(6*24),0,0)));
+
+sample_shift = NaN .* zeros(size(tv));
+t_shift = NaN .* zeros(size(tv));
+
+for i = 1:length(tv)
+    disp(datestr(tv(i)));
+    try
+        cd D:\Experiments\BC_HDF89\Setup_XSITE
+        c_xs = fr_get_init(fr_current_siteid,tv(i));
+        s_xs = fr_read_Digital1(tv(i),c_xs,1);
+        l_xs = fr_read_Digital2(tv(i),c_xs,2);
+        
+        cd D:\Experiments\BC_HDF89\Setup
+        c_yf = fr_get_init(fr_current_siteid,tv(i));
+        s_yf = fr_read_Digital1(tv(i),c_yf,1);
+        l_yf = fr_read_Digital2(tv(i),c_yf,2);
+        
+        n = min(length(s_yf),length(s_xs));
+        nl = min(length(l_yf),length(l_xs));
+        
+        [r,lag] = xcorr(detrend(s_xs(1:1e4,4),0),detrend(s_yf(1:1e4,4),0),'coeff');
+        [r_max,ind_max] = max(r);
+        
+        sample_shift(i) = lag(ind_max);
+        t_shift(i) = sample_shift(i)./20;
+
+        [r,lag] = xcorr(detrend(l_xs(1:1e4,1),0),detrend(l_yf(1:1e4,1),0),'coeff');
+        [r_max,ind_max] = max(r);
+        
+        sample_shift_licor(i) = lag(ind_max);
+        t_shift_licor(i) = sample_shift(i)./20;
+        
+    catch
+        disp('Did not work');
+    end
+end
+
+plot(tv-datenum(2004,1,0),t_shift,)

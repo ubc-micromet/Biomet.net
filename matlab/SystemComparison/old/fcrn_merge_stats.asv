@@ -1,0 +1,103 @@
+function Stats = fcrn_merge_stats(Stats1,Stats2,timeshift,comp_flag)
+% Stats = fcrn_merge_stats(Stats_fcrn,Stats_site,timeshift,comp_flag)
+%
+% timeshift will be applied to Stats1 as tv-timeshift
+% indentical_flag = 1 indicates that the two Stats are identical and fields
+% should be renamed *_1 and *_2
+
+arg_default('timeshift',0);
+arg_default('comp_flag',0);
+
+tv_xs = get_stats_field(Stats1,'TimeVector')-timeshift;
+tv_pi = get_stats_field(Stats2,'TimeVector');
+
+[tv_dum,ind_xs,ind_pi] = intersect(round(tv_xs.*100)./100,round(tv_pi.*100)./100);
+
+n = length(ind_xs);
+
+%----------------------------------------------------
+% Make sure fist element in Stats have Configuration
+%----------------------------------------------------
+i1 = 1;
+while isempty(Stats1(i1).Configuration)
+    i1 = i1+1;
+end
+Stats1(1).Configuration = Stats1(i1).Configuration;
+i2 = 1;
+while isempty(Stats2(i2).Configuration)
+    i2 = i2+1;
+end
+Stats2(1).Configuration = Stats2(i2).Configuration;
+
+%----------------------------------------------------
+% Extract system info for both systems
+%----------------------------------------------------
+ind_pi_sys = 1:length(Stats2(i2).Configuration.System);
+ind_xs_sys = 1:length(Stats1(i1).Configuration.System);
+
+ind_pi_ins = 1:length(Stats2(i2).Configuration.Instrument);
+ind_xs_ins = 1:length(Stats1(i1).Configuration.Instrument);
+
+%----------------------------------------------------
+% Join stats structure
+%----------------------------------------------------
+% Rename fields if structres are identical
+if identity_flag = 1
+    field_tag1 = '1';
+    field_tag2 = '2';
+else
+    field_tag1 = '';
+    field_tag2 = '';
+end
+
+for i = 1:n
+%----------------------------------------------------
+% Add first structure
+%----------------------------------------------------
+    Stats_new = Stats1(ind_xs(i));
+
+    for j = ind_xs_sys
+        field(j) = Stats1(1).Configuration.System(j).FieldName;
+    end
+    
+    if identity_flag = 1
+        % Remove fields as they will be renamed
+        Stats_new = rmfield(Stats_new,field);
+        Stats_new = rmfield(Stats_new,'Instrument');
+    end    
+    
+    for j = ind_xs_sys
+        eval(['Stats_new.' char(field(j)) field_tag1 ' = Stats1(ind_pi(i)).' char(field(j) ';']);
+    end
+    
+    for j = ind_xs_ins 
+        try
+            eval(['Stats_new.Instrument' field_tag1 '(ind_xs_ins(end)+j) = Stats1(ind_xs(i)).Instrument(j);']);
+        catch
+            %Stats_new.Instrument(ind_xs_ins(end)+j) = NaN;
+        end
+    end
+
+%----------------------------------------------------
+% Add second structure
+%----------------------------------------------------
+    for j = ind_pi_sys 
+        field(j) = Stats2(1).Configuration.System(j).FieldName;
+    end
+
+    for j = ind_pi_sys 
+        eval(['Stats_new.' char(field(j)) field_tag2 ' = Stats2(ind_pi(i)).' char(field(j)) ';']);
+    end
+        for j = ind_pi_ins 
+        try
+            eval(['Stats_new.Instrument' field_tag2 '(ind_pi_ins(end)+j) = Stats2(ind_pi(i)).Instrument(j);']);
+            Stats_new.Instrument(ind_xs_ins(end)+j) = Stats2(ind_pi(i)).Instrument(j);
+        catch
+            %Stats_new.Instrument(ind_xs_ins(end)+j) = NaN;
+        end
+    end
+    
+    Stats(i) = Stats_new;
+end
+
+return

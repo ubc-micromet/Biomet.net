@@ -1,0 +1,300 @@
+function [k,StatsAll,dbFileNames, dbFieldNames] = db_new_eddy(arg1,wildcard,pthOut)
+%
+% eg. k = db_new_eddy('\\annex001\database\2000\cr\flux\raw\',
+%                             '0001*.hp.mat','\\annex001\database\2000\cr\flux\');
+%       would update the data base using all Jan 2000 files
+%
+%   This function updates eddy correlation (PC based) data base files.
+%   It reads data from hhour files stored in the pthIn directory and
+%   updates data base located in pthOut
+%   
+%   Wildcard parameter lets us choose the site (hp or hc)
+% 
+% Inputs:
+%       pthIn       -   raw data path (*.mat files)
+%       wildcard    -   '*.hp.mat' or '*.hc.mat'
+%       pthOut      -   data base location for the output data
+% Outputs:
+%       k           -   number of files processed
+%
+% (c) Zoran Nesic               File created:       Apr  1, 2004
+%                               Last modification:  Aug 11, 2004
+
+% Revisions:
+% Sep 09, 2004 - kai* & Christopher
+% Fixed 'spanning two year' error message popping up for every Dec 31. 
+% Aug 11, 2004 - kai*,Praveena,Chirstoper
+% Changed arguments to be able to hand over the Stats structure OR the path
+% from where they will be loaded.
+%
+
+if ischar(arg1)
+   pth_tmp = fr_valid_path_name(arg1);          % check the path and create
+   if isempty(pth_tmp)                         
+      error (sprintf('Directory %s does not exist!',arg1));
+   else
+      pthIn = pth_tmp;
+   end
+else
+   StatsAll = arg1;
+end
+
+pth_tmp = fr_valid_path_name(pthOut);          % check the path and create
+if isempty(pth_tmp)                         
+   error (sprintf('Directory %s does not exist!',pthOut));
+else
+   pthOut = pth_tmp;
+end
+
+if exist('pthIn')
+   % load all files and join them
+   D = dir([pthIn wildcard]);
+   n = length(D);
+   k = 0;
+   tic;
+   StatsAll = [];
+   for i=1:n
+      %if D(i).isdir == 0 & ~strcmp(D(i).name(7),'s')       % avoid directories and short form hhour files
+      if D(i).isdir == 0        % avoid directories, use short form hhour files (Jan 18, 2000)
+         if find(D(i).name == ':' | D(i).name == '\') 
+            load(D(i).name);
+         else
+            load([pthIn D(i).name]);
+         end
+         if length(StatsAll) == 0
+            StatsAll = Stats;
+         else
+            try
+               StatsAll(length(StatsAll)+1:length(StatsAll)+length(Stats)) = Stats;
+            catch
+               disp(lasterr);
+            end
+         end
+         disp(sprintf('Processing: %s',D(i).name))
+         k = k+1;
+      end
+   end
+   tm = toc;
+   disp(sprintf('%d files loaded in %4.3f seconds.',([k tm])))
+end
+
+%
+% extract the time vector and index it to the current year
+%
+tic;
+tv = get_stats_field(StatsAll,'TimeVector');
+% Sort the time vector (there is no guarantee that the files will be 
+% loaded in any particular order so we have to assume that the dates
+% are mixed up.
+
+[tv,ind] = sort(tv);
+% sort the entire structure accordingly
+StatsAll = StatsAll(ind);
+% make sure all the files belong to the same year, don't do anything if 
+% they don't belong to the same year
+year1 = datevec(tv(1));
+
+ind = find(tv < datenum(year1(1),1,1,0,29,0) | tv > datenum(year1(1)+1,1,1,0,1,0));
+if ~isempty(ind)
+   error ('Data belongs to two (or more) different years! Only one year can be processed.  Program stopped!')
+end
+% create a time vector for the year (all half hours)
+% and find where the data belongs
+nDays = datenum(year1(1)+1,1,1) - datenum(year1(1),1,1);
+fullYearTv = datenum(year1(1),1,1,0,30:30:nDays*30*48,0)';
+[junk,indTv] = intersect(fr_round_hhour(fullYearTv),fr_round_hhour(tv));
+%
+%--------------------------------------------------------------------------------
+% Start storing the variables, first analyze the ones we know are 
+% always there, then go for the generic names
+%--------------------------------------------------------------------------------
+
+dbFileNamesTmp = recursiveStrucFieldNames(StatsAll);
+nFiles = length(dbFileNamesTmp);
+dbFileNames = [];
+dbFieldNames = [];
+for i=1:nFiles
+   % create file and field namesnames
+   fieldName = char(dbFileNamesTmp(i));
+   [fileNameX] = replaceControlCodes(fieldName);
+   dbFileNames{i}=fullfile(pthOut,fileNameX);
+   dbFieldNames{i} = fieldName;
+end
+% Save the data
+errCode = saveAll(StatsAll,dbFileNames,dbFieldNames,fullYearTv,indTv);
+% report time
+tm = toc;
+if errCode ~= 0 
+   disp(sprintf('***  %d errors during processing. ***',errCode));
+end
+
+if exist('pthIn')
+   disp(sprintf('%d files processed in %4.3f seconds.',([k tm])));
+else
+   disp(sprintf('%i database entries generated in %4.3f seconds.',([length(StatsAll) tm])));
+end
+
+
+
+%===============================================================
+%
+% Save all files
+%
+%===============================================================
+function errCode = saveAll(Stats,fileNamesIn,fieldNamesIn,fullYearTv,indTv)
+
+errCode = 0;
+for i=1:length(fileNamesIn)
+   fileName = char(fileNamesIn(i));
+   fieldName = char(fieldNamesIn(i));
+   dataIn = get_stats_field(Stats,fieldName);
+   if ~isempty(dataIn)
+      if ~exist(fileName,'file')
+         % if the file doesn't exist  
+         % create it (dbase initialization)
+         % special handling of TimeVector (always store full year)
+         % in double precision
+         if ~isempty(findstr(fileName,'TimeVector'))
+            save_bor(fileName,8,fullYearTv);
+         elseif ~isempty(findstr(fileName,'RecalcTime'))
+            dataTemp = zeros(size(fullYearTv));
+            dataTemp(indTv) = dataIn;
+            save_bor(fileName,8,dataTemp);
+         else
+            dataTemp = zeros(size(fullYearTv));
+            dataTemp(indTv) = dataIn;
+            save_bor(fileName,1,dataTemp);                
+         end
+      else 
+         % if file already exist just write the new data at the
+         % proper spot
+         if isempty(findstr(fileName,'TimeVector'))
+            if ~isempty(findstr(fileName,'RecalcTime'))
+               jumpInd = 8;
+               formatX = 'float64';
+            else
+               jumpInd = 4;
+               formatX = 'float32';
+            end % findstr(fileName,'RecalcTime')
+            fid = fopen(fileName,'rb+');
+            if fid ~= -1
+               status = fseek(fid,jumpInd*(indTv(1)-1),'bof');
+               if status == 0
+                  status = fwrite(fid,dataIn,formatX); 
+               else
+                  disp('Error doing FSEEK')
+                  errCode = errCode + 1;
+               end
+            else
+               disp(['Error opening: ' fileName]);
+               errCode = errCode + 1;
+            end
+            fclose(fid);                
+         end % ~findstr(fileName,'TimeVector')
+      end % ~exist(fileName,'file')
+   end % ~isempty(dataIn)
+end % i=1:length(fileNamesIn)
+%end % of function
+
+%===============================================================
+%
+% replace control codes
+%
+%===============================================================
+
+function [fileName] = replaceControlCodes(oldName)
+% replace all the brackets and commas using the following table
+% '('  -> '_'
+% ','  -> '_'
+% ')'  -> []
+ind = find(oldName == '(' | oldName == ',');
+oldName(ind) = '_';
+ind = find(oldName == ')');
+oldName(ind) = [];
+fileName = oldName;
+end % of function
+
+
+%===============================================================
+%
+% Recursive structure field name search
+%
+%===============================================================
+
+function dbFileNames = recursiveStrucFieldNames(StatsAll)
+dbFileNames = [];
+nFiles = 0;
+statsFieldNames = fieldnames(StatsAll);
+for i = 1:length(statsFieldNames)
+   fName = char(statsFieldNames(i));
+   % load the first element of StatsAll to 
+   % examine the structure type
+   fieldTmp = getfield(StatsAll,{1},fName);
+   % skip fields 'Configuration', 'Spectra' and all character and cell fields
+   if ~strcmp(fName,'Configuration') & ~ischar(fieldTmp) & ~iscell(fieldTmp) & ~strcmp(fName,'Spectra')
+      % is it a vector or not
+      nLen = length(fieldTmp);
+      if nLen > 1
+         [nCol, nRow] = size(fieldTmp);
+         for j = 1:nCol
+            for j1 = 1:nRow
+               nFiles = nFiles + 1;
+               if nCol == 1 | nRow == 1 
+                  % if it's a one dimensional vector use only one index
+                  jj = max(j,j1);
+                  dbFileNames{nFiles} = [fName '(' num2str(jj) ')' ];
+               else
+                  % for two dimensional vectors use two 
+                  dbFileNames{nFiles} = [fName '(' num2str(j) ',' num2str(j1) ')' ];
+               end % if nCol == 1 or nRow == 1 
+               % test if it's a structure and do a recursive call
+               if isstruct(fieldTmp)
+                  %-------------------------
+                  % recursive call goes here
+                  %-------------------------
+                  %                    fieldI = get_stats_field(StatsAll,fName);
+                  if nCol == 1 | nRow == 1 
+                     % if it's a one dimensional vector use only one index
+                     jj = max(j,j1);
+                     dbFileNamesTmp = recursiveStrucFieldNames(fieldTmp(jj));
+                  else
+                     % for two dimensional vectors use two 
+                     dbFileNamesTmp = recursiveStrucFieldNames(fieldTmp(j,j1));
+                  end % if nCol == 1 or nRow == 1 
+                  
+                  mFiles = length(dbFileNamesTmp);
+                  dbFileNamesBase = char(dbFileNames{nFiles});
+                  % move the pointer back to overwrite the last entry
+                  nFiles = nFiles - 1;                            
+                  for k=1:mFiles
+                     nFiles = nFiles + 1;
+                     dbFileNames{nFiles}=[dbFileNamesBase '.' char(dbFileNamesTmp(k))];
+                  end % i=1:nFiles
+               end % if isstruc(fieldTmp)
+            end % for j1=1:nRow
+         end % j = 1:nCol
+      else
+         % save new file name
+         nFiles = nFiles + 1;
+         dbFileNames{nFiles} = fName;
+         % test if it's a structure and do a recursive call
+         if isstruct(fieldTmp)
+            %-------------------------
+            % recursive call goes here
+            %-------------------------
+            %                    fieldI = get_stats_field(StatsAll,fName);
+            dbFileNamesTmp = recursiveStrucFieldNames(fieldTmp);
+            mFiles = length(dbFileNamesTmp);
+            dbFileNamesBase = char(dbFileNames{nFiles});
+            % back out the index by one (over-write the last fName entry)
+            nFiles = nFiles - 1;
+            for k=1:mFiles
+               nFiles = nFiles + 1;
+               dbFileNames{nFiles}=[dbFileNamesBase '.' char(dbFileNamesTmp(k))];
+            end % i=1:nFiles
+         end % if isstruc(fieldTmp)
+      end % nLen > 1
+   end % fName ~= 'Configuration'
+end % for i = 
+
+end % of function

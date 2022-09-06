@@ -1,0 +1,47 @@
+==============================
+FR_SHOW_FLUX.M instructions
+==============================
+
+Syntax: 
+
+d = fr_show_flux(dateIn,fluxNum,d);
+
+
+Inputs:
+
+dateIn = datenum(year,month,day,hour,minute,second)
+fluxNum = 1 (for Fc), 2 (for H), 3 for LE
+data = data read from the disk during a previous run of fr_show_flux (see examples)
+
+Output:
+
+d - data in eng. units, to be used in consecutive calls of fr_show_flux
+    to speedup the plotting (see examples)
+
+
+----------------
+Examples:
+----------------
+
+1. Plotting of the *current* hhour, "the least typing" option
+
+    Run once:
+       d = fr_show_flux;    (will plot Fc for the current hhour)
+       
+    Run as many times as needed (data will not be updated - fast plots):
+       fr_show_flux([],1,d) (will plot Fc)
+       fr_show_flux([],2,d) (will plot H)
+       fr_show_flux([],3,d) (will plot LE)
+
+2. Plotting of a specific hhour (up to 40 days old!)
+
+    Run once:
+        d = fr_show_flux(datenum(2001,5,8,18,15,0),1)
+            (will plot Fc for May 8, 2001 @18:15 GMT, choose your own
+             date and time - as needed)
+
+    Run as many times as needed (fast plots):
+       fr_show_flux([],1,d) (will plot Fc)
+       fr_show_flux([],2,d) (will plot H)
+       fr_show_flux([],3,d) (will plot LE)
+ 

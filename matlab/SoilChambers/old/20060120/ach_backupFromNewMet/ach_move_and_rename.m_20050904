@@ -1,0 +1,57 @@
+function [tv,climateData] = ach_move_and_rename(dateIn,filePathIn,fileName,filePathOut, tableID, timeUnit)
+% move and rename temporary chamber system datalogger files 
+%  [tv2,climateData2] = ach_move_and_rename(datenum(2005,8,25),...
+%                     'D:\met-data\csi_net\chamber_temp','CH_23X_2.DAT','d:\met-data\data\',101,'sec');
+% This program will load file: fileName, extract all the data for the
+% date dateIn and rename it to yymmdd_fileName and store it 
+% in the folder filePathOut.  If filePathOut is not given the program will
+% store the data into the data path obtained using fr_get_local_path.
+%
+% (c) Zoran Nesic           File created:           Sep  1, 2005
+%                           Last modification:      Sep  1, 2005
+%
+
+% Load data
+[tv,climateData] = fr_read_csi(fullfile(filePathIn,fileName),[],[],tableID,0,timeUnit,2);
+
+% Extract the requested date. If date is not present extract all days
+% assuming default folders (this feature is to be added later, first focus
+% on getting one day out of the file).
+days = unique(floor(dateIn));
+if length(days) > 1
+    error 'Currently only one day at the time can be renamed and moved!'
+end
+ind_dateIn = find( ceil(tv) == floor(dateIn)+1 ); % 00:01 to 23:59 (inclusive) belong to the same day
+dataOut = climateData(ind_dateIn,:);
+
+% Store the extracted data under pathOut and yymmdd\yymmdd_fileName name.
+datePath = sprintf('%04d%02d%02d',datevec(dateIn));
+datePath = datePath(3:8);
+dataFolder = fullfile(filePathOut,datePath);
+if ~exist(dataFolder,'dir')
+    % create folder if it doesn't exist
+    mkdir(filePathOut,datePath);
+end
+fast_csvwrite(fullfile(dataFolder,[datePath '_' fileName]),dataOut)
+%csvwrite(fullfile(dataFolder,[datePath '_' fileName]),dataOut)
+    
+% if there is more data in the file that belongs for dates after dateIn
+% store the reminder of the data under the original name (keep the csv
+% format too)
+
+dataLeft = climateData;
+dataLeft(ind_dateIn,:) = [];
+fast_csvwrite([fullfile(filePathIn,fileName) '_test'],dataLeft);
+
+function fast_csvwrite(fileName,dataOut)
+% Create a default format for output.  This avoids the need for csvwrite
+% wich is very slow.
+
+frmt = ['%d,%d,%d,%d'];
+for i=1:size(dataOut,2)-4;
+    frmt = [frmt ',%g'];
+end;
+frmt = [frmt '\n'];
+fid = fopen(fileName,'wt');
+fprintf(fid,frmt,dataOut');
+fclose(fid);

@@ -1,0 +1,27 @@
+% chamber_daily_script.copy
+%
+%   This script is run at prescheduled time (pc208 task) on the site
+%   PC to recalculate previous days soil resp. fluxes. The file name needs to
+%   be set up in "CH_RenAndMove.ini". Check this file
+%   for more info.
+%
+% (c) Zoran Nesic           File created:       Aug 11, 2000
+%                           Last modification:  Aug 11, 2000
+%
+
+% Revisions:
+%
+
+fileName = which('run_matlab_1');           % find file name of this file
+c = ['dos(' 39 'del ' fileName 39 ');' ];   % and delete it so Matlab can bootup 
+eval(c)                                     % properly next time
+
+SiteID = fr_current_siteID;                 % current site ID
+CurrentDate = now-1;
+
+try,
+    [chamber_data] = ch_read_and_save(CurrentDate,SiteID);    
+catch,
+end
+                                            % when done
+exit                                        % close this instance of Matlab
