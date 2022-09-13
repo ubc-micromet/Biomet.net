@@ -11,11 +11,14 @@ function db_ECCC_climate_station(yearRange,monthRange,stationID,dbPath,timeperio
 %
 %
 % Zoran Nesic               File created:       Apr  3, 2022
-%                           Last modification:  Jul 18, 2022
+%                           Last modification:  Sep 13, 2022
 %
 
 % Revisions:
 %
+% Sep 13, 2022 (Zoran)
+%   - Changed the Pbar multiplier from 1000 to 1 to keep the Pbar units as kPa
+%      [Stats,~,~] = fr_read_EnvCanada_file(tempFileName,[],[],1);
 % July 18, 2022 (Zoran)
 %   - fixed the bug when I divided all the traces by 2 instead of doing
 %   that only to Percip
@@ -50,7 +53,7 @@ for yearNow = yearRange
         urlDataSource = sprintf('https://climate.weather.gc.ca/climate_data/bulk_data_e.html?format=csv&stationID=%d&Year=%d&Month=%d&Day=14&timeframe=1&submit=%20Download+Data',...
                                 stationID,yearIn,monthIn);
         websave(tempFileName,urlDataSource);
-        [Stats,~,~] = fr_read_EnvCanada_file(tempFileName);
+        [Stats,~,~] = fr_read_EnvCanada_file(tempFileName,[],[],1);
         delete(tempFileName);
         % extract time 
         % Note: the time stamp in the ECCC files is set to the middle of the period
