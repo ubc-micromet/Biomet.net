@@ -12,8 +12,7 @@ function [export_mat] = trace_export(file_opts,trc,export_mat)
 % Revisions:
 %
 % Sep 21, 2022 (Zoran)
-%   - fixed up the very-old-style dealing with paths. That avoids hard coding '\'
-%     and doubling them up. 
+%   - fixed up the very-old-style dealing with paths. 
 %     Example:
 %       Replaced: [file_opts.out_path 'climate\clean\'];
 %       With:     fullfile(file_opts.out_path,'climate','clean');
