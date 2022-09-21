@@ -35,10 +35,16 @@ function fr_automated_cleaning(Years,Sites,stages,db_out,db_ini)
 %    to use a local copy of the database.
 
 
-% kai* Feb 12, 2003                     Last modified: Aug 10, 2022
+% kai* Feb 12, 2003                     Last modified: Sep 21, 2022
 %
 % Revisions:
 % 
+% Sep 21, 2022 (Zoran)
+%   - change path creation to make it work compatible with MacOS:
+%     Changed:
+%       pth_out_second = fullfile(db_out,yy_str,SiteId,'clean\SecondStage','');
+%     to
+%       pth_out_second = fullfile(db_out,yy_str,SiteId,'clean','SecondStage','');
 % Aug 10, 2022 (Zoran)
 %   - Had to change my mind about preventing (error-ing)on the use of
 %     db_out option. Some of our backup programs might be using this
@@ -192,8 +198,8 @@ for i = 1:n
         % Get output paths
         %------------------------------------------------------------------
         pth_out_first  = fullfile(db_out,yy_str,SiteId,'');
-        pth_out_second = fullfile(db_out,yy_str,SiteId,'clean\SecondStage','');
-        pth_out_third = fullfile(db_out,yy_str,SiteId,'clean\ThirdStage','');
+        pth_out_second = fullfile(db_out,yy_str,SiteId,'clean','SecondStage','');
+        pth_out_third  = fullfile(db_out,yy_str,SiteId,'clean','ThirdStage', '');
         
         %------------------------------------------------------------------
         % Do first stage cleaning and exporting

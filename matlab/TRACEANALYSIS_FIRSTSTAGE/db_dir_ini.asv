@@ -63,8 +63,7 @@ function do_dir(db_pth,base_dir,pth)
 % won't work.
 
 % 20220921 (Zoran)
-% Removed the following lines. Not needed when using fullfile but causing trouble
-% on MacOS by adding the wrong filesep ('\').
+% Removed
 % if base_dir(end) ~= '\'
 %     base_dir = [base_dir '\'];
 % end
