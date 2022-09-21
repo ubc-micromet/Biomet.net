@@ -51,25 +51,22 @@ The biomet_database_default.m and localDataCleaning_ini.mat files will be stored
 
 * Change the app settings if needed. The program always saves the settings after each successful run. Those settings become the defaults for the next app run. If the user starts the app while being in the same folder, the setup info saved during the previous run (file localDataCleaning_ini.mat) will be loaded with the default settings for the GUI.
 
+* Here are the app settings you may need to change:<br />
+    * Site: Enter your site name (e.g., DSM)<br />
+    * Years: Enter the year of interest (eg. 2022)<br />
+    * User work folder: This is the path to the folder you created in Step 1<br />
+    * Database server location: Is these Database folder on vinimet (e.g., `/Volumes/Projects/Database`)<br />
+    * Local copy of database: A folder where you'd like to keep a local copy of your database (e.g., `/Users/sara/localdatabase`)<br />
 
+* Click on "Copy Database" and wait for the copy to finish. The program may stop and warn you if you are about to overwrite some newer files in your local database. **Read the prompts!**
 
-* Click on "Copy Database" and wait for the copy to finish. The program may stop and warn
+* After the app closes, you'll have your own copy of the database and, as long as you stay in this folder, all the cleaning will be done on your local copy of the database (because biomet_database_default.m points to your local database).
 
-    %     you if you are about to overwrite some newer files in your local database. Read the prompts!
+**A Note on ini files**
 
-    %   - Afte the app closes, you'll have your own copy of the database and,
+* if you don't need to change ini files you, you can run the automated cleaning using `fr_automated_cleaning(years,sites,stages)` (e.g., fr_automated_cleaning(2021:2022,'DSM',1:2)
 
-    %     as long as you stay in this folder,
-
-    %     all the cleaning will be done on your local copy of the database (because biomet_database_default.m
-
-    %     points to your local database).
-
-    %  Ini files
-
-    %   - if you don't need to change ini files you can skip to fr_automated_cleaning()
-
-    %   - copy the newest version of the ini files from ../Database/Calculation_Procedures/TraceAnalysis_ini/DSM
+* copy the newest version of the ini files from ../Database/Calculation_Procedures/TraceAnalysis_ini/DSM
 
     %     into your local folder - the same one from which you ran setupLocalDataCleaning app
 
