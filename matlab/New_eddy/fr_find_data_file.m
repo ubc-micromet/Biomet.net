@@ -18,10 +18,13 @@ function [fullFileName,fileName] = fr_find_data_file(dateIn,configIn,instrumentN
 %
 %
 % (c) Zoran Nesic           File created:       Sep 26, 2001
-%                           Last modification:  Sep  7, 2004
+%                           Last modification:  Oct  6, 2022
 
 % Revisions
 %
+%  Oct 6, 2022 (Zoran)
+%  - changed arg_default('customeName') to arg_default('customeName',[]);
+%    The newest version of arg_default does not tolerate missing second argument.
 %  Sep 7, 2004 - changed:
 %    pth = [pth fileName(1:6) '\'];
 %    fullFileName = fullfile(pth,fileName);
@@ -32,7 +35,7 @@ function [fullFileName,fileName] = fr_find_data_file(dateIn,configIn,instrumentN
 %
 %  Oct 8, 2002 - allowed a database file to be found with this procedure
 
-arg_default('customeName');
+arg_default('customeName',[]);
 
 if strcmp(upper(configIn.Instrument(instrumentNum).FileType),'DATABASE')
     pth = configIn.database_path;

@@ -10,7 +10,10 @@
 
 
 % This file is intended to serve as a manual (learning through examples)
-% of how to read data from the Biomet/Micromet data base. 
+% of how to read data from the Biomet/Micromet data base.
+%
+%
+% Run it one section at the time (not the entire file)
 
 %% Load one trace and plot it
 pth = biomet_path(2022,'DSM','MET');            % find data base path for year = 2022, DSM site
