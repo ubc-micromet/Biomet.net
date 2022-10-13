@@ -163,11 +163,10 @@ function EddyPro_run_period
         %    under .\old ?
 
         % Find older recalcs and move them to the old folder
-        wildCard = sprintf('*_%s_full_output*.*',strProjectID);
         filesMoved = findAndMoveOldFiles(strEddyProOutput, ...
                             fullfile(strEddyProOutput,'old'),...
-                            wildCard);
-        fprintf('%d (%s) files moved',filesMoved,wildCard);
+                            sprintf('*_%s_full_output*.*',strProjectID));
+
 
         allFullOutputFiles = dir(fullfile(strEddyProOutput,sprintf('eddypro_%s_full_output*.csv',strProjectID)));
         % copy only the newest file
@@ -244,7 +243,7 @@ function filesMoved = findAndMoveOldFiles(sourceFolder, destinationFolder,wildCa
                 sourceFile = fullfile(allRecalcs(cntFiles).folder,allRecalcs(cntFiles).name);
                 destinationFile = fullfile(allRecalcs(cntFiles).folder,'old',allRecalcs(cntFiles).name);
                 try
-                    movefile(sourceFile,destinationFile);
+                    copyfile(sourceFile,destinationFile);
                     filesMoved = filesMoved+1;
                 catch
                     fprintf('File %s could not be copied to %s!\n',sourceFile,destinationFile)
