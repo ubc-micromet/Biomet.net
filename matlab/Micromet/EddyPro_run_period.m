@@ -17,8 +17,13 @@ function EddyPro_run_period
     % Express or advanced
     run_mode = 0;  % 1 - Express, 0 - Advanced
 
-
-    %%
+    
+    %% Function starts here
+    if run_mode == 0
+        strRunMode = 'adv';
+    else
+        strRunMode = 'exp';
+    end
     hfPath = fullfile(hfRootPath,siteID);
 
     % path to the exe file for EddyPro 
@@ -159,57 +164,72 @@ function EddyPro_run_period
         %    for the currentDate
         %  - find the newest recalc for that date
         %  - copy it to the folder where _full_output_ files go
-        %  - should we keep only the newest _full_output_ files and move the older ones
-        %    under .\old ?
+        %  - we should keep only the newest _full_output_ files and move the older ones
+        %    under .\old 
 
         % Find older recalcs and move them to the old folder
+        fprintf('Moving older recalcs under %s/old folders.\n',strEddyProOutput);
         wildCard = sprintf('*_%s_full_output*.*',strProjectID);
-        filesMoved = findAndMoveOldFiles(strEddyProOutput, ...
-                            fullfile(strEddyProOutput,'old'),...
-                            wildCard);
-        fprintf('%d (%s) files moved',filesMoved,wildCard);
+        filesMoved = findAndMoveOldFiles(strEddyProOutput,fullfile(strEddyProOutput,'old'),wildCard);
+        fprintf('%d (%s) files moved\n',filesMoved,wildCard);
+        
+        wildCard = sprintf('*_%s_biomet_*.*',strProjectID);
+        filesMoved = findAndMoveOldFiles(strEddyProOutput,fullfile(strEddyProOutput,'old'),wildCard);
+        fprintf('%d (%s) files moved\n',filesMoved,wildCard);
 
-        allFullOutputFiles = dir(fullfile(strEddyProOutput,sprintf('eddypro_%s_full_output*.csv',strProjectID)));
-        % copy only the newest file
-        dateNewest = datenum(1990,1,1);
-        cntNewest = 0;
-        for cntFiles = 1:length(allFullOutputFiles)
-            if allFullOutputFiles(cntFiles).datenum > dateNewest
-                dateNewest = allFullOutputFiles(cntFiles).datenum;
-                cntNewest = cntFiles;
+        wildCard = sprintf('*_%s_fluxnet_*.*',strProjectID);
+        filesMoved = findAndMoveOldFiles(strEddyProOutput,fullfile(strEddyProOutput,'old'),wildCard);
+        fprintf('%d (%s) files moved\n',filesMoved,wildCard);
+        
+        wildCard = sprintf('*_%s_metadata_*.*',strProjectID);
+        filesMoved = findAndMoveOldFiles(strEddyProOutput,fullfile(strEddyProOutput,'old'),wildCard);
+        fprintf('%d (%s) files moved\n',filesMoved,wildCard);
+        
+        wildCard = sprintf('*_%s_qc_details_*.*',strProjectID);
+        filesMoved = findAndMoveOldFiles(strEddyProOutput,fullfile(strEddyProOutput,'old'),wildCard);
+        fprintf('%d (%s) files moved\n',filesMoved,wildCard);
+        
+        % Move to ./old all eddypro ini file but the latest one
+        wildCard = sprintf('processing_2*.*',strProjectID);
+        filesMoved = findAndMoveOldFiles(strEddyProOutput,fullfile(strEddyProOutput,'old'),wildCard);
+        fprintf('%d (%s) files moved\n',filesMoved,wildCard);
+        % rename the last ini file to processing_YYYYMMDD of the currentDateIn
+        s = dir(fullfile(strEddyProOutput,wildCard));
+        if length(s) >= 1
+            try
+                movefile(fullfile(strEddyProOutput,s(1).name),...
+                    fullfile(strEddyProOutput,sprintf('processing_%s_%s.eddypro',strProjectID,strRunMode)))
+            catch
             end
         end
-        % if file found copy it to the final destination
+           
+        %% Copy _full_output_ files to pthRootFullOutput (Usually: vinimet p:/sites)        
+        % Make sure that the final file destination exists and it's reachable
         % File path to the location (usually ./Sites/siteID/Flux/EP_outputs)
         pthFullOutputFiles = fullfile(pthRootFullOutput,siteID,'Flux','EP_outputs');
         % check if the output folder exists, create if needed
         if ~exist(pthFullOutputFiles,'dir')
             mkdir(pthFullOutputFiles)
-        end
-        % move the old eddypro files for the same date from the current folder into 
-        % pthFullOutputFiles/old folder
-        if ~exist(fullfile(pthFullOutputFiles,'old'),'dir')
-            mkdir(fullfile(pthFullOutputFiles,'old'));
-        end
-        oldFiles = dir(fullfile(pthFullOutputFiles,sprintf('eddypro_%s_full_output*.csv',strProjectID)));
-        for cntFiles = 1:length(oldFiles)
-            sourceFile = fullfile(pthFullOutputFiles,oldFiles(cntFiles).name);
-            destinationFile = fullfile(pthFullOutputFiles,'old',oldFiles(cntFiles).name);
+        end        
+        
+        % find the _full_output_ file
+        outputFiles = dir(fullfile(strEddyProOutput,sprintf('eddypro_%s_full_output*.csv',strProjectID)));
+        if length(outputFiles) >= 1
+            % if file found copy it to the final destination
+            sourceFile      = fullfile(outputFiles(1).folder,outputFiles(1).name);
+            destinationFile = fullfile(pthFullOutputFiles,outputFiles(1).name); 
             try
                 copyfile(sourceFile,destinationFile);
             catch
                 fprintf('File %s could not be copied to %s!\n',sourceFile,destinationFile)
-            end
+            end            
         end
-        % Copy new file to the final location
-        sourceFile      = fullfile(allFullOutputFiles(cntNewest).folder,allFullOutputFiles(cntNewest).name);
-        destinationFile = fullfile(pthFullOutputFiles,allFullOutputFiles(cntNewest).name); 
-        try
-            copyfile(sourceFile,destinationFile);
-        catch
-            fprintf('File %s could not be copied to %s!\n',sourceFile,destinationFile)
-        end    
-        %%
+        % move the old eddypro files for the same date from the pthRootFullOutput into 
+        % pthFullOutputFiles/old folder
+        wildCard = sprintf('eddypro_%s_full_output*.csv',strProjectID);
+        filesMoved = findAndMoveOldFiles(pthFullOutputFiles,fullfile(pthFullOutputFiles,'old'),wildCard);
+        fprintf('%d (%s) files moved\n',filesMoved,wildCard);
+        
         toc
     end
 
@@ -218,7 +238,10 @@ function EddyPro_run_period
 end
 
 
-function filesMoved = findAndMoveOldFiles(sourceFolder, destinationFolder,wildCard)
+function filesMoved = findAndMoveOldFiles(sourceFolder, destinationFolder,wildCard,flagMoveEverything)
+    arg_default('flagMoveEverything',false);
+    filesMoved = 0;
+    
     % find all files that fit the wildCard in the sourceFolder
     allRecalcs = dir(fullfile(sourceFolder,wildCard));
     
@@ -240,7 +263,7 @@ function filesMoved = findAndMoveOldFiles(sourceFolder, destinationFolder,wildCa
         % move all but the newest file to destinationFolder
         filesMoved = 0;
         for cntFiles = 1:length(allRecalcs)
-            if cntFiles ~= cntNewest
+            if (cntFiles ~= cntNewest) && ~flagMoveEverything
                 sourceFile = fullfile(allRecalcs(cntFiles).folder,allRecalcs(cntFiles).name);
                 destinationFile = fullfile(allRecalcs(cntFiles).folder,'old',allRecalcs(cntFiles).name);
                 try
