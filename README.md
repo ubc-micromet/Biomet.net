@@ -66,7 +66,7 @@ The biomet_database_default.m and localDataCleaning_ini.mat files will be stored
 
 * if you don't need to change ini files you, you can run the automated cleaning using `fr_automated_cleaning(years,sites,stages)` (e.g., fr_automated_cleaning(2021:2022,'DSM',1:2)
 
-* If you do want to edit the ini file, copy the newest version of the ini files from `./Database/Calculation_Procedures/TraceAnalysis_ini/site_name` into your local folder - **the same one from which you ran setupLocalDataCleaning app (e.g., `./user_name/Matlab/local_data_cleaning/site_name`)
+* If you do want to edit the ini file, copy the newest version of the ini files from `./Database/Calculation_Procedures/TraceAnalysis_ini/site_name` into your local folder - **the same one from which you ran setupLocalDataCleaning app (e.g., `./user_name/Matlab/local_data_cleaning/site_name`)**
 
 * Edit and save ini files
 
