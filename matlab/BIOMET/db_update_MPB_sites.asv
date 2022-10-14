@@ -110,10 +110,7 @@ for k=1:length(yearIn)
         
         eval(['[numOfFilesProcessed,numOfDataPointsProcessed] = fr_site_met_database(''D:\sites\MPB' num2str(sitenum(j)) '\CSI_net\old\' num2str(yearIn(k)) '\mpb' num2str(sitenum(j)) '_EC_Tscov.' num2str(yearIn(k)) '*'',[],[],[],progressListMPB' num2str(sitenum(j)) '_Ts_cov_Pth,MPB' num2str(sitenum(j)) 'TsCovDatabase_Pth,2);'])
         eval(['disp(sprintf(''MPB' num2str(sitenum(j)) ' Ts_cov:  Number of files processed = %d, Number of HHours = %d'',numOfFilesProcessed,numOfDataPointsProcessed))']);
- 
-        eval(['[numOfFilesProcessed,numOfDataPointsProcessed] = fr_site_met_database(''D:\sites\MPB' num2str(sitenum(j)) '\CSI_net\old\' num2str(yearIn(k)) '\mpb' num2str(sitenum(j)) '_tblSHFP.' num2str(yearIn(k)) '*'',[],[],[],progressListMPB' num2str(sitenum(j)) '_tblSHFP_Pth,MPB' num2str(sitenum(j)) 'tblSHFP_Pth,2);'])
-        eval(['disp(sprintf(''MPB' num2str(sitenum(j)) ' tblSHFP:  Number of files processed = %d, Number of HHours = %d'',numOfFilesProcessed,numOfDataPointsProcessed))']);
-  
+        
         % compute EC fluxes from raw covariances above and save to db
         
         siteId = ['MPB' num2str(sitenum(j))];
