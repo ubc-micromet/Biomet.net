@@ -9,6 +9,8 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
 %    siteID             -   Site name ('DSM' or 'RBM'...)
 %    hfRootPath         -   Root path of the drive where all high-frequency data is (//micrometdrive.geog.ubc.ca/highfreq)
 %                           All EddyPro templates, outputs and bin files are storred there too.
+%                           Use only the drive letter. If highfreq is
+%                           mapped to "y:\" use: 'y:'.
 %    pthRootFullOutput  -   The summary of daily outputs ( *_full_output_*_adv.csv file) will be copied
 %                           here. Those files will be then converted to database files.
 %    run_mode           -   EddyPro mode:  1 - Express, 0 - Advanced (default)
@@ -22,10 +24,10 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
 %        and the Sites folder is on P: drive)
 %  Calculate only the last two 30-minute periods for the same 
 %  range of days and the same path assumptions as above:
-%      runEddyPro(datetime("Jul 1,2022"):datetime("Jul 31, 2022"),'DSM','y:/','P:/Sites',0,"23:00","23:59")
+%      runEddyPro(datetime(2022,7,1):datetime(2022,7,31),'DSM','y:','P:/Sites',0,'23:00','23:59')
 %
-% Zoran Nesic               File created:           Oct 15, 2022
-%                           Last modification:      Oct 15, 2022
+% Zoran Nesic               File created:           Oct 14, 2022
+%                           Last modification:      Oct 14, 2022
 
 %
 % Revisions:
@@ -35,6 +37,11 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
     arg_default('strStartTime',"00:00");
     arg_default('strEndTime',"23:59");
     arg_default('run_mode',0);          % 1 - Express, 0 - Advanced
+    
+    % remove trailing '\' or '/' from hfRootPath
+    if strcmp(hfRootPath(end),'/') || strcmp(hfRootPath(end),'\')
+        hfRootPath = hfRootPath(1:end-1);
+    end
     
     if run_mode == 0
         strRunMode = 'adv';
@@ -168,9 +175,9 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
 
 
         % Run the batch file
-        fprintf('%s ---> Processing: %s. Please wait.\n',datetime("now"),datestr(currentDateIn));
+        fprintf('%s ---> EddyPro processing %s site: %s . Please wait.\n',datetime("now"),siteID,datestr(currentDateIn));
         [~,cmdOut] = system(pathToBatchFile);   %#ok<ASGLU> % system(pathToBatchFile,'-echo') - to see the batch output while processing
-        fprintf('%s ---> Done!\n',datetime("now"));
+        fprintf('   %s ---> Done!\n',datetime("now"));
 
         %%
         % copy results to the the folder where database program can process them
@@ -185,14 +192,14 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
         %    under .\old 
 
         % Find older recalcs and move them to the old folder
-        fprintf('Moving older recalcs under %s/old folders.\n',strEddyProOutput);
+        fprintf('   Moving older recalcs under %s/old folders.\n',strEddyProOutput);
         wildCard = sprintf('*_%s_full_output*.*',strProjectID);
         filesMoved = findAndMoveOldFiles(strEddyProOutput,fullfile(strEddyProOutput,'old'),wildCard); %#ok<*NASGU>
 %         fprintf('%d (%s) files moved\n',filesMoved,wildCard);
         
         wildCard = sprintf('*_%s_biomet_*.*',strProjectID);
         filesMoved = findAndMoveOldFiles(strEddyProOutput,fullfile(strEddyProOutput,'old'),wildCard);
-        fprintf('%d (%s) files moved\n',filesMoved,wildCard);
+%         fprintf('%d (%s) files moved\n',filesMoved,wildCard);
 
         wildCard = sprintf('*_%s_fluxnet_*.*',strProjectID);
         filesMoved = findAndMoveOldFiles(strEddyProOutput,fullfile(strEddyProOutput,'old'),wildCard);
@@ -240,7 +247,7 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
             try
                 copyfile(sourceFile,destinationFile);
             catch
-                fprintf('File %s could not be copied to %s!\n',sourceFile,destinationFile)
+                fprintf('   File %s could not be copied to %s!\n',sourceFile,destinationFile)
             end            
         end
         % move the old eddypro files for the same date from the pthRootFullOutput into 
@@ -249,7 +256,7 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
         filesMoved = findAndMoveOldFiles(pthFullOutputFiles,fullfile(pthFullOutputFiles,'old'),wildCard);
 %         fprintf('%d (%s) files moved\n',filesMoved,wildCard);
         
-        toc
+        fprintf('   Elapsed time is %6.2f\n',toc);
     end
 
     % run database program on the folder with _full_output_ files

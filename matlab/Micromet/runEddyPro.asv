@@ -9,6 +9,8 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
 %    siteID             -   Site name ('DSM' or 'RBM'...)
 %    hfRootPath         -   Root path of the drive where all high-frequency data is (//micrometdrive.geog.ubc.ca/highfreq)
 %                           All EddyPro templates, outputs and bin files are storred there too.
+%                           Use only the drive letter. If highfreq is
+%                           mapped to "y:\" use: 'y:'.
 %    pthRootFullOutput  -   The summary of daily outputs ( *_full_output_*_adv.csv file) will be copied
 %                           here. Those files will be then converted to database files.
 %    run_mode           -   EddyPro mode:  1 - Express, 0 - Advanced (default)
@@ -20,11 +22,22 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
 %     runEddyPro(datetime("Jul 1,2022"):datetime("Jul 31, 2022"),'DSM','y:/','P:/Sites')
 %       (assuming that Matlab runs on vinimet, y:/ - is mapped to 'micrometdrive.geog.ubc.ca'
 %        and the Sites folder is on P: drive)
+%  Calculate only the last two 30-minute periods for the same 
+%  range of days and the same path assumptions as above:
+%      runEddyPro(datetime("Jul 1, 2022"):datetime("Jul 31, 2022"),'DSM','y:','P:/Sites',0,"23:00","23:59")
+%
+% Zoran Nesic               File created:           Oct 15, 2022
+%                           Last modification:      Oct 15, 2022
+
+%
+% Revisions:
+%
 
 
     arg_default('strStartTime',"00:00");
     arg_default('strEndTime',"23:59");
     arg_default('run_mode',0);          % 1 - Express, 0 - Advanced
+    
     
     if run_mode == 0
         strRunMode = 'adv';
@@ -182,7 +195,7 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
         
         wildCard = sprintf('*_%s_biomet_*.*',strProjectID);
         filesMoved = findAndMoveOldFiles(strEddyProOutput,fullfile(strEddyProOutput,'old'),wildCard);
-        fprintf('%d (%s) files moved\n',filesMoved,wildCard);
+%         fprintf('%d (%s) files moved\n',filesMoved,wildCard);
 
         wildCard = sprintf('*_%s_fluxnet_*.*',strProjectID);
         filesMoved = findAndMoveOldFiles(strEddyProOutput,fullfile(strEddyProOutput,'old'),wildCard);
