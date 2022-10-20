@@ -24,20 +24,30 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
 %        and the Sites folder is on P: drive)
 %  Calculate only the last two 30-minute periods for the same 
 %  range of days and the same path assumptions as above:
-%      runEddyPro(datetime("Jul 1, 2022"):datetime("Jul 31, 2022"),'DSM','y:','P:/Sites',0,"23:00","23:59")
+%      runEddyPro(datetime(2022,7,1):datetime(2022,7,31),'DSM','y:','P:/Sites',0,'23:00','23:59')
 %
-% Zoran Nesic               File created:           Oct 15, 2022
-%                           Last modification:      Oct 15, 2022
+% Zoran Nesic               File created:           Oct 14, 2022
+%                           Last modification:      Oct 18, 2022
 
 %
 % Revisions:
 %
+% Oct 18, 2022 (Zoran)
+%   - Changed all channel numbers to -1 under assumptiong that this will make
+%     EddyPro find the channels on its own.
+%   - Saved the output of EddyPro run into a log file
+%
+
 
 
     arg_default('strStartTime',"00:00");
     arg_default('strEndTime',"23:59");
     arg_default('run_mode',0);          % 1 - Express, 0 - Advanced
     
+    % remove trailing '\' or '/' from hfRootPath
+    if strcmp(hfRootPath(end),'/') || strcmp(hfRootPath(end),'\')
+        hfRootPath = hfRootPath(1:end-1);
+    end
     
     if run_mode == 0
         strRunMode = 'adv';
@@ -152,6 +162,28 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
         ss1 = regexprep(ss1,'sa_bin_spectra=.*?\r',sprintf('sa_bin_spectra=%s\r',modStrBinSpectraPath));
         ss1 = regexprep(ss1,'sa_full_spectra=.*?\r',sprintf('sa_full_spectra=%s\r',modStrBinFullSpectraPath));
 
+        % Replace the fixed channel numbers with generic ones (-1)
+        ss1 = regexprep(ss1,'col_co2=.*?\r',sprintf('col_co2=-1\r'));
+        ss1 = regexprep(ss1,'col_h2o=.*?\r',sprintf('col_h2o=-1\r'));
+        ss1 = regexprep(ss1,'col_ch4=.*?\r',sprintf('col_ch4=-1\r'));
+        ss1 = regexprep(ss1,'col_n2o=.*?\r',sprintf('col_n2o=-1\r'));
+        ss1 = regexprep(ss1,'col_int_t_1=.*?\r',sprintf('col_int_t_1=-1\r'));
+        ss1 = regexprep(ss1,'col_int_t_2=.*?\r',sprintf('col_int_t_2=-1\r'));
+        ss1 = regexprep(ss1,'col_int_p=.*?\r',sprintf('col_int_p=-1\r'));
+        ss1 = regexprep(ss1,'col_air_t=.*?\r',sprintf('col_air_t=-1\r'));
+        ss1 = regexprep(ss1,'col_air_p=.*?\r',sprintf('col_air_p=-1\r'));
+        ss1 = regexprep(ss1,'col_cell_t=.*?\r',sprintf('col_cell_t=-1\r'));
+        ss1 = regexprep(ss1,'col_diag_75=.*?\r',sprintf('col_diag_75=-1\r'));
+        ss1 = regexprep(ss1,'col_diag_72=.*?\r',sprintf('col_diag_72=-1\r'));
+        ss1 = regexprep(ss1,'col_diag_77=.*?\r',sprintf('col_diag_77=-1\r'));
+        ss1 = regexprep(ss1,'col_diag_anem=.*?\r',sprintf('col_diag_anem=-1\r'));
+        ss1 = regexprep(ss1,'col_ts=.*?\r',sprintf('col_ts=-1\r'));
+        ss1 = regexprep(ss1,'biom_ta=.*?\r',sprintf('biom_ta=-1\r'));
+        ss1 = regexprep(ss1,'biom_pa=.*?\r',sprintf('biom_pa=-1\r'));
+        ss1 = regexprep(ss1,'biom_lwin=.*?\r',sprintf('biom_lwin=-1\r'));
+        ss1 = regexprep(ss1,'biom_ppfd=.*?\r',sprintf('biom_ppfd=-1\r'));
+        
+        
         % Save the new template and close the file handle
         fprintf(fidOut,'%s',ss1);
         fclose(fidOut);
@@ -171,9 +203,18 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
 
 
         % Run the batch file
-        fprintf('%s ---> Processing: %s. Please wait.\n',datetime("now"),datestr(currentDateIn));
-        [~,cmdOut] = system(pathToBatchFile);   %#ok<ASGLU> % system(pathToBatchFile,'-echo') - to see the batch output while processing
-        fprintf('%s ---> Done!\n',datetime("now"));
+        fprintf('%s ---> EddyPro processing %s site: %s . Please wait.\n',datetime("now"),siteID,datestr(currentDateIn));
+        [~,cmdOut] = system(pathToBatchFile);   % system(pathToBatchFile,'-echo') - to see the batch output while processing
+        fprintf('   %s ---> Done!\n',datetime("now"));
+        
+        % Save cmdOut
+        fidLog = fopen(fullfile(strEddyProOutput,['eddypro_' strProjectID '.log']),'w');
+        if fidLog > 0
+            fprintf(fidLog,'%s',cmdOut);
+            fclose(fidLog);
+        end
+        
+        
 
         %%
         % copy results to the the folder where database program can process them
@@ -188,7 +229,7 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
         %    under .\old 
 
         % Find older recalcs and move them to the old folder
-        fprintf('Moving older recalcs under %s/old folders.\n',strEddyProOutput);
+        fprintf('   Moving older recalcs under %s/old folders.\n',strEddyProOutput);
         wildCard = sprintf('*_%s_full_output*.*',strProjectID);
         filesMoved = findAndMoveOldFiles(strEddyProOutput,fullfile(strEddyProOutput,'old'),wildCard); %#ok<*NASGU>
 %         fprintf('%d (%s) files moved\n',filesMoved,wildCard);
@@ -243,7 +284,7 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
             try
                 copyfile(sourceFile,destinationFile);
             catch
-                fprintf('File %s could not be copied to %s!\n',sourceFile,destinationFile)
+                fprintf('   File %s could not be copied to %s!\n',sourceFile,destinationFile)
             end            
         end
         % move the old eddypro files for the same date from the pthRootFullOutput into 
@@ -252,7 +293,7 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
         filesMoved = findAndMoveOldFiles(pthFullOutputFiles,fullfile(pthFullOutputFiles,'old'),wildCard);
 %         fprintf('%d (%s) files moved\n',filesMoved,wildCard);
         
-        toc
+        fprintf('   Elapsed time is %6.2f\n',toc);
     end
 
     % run database program on the folder with _full_output_ files
