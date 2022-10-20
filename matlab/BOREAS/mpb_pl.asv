@@ -6,8 +6,6 @@ function [t,x] = mpb_pl(ind, year, SiteID, select, fig_num_inc,pause_flag)
 
 % Revisions
 %
-% Oct 15, 2022 (Zoran)
-%   - Added plotting of 3 new soil heatflux plates
 % Jan 23, 2022 (Zoran)
 %   - changed to match datetime version of pl_msig
 %   - a lot of minor fixes
@@ -644,7 +642,7 @@ trace_legend= char('Rainfall_{tot}');
 trace_units = '(mm halfhour^{-1})';
 y_axis      = [0 4];
 fig_num = fig_num + fig_num_inc;
-if strcmpi(SiteID,'MPB1') || strcmpi(SiteID,'MPB3')
+if strcmpi(SiteID,'MPB1') | strcmpi(SiteID,'MPB3')
     x = plt_msig( trace_path, ind, trace_name, trace_legend, year, trace_units, y_axis, t, fig_num );
 else
     x = plt_msig( trace_path, ind, trace_name, trace_legend, year, trace_units, y_axis, t, fig_num,[2.54]);
@@ -807,7 +805,7 @@ end
 
 trace_units = '(m^{3} m^{-3})';
 
-if strcmpi(SiteID,'MPB1') || strcmpi(SiteID,'MPB3')
+if strcmpi(SiteID,'MPB1') | strcmpi(SiteID,'MPB3')
    y_axis      = [0 1];
 else
    y_axis      = [0 600];   
@@ -1097,11 +1095,9 @@ trace_name  = 'Climate/Diagnostics: Soil Heat flux';
 if strcmpi(SiteID,'MPB1')
     if rangeYears(1)>= 2022
         trace_path  = char(fullfile(pthClim,'Sheat_flux_Avg1'),fullfile(pthClim,'Sheat_flux_Avg2')...
-            ,fullfile(pthClim,'Sheat_flux_Avg3'),fullfile(pthClim,'Sheat_flux_Avg4')...
-            ,fullfile(pthClim,'SoilHeatflux','SHFP_F246_Avg'),fullfile(pthClim,'SoilHeatflux','SHFP_G242_Avg')...
-            ,fullfile(pthClim,'SoilHeatflux','SHFP_G243_Avg')...
-            );
-        trace_legend= char('sheat_{1}','sheat_{2}','sheat_{3}','sheat_{4}','SHFP_{F246}','SHFP_{G242}','SHFP_{G243}');
+            ,fullfile(pthClim,'Sheat_flux_Avg3'),fullfile(pthClim,'Sheat_flux_Avg4',fullfile(pthClim,'Sheat_flux_Avg4'),...
+            fullfile(pthClim,'SoilHeatflux','Sheat_flux_Avg4')));
+        trace_legend= char('sheat_{1}','sheat_{2}','sheat_{3}','sheat_{4}');
     else
         trace_path  = char(fullfile(pthClim,'Sheat_flux_Avg1'),fullfile(pthClim,'Sheat_flux_Avg2')...
             ,fullfile(pthClim,'Sheat_flux_Avg3'),fullfile(pthClim,'Sheat_flux_Avg4'));
@@ -1115,7 +1111,7 @@ trace_units = '(W m^{-2})';
 y_axis      = [-200 200];
 fig_num = fig_num + fig_num_inc;
 if strcmpi(SiteID,'MPB1')
-   x = plt_msig( trace_path, ind, trace_name, trace_legend, year, trace_units, y_axis, t, fig_num,[-1 1 1 1 1 1 1]);
+   x = plt_msig( trace_path, ind, trace_name, trace_legend, year, trace_units, y_axis, t, fig_num,[-1 1 1 1 1]);
 elseif strcmpi(SiteID,'MPB2')
    x = plt_msig( trace_path, ind, trace_name, trace_legend, year, trace_units, y_axis, t, fig_num,[-1 -1 1 -1]);  
 else

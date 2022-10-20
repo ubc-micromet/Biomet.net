@@ -9,10 +9,12 @@ function db_update_MPB_sites(yearIn,sitenum)
 
 % 
 % (c) Nick Grant        file created:   Oct 21, 2009        
-%                       last modified:  Oct 14, 2022
+%                       last modified:  Oct 15, 2022
 
 % revisions:
 %
+% Oct 15, 2022 (Zoran)
+%   - fixed a few bugs in paths and file names
 % Oct 14, 2022 (Zoran)
 %   - added processing of soil heatflux plates that were added on Oct 14,
 %     2022 to EC logger.
@@ -44,6 +46,9 @@ dv=datevec(now);
 arg_default('yearIn',dv(1));
 arg_default('sitenum',[ 1 2 3]);
 arg_default('do_eddy',0);
+
+% Path used inside of eval statements
+pth_db = db_pth_root; %#ok<NASGU>
 
 fileExt = datestr(now,30);
 fileExt = fileExt(1:8);
@@ -79,7 +84,7 @@ for k=1:length(yearIn)
         eval(['progressListMPB' num2str(sitenum(j)) '_tblSHFP_Pth = fullfile(pth_db,''MPB' num2str(sitenum(j))...
             '_tblSHFP_progressList_' num2str(yearIn(k)) '.mat'');']);
         eval(['MPB' num2str(sitenum(j)) 'tblSHFP_Pth = [pth_db ''yyyy\mpb'...
-            num2str(sitenum(j)) '\Flux_Logger\''];']);
+            num2str(sitenum(j)) '\Climate\SoilHeatflux\''];']);
        
         filePath = sprintf('d:\\sites\\MPB%d\\CSI_net\\old\\',sitenum(j));
        
@@ -111,7 +116,7 @@ for k=1:length(yearIn)
         eval(['[numOfFilesProcessed,numOfDataPointsProcessed] = fr_site_met_database(''D:\sites\MPB' num2str(sitenum(j)) '\CSI_net\old\' num2str(yearIn(k)) '\mpb' num2str(sitenum(j)) '_EC_Tscov.' num2str(yearIn(k)) '*'',[],[],[],progressListMPB' num2str(sitenum(j)) '_Ts_cov_Pth,MPB' num2str(sitenum(j)) 'TsCovDatabase_Pth,2);'])
         eval(['disp(sprintf(''MPB' num2str(sitenum(j)) ' Ts_cov:  Number of files processed = %d, Number of HHours = %d'',numOfFilesProcessed,numOfDataPointsProcessed))']);
  
-        eval(['[numOfFilesProcessed,numOfDataPointsProcessed] = fr_site_met_database(''D:\sites\MPB' num2str(sitenum(j)) '\CSI_net\old\' num2str(yearIn(k)) '\mpb' num2str(sitenum(j)) '_tblSHFP.' num2str(yearIn(k)) '*'',[],[],[],progressListMPB' num2str(sitenum(j)) '_tblSHFP_Pth,MPB' num2str(sitenum(j)) 'tblSHFP_Pth,2);'])
+        eval(['[numOfFilesProcessed,numOfDataPointsProcessed] = fr_site_met_database(''D:\sites\MPB' num2str(sitenum(j)) '\CSI_net\old\' num2str(yearIn(k)) '\mpb' num2str(sitenum(j)) '_EC_tblSHFP.' num2str(yearIn(k)) '*'',[],[],[],progressListMPB' num2str(sitenum(j)) '_tblSHFP_Pth,MPB' num2str(sitenum(j)) 'tblSHFP_Pth,2);'])
         eval(['disp(sprintf(''MPB' num2str(sitenum(j)) ' tblSHFP:  Number of files processed = %d, Number of HHours = %d'',numOfFilesProcessed,numOfDataPointsProcessed))']);
   
         % compute EC fluxes from raw covariances above and save to db
