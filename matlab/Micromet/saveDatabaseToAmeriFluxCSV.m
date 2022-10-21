@@ -84,7 +84,14 @@ tableOut = struct2table(structOut);
 if ~isempty(outputPath)
     % load the AF site names from a file.
     % ** this is just for testing***
-    siteNameAF = 'CC-DSM';
+    switch siteID
+        case {'BB','BB1'}
+            siteNameAF = 'CC-DBB';
+        case {'BB2'}
+            siteNameAF = 'CC-DB2';
+        otherwise
+            siteNameAF = ['CC-' upper(siteID)];
+    end
     fileName = sprintf('%s_HH_%s_%s.csv',siteNameAF,...
                              datestr(tv(1)-1/48,'yyyymmdd0000'),...
                              datestr(tv(end),'yyyymmdd0000'));
