@@ -22,12 +22,15 @@ function tableOut = saveDatabaseToAmeriFluxCSV(siteID,yearIn,outputPath)
 %
 %
 % Zoran Nesic               File created:       Oct 20, 2022
-%                           Last modification:  Oct 20, 2022
+%                           Last modification:  Oct 21, 2022
 %
 
 %
 % Revisions:
 %
+% Oct 21, 2022 (Zoran)
+%   - corrected site names' typo ("CC-" -> "CA-")
+%   - added option to pass third stage variables to the table
 
 arg_default('outputPath',[]);
 pthDatabase = biomet_path(yearIn,siteID);
@@ -39,44 +42,55 @@ else
     % extract the root path
     pthRoot = pthDatabase(1:ind(1)+length('DATABASE'));    
 end
-pthDataIn = fullfile(pthDatabase,'Clean','SecondStage');
+pthDataIn{1} = fullfile(pthDatabase,'Clean','SecondStage');
+pthListOfVarNames{1} = fullfile(pthRoot,'Calculation_Procedures','AmeriFlux');
+afListOfVarNames{1} = readtable(fullfile(pthListOfVarNames{1},'flux-met_processing_variables_20221020.csv'));
 
-pthListOfVarNames = fullfile(pthRoot,'Calculation_Procedures','AmeriFlux');
-afListOfVarNames = readtable(fullfile(pthListOfVarNames,'flux-met_processing_variables_20221020.csv'));
+pthDataIn{2} = fullfile(pthDatabase,'Clean','ThirdStage');
+pthListOfVarNames{2} = fullfile(pthRoot,'Calculation_Procedures','AmeriFlux');
+afListOfVarNames{2} = readtable(fullfile(pthListOfVarNames{2},'Micromet_ThirdStageNames.txt'));
 
 % create an empty output structure
 structOut = struct;
 % Add time stamps.
-tv = datetime(read_bor(fullfile(pthDataIn,'clean_tv'),8),'convertfrom','datenum');
+tv = datetime(read_bor(fullfile(pthDataIn{1},'clean_tv'),8),'convertfrom','datenum');
 structOut.TIMESTAMP_START = datestr(tv-1/48,'yyyymmddhhMM');
 structOut.TIMESTAMP_END = datestr(tv,'yyyymmddhhMM');
-% cycle through all Ameriflux variable names
-for cntVar = 1:size(afListOfVarNames,1)
-    varType = char(afListOfVarNames.Type(cntVar));
-    % skip time-keeping variables (we'll create our own)
-    if ~strcmp(varType,'TIMEKEEPING')
-        varName = char(afListOfVarNames.Variable(cntVar));
-        % see if such a variable exists in the second stage
-        if ~isempty(dir(fullfile(pthDataIn,varName))) ...
-           || ~isempty(dir(fullfile(pthDataIn,[varName '_*'])))
-           % get all the variables that match that wildcard
-           allSecondStageVars = [dir(fullfile(pthDataIn,varName));...
-                                 dir(fullfile(pthDataIn,[varName '_*']))];
-           % load all SecondStage variables into structOut
-           for cntSecStgVars = 1: length(allSecondStageVars)
-               % get variable name
-               ssVarName = char(allSecondStageVars(cntSecStgVars).name);
-               % read data from database
-               ssData = read_bor(fullfile(pthDataIn,ssVarName));
-               % replace NaN-s with -9999
-               ssData(isnan(ssData)) = -9999;
-               % store output
-               structOut.(ssVarName) = ssData;
-           end
+% cycle through both Second and Third stage
+for cntStage = 1:2
+    % cycle through all Ameriflux variable names
+    for cntVar = 1:size(afListOfVarNames{cntStage},1)
+        varType = char(afListOfVarNames{cntStage}.Type(cntVar));
+        % skip time-keeping variables (we'll create our own)
+        if ~strcmp(varType,'TIMEKEEPING')
+            varName = char(afListOfVarNames{cntStage}.Variable(cntVar));
+            % see if such a variable exists in the second stage
+            % or in the third stage (but only with qualifiers '_*'
+            % that why there is: " && ~strcmp(varType,'PI')" below
+            if (~isempty(dir(fullfile(pthDataIn{cntStage},varName)))&& ~strcmp(varType,'PI')) ...
+               || ~isempty(dir(fullfile(pthDataIn{cntStage},[varName '_*'])))
+               % get all the variables that match that wildcard
+               if ~strcmp(varType,'PI')
+                    allSecondStageVars = [dir(fullfile(pthDataIn{cntStage},varName));...
+                                          dir(fullfile(pthDataIn{cntStage},[varName '_*']))];
+               else
+                    allSecondStageVars = dir(fullfile(pthDataIn{cntStage},[varName '_*']));
+               end
+               % load all SecondStage variables into structOut
+               for cntSecStgVars = 1: length(allSecondStageVars)
+                   % get variable name
+                   ssVarName = char(allSecondStageVars(cntSecStgVars).name);
+                   % read data from database
+                   ssData = read_bor(fullfile(pthDataIn{cntStage},ssVarName));
+                   % replace NaN-s with -9999
+                   ssData(isnan(ssData)) = -9999;
+                   % store output
+                   structOut.(ssVarName) = ssData;
+               end
+            end
         end
     end
 end
-
 % Convert output structure to a table
 tableOut = struct2table(structOut);
 
@@ -86,11 +100,11 @@ if ~isempty(outputPath)
     % ** this is just for testing***
     switch siteID
         case {'BB','BB1'}
-            siteNameAF = 'CC-DBB';
+            siteNameAF = 'CA-DBB';
         case {'BB2'}
-            siteNameAF = 'CC-DB2';
+            siteNameAF = 'CA-DB2';
         otherwise
-            siteNameAF = ['CC-' upper(siteID)];
+            siteNameAF = ['CA-' upper(siteID)];
     end
     fileName = sprintf('%s_HH_%s_%s.csv',siteNameAF,...
                              datestr(tv(1)-1/48,'yyyymmdd0000'),...
