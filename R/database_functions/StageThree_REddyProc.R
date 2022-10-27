@@ -13,7 +13,8 @@
 # fx_path <- Specify path for loading functions
 
 StageThree_REddyProc <- function(site, years, db_ini, db_out, ini_path, fx_path) {
-
+ print(ini_path)
+ print("Zoran----------")
   # Load libraries
   library("REddyProc")
   require("dplyr")
@@ -31,8 +32,11 @@ StageThree_REddyProc <- function(site, years, db_ini, db_out, ini_path, fx_path)
   
   # Run Stage Three for DSM
   ini_file_name <- paste(site,'_StageThree_ini.R',sep = "")
+sprintf("ini_file_name = %s",ini_file_name)
   
   # Load ini file
+junk <- paste(ini_path,ini_file_name,sep="/")
+sprintf("full path = %s",junk)
   source(paste(ini_path,ini_file_name,sep="/"))
   
   #Copy files from second stage to third stage

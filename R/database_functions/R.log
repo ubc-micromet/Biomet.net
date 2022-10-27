@@ -1,3 +1,10 @@
+[1] "Radi: 1n"
+[1] "Radi: DSM"
+[1] "Year: 2022"
+[1] "db_root: v:/database"
+[1] "fx_path: c:/biomet.net/R/database_functions"
+[1] "v:/database/Calculation_Procedures/TraceAnalysis_ini/DSM"
+[1] "Zoran----------"
 Loading required package: dplyr
 
 Attaching package: 'dplyr'
@@ -21,7 +28,5 @@ The following objects are masked from 'package:base':
 Error in file(filename, "r", encoding = encoding) : 
   cannot open the connection
 Calls: StageThree_REddyProc -> source -> file
-In addition: Warning message:
-In file(filename, "r", encoding = encoding) :
-  cannot open file 'p:\database/Calculation_Procedures/TraceAnalysis_ini/DSM///DSM_StageThree_ini.R': No such file or directory
+In addition: There were 50 or more warnings (use warnings() to see the first 50)
 Execution halted
