@@ -533,7 +533,7 @@ if pause_flag == 1;pause;end
 % *** in case of multiple-year plots it plots only the last year
 indx = find( t_all >= 1 & t_all <= ed );                    % extract the period from
 tx = t_all(indx);                                           % the beginning of the last year
-indNew = 1:length(indx);
+indNew = [1:length(indx)]+round(GMTshift*48);               % use GMTshift to align the data with time vector
 trace_name  = 'Climate: Cumulative Rain (current year only)';
 trace_legend = str2mat('TBRG1','TBRG2\_snow','TR525M');
 y_axis      = [];

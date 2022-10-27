@@ -6,6 +6,9 @@ function [t,x] = mpb_pl(ind, year, SiteID, select, fig_num_inc,pause_flag)
 
 % Revisions
 %
+% Oct 27, 2022 (Zoran)
+%   - Cumulative Precip for MPB1 was wrong. It had a multiplier of 2.54
+%     embeded into plt_msig. 
 % Oct 15, 2022 (Zoran)
 %   - Added plotting of 3 new soil heatflux plates
 % Jan 23, 2022 (Zoran)
@@ -657,7 +660,7 @@ if pause_flag == 1;pause;end
 %----------------------------------------------------------
 indx = find( t_all >= 1 & t_all <= ed );                    % extract the period from
 tx = t_all(indx);                                           % the beginning of the year
-indNew = 1:length(indx);
+indNew = [1:length(indx)]+round(GMTshift*48);               % use GMTshift to align the data with time vector
 
 trace_name  = 'Climate: Cumulative Rain';
 trace_units = '(mm)';
@@ -673,7 +676,7 @@ end
 fig_num = fig_num + fig_num_inc;
 
 %plt_sig1( tx_new, [cumsum(x1)], trace_name, year, trace_units, ax, y_axis, fig_num );
-x = plt_msig( [cumsum(x1)], indNew, trace_name, [], rangeYears(end), trace_units, y_axis, tx_new, fig_num,[2.54]);
+x = plt_msig( [cumsum(x1)], indNew, trace_name, [], rangeYears(end), trace_units, y_axis, tx_new, fig_num);
 xlim(originalXlim);
 indAxes = indAxes+1; allAxes(indAxes) = gca;
 if pause_flag == 1;pause;end
