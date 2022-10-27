@@ -11,10 +11,13 @@ function run_ECCC_climate_station_update(yearsIn,monthsIn,stationIDs)
 %                 File: "Station Inventory EN.csv"
 %
 % Zoran Nesic                   File created:               2022
-%                               Last modification:  Sep  7, 2022
+%                               Last modification:  Oct 19, 2022
 
 % Revisions
 %
+% Oct 19, 2022 (Zoran)
+%  - Added a generic option to create a station under yyyy\ECCC\stationID
+%    for all new stations except BB (49088) and Hogg (10927)
 % Sep 7, 2022 (Zoran)
 %  - added input option for stationIDs
 %  - added calls for Manitoba station
@@ -35,8 +38,11 @@ for cntStations = 1:length(stationIDs)
             % Hogg station
             pathECCC = 'yyyy\Hogg\Met\ECCC';
         otherwise
-            fprintf('station ID out of range!\n');     
-            pathECCC = '';
+            % Group all other stations under \ECCC\stationID
+            pathECCC = fullfile('yyyy','ECCC',num2str(sID));
+%         otherwise
+%             fprintf('station ID out of range!\n');     
+%             pathECCC = '';
     end
     if ~isempty(pathECCC)
         try
