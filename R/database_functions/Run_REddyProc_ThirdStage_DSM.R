@@ -37,7 +37,12 @@ source(file.path(fx_path,'StageThree_REddyProc.R'))
 
 # Call third stage processing
 StageThree_REddyProc(site, years, db_ini, db_out, ini_path, fx_path)
+sprintf("===================================================================")
+sprintf(" Warnings")
+sprintf("===================================================================")
 warnings()
+sprintf("===================================================================")
+sprintf(" ")
 
 
 
