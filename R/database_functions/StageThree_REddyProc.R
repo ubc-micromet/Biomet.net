@@ -28,7 +28,7 @@ StageThree_REddyProc <- function(site, years, db_ini, db_out, ini_path, fx_path)
   yrs <- years
   
   # Run Stage Three for DSM
-  ini_file_name <- paste(site,'_StageThree_ini.R',sep = "")
+  ini_file_name <- paste(site,'_ThirdStage_ini.R',sep = "")
   
   # Load ini file
   source(paste(ini_path,ini_file_name,sep="/"))
