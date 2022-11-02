@@ -29,7 +29,7 @@ StageThree_REddyProc <- function(site, yearIn, db_ini, db_out, ini_path, fx_path
 
   # Load ini file
   source(paste(ini_path,ini_file_name,sep="/"))
-cat("Z0\n")
+  
   #Copy files from second stage to third stage
   for (j in 1:length(yrs)) {
     in_path <- paste(db_ini,"/",as.character(yrs[j]),"/",site,"/clean/SecondStage/", sep = "")
@@ -62,11 +62,7 @@ cat("Z0\n")
       level_in <- "clean/SecondStage" # Specify that this is data from the second stage we are using as inputs
       
       # Create data frame for years & variables of interest 
-cat("start\n")
-cat(vars)
-cat("\n")
-      data.now <- load.export.data(db_ini,years_REddyProc[j],site,level_in,vars,tv_input,export)
-cat("end\n")     
+      data.now <- read_database(db_ini,years_REddyProc[j],site,level_in,vars,tv_input,export)
       data <- dplyr::bind_rows(data,data.now)
     }
     
@@ -215,7 +211,7 @@ cat("end\n")
     for (j in 1:length(years_RF)) {
       
       # Load stage three data
-      data_RF.now <- load.export.data(db_ini,years_RF[j],site,level_RF_FCH4,predictors_FCH4,tv_input,export)
+      data_RF.now <- read_database(db_ini,years_RF[j],site,level_RF_FCH4,predictors_FCH4,tv_input,export)
       data_RF <- dplyr::bind_rows(data_RF,data_RF.now)
     }
     

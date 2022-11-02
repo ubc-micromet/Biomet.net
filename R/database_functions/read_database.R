@@ -14,9 +14,14 @@
 #outpath <- "specify/your/path/here/"
 #outfilename <- specify file name (e.g., "BB1_subset_2020")
 
-# to output R dataframe, use df <- load.export.data(basepath,yrs,site,level,vars,outpath,outfilename,export)
+# Revisions:
+#  Nov 2, 2022 (Zoran)
+#    - renamed the function from read.export.data to read_database
 
-load.export.data <-
+
+# to output R dataframe, use df <- read_database(basepath,yrs,site,level,vars,outpath,outfilename,export)
+
+read_database <-
   function(basepath,
            yrs,
            site,
@@ -47,11 +52,6 @@ load.export.data <-
       
       setwd(inpath)
       #Convert Matlab timevector to POSIXct
-cat("inpath = ")
-cat(inpath)
-cat("\ntv_input = ")
-cat(tv_input)
-cat("\n")
       tv <- readBin(tv_input, double(), n = 18000)
       datetime <-
         as.POSIXct((tv - 719529) * 86400, origin = "1970-01-01", tz = "UTC")
