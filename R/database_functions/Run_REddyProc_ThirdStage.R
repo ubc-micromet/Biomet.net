@@ -30,9 +30,6 @@ do_REddyProc <- as.numeric(args[5])     # 1 = yes to do ustar filtering, gap-fil
 db_root 	<- args[6]								    # Path to database (p:/database)
 fx_path 	<- args[7] 								    # Path for R/database_functions functions
 
-
-
-
 db_ini <- db_root # base path to find the files
 db_out <- db_root # base path where to save the files
 ini_path <- paste(db_root,"Calculation_Procedures","TraceAnalysis_ini",site,"/",sep="/") # specify base path to where the ini files are

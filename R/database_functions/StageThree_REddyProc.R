@@ -26,8 +26,6 @@ StageThree_REddyProc <- function(site, yearIn, db_ini, db_out, ini_path, fx_path
 
   # Run Stage Three for DSM
   ini_file_name <- paste(site,'_ThirdStage_ini.R',sep = "")
-  cat(yearIn)
-  cat(" -> yearIn\n") 
 
   # Load ini file
   source(paste(ini_path,ini_file_name,sep="/"))
@@ -65,7 +63,7 @@ cat("Z0\n")
       
       # Create data frame for years & variables of interest 
 cat("start\n")
-cat(years_REddyProc[j])
+cat(vars)
 cat("\n")
       data.now <- load.export.data(db_ini,years_REddyProc[j],site,level_in,vars,tv_input,export)
 cat("end\n")     

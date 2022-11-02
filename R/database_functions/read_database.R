@@ -47,6 +47,11 @@ load.export.data <-
       
       setwd(inpath)
       #Convert Matlab timevector to POSIXct
+cat("inpath = ")
+cat(inpath)
+cat("\ntv_input = ")
+cat(tv_input)
+cat("\n")
       tv <- readBin(tv_input, double(), n = 18000)
       datetime <-
         as.POSIXct((tv - 719529) * 86400, origin = "1970-01-01", tz = "UTC")
