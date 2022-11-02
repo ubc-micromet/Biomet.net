@@ -1,4 +1,4 @@
-function runThirdStageCleaningREddyProc(yearIn,siteID,Ustar_scenario,yearsToProcess)
+function runThirdStageCleaningREddyProc(yearIn,siteID,Ustar_scenario,yearsToProcess,do_REddyProc)
 % runThirdStageCleaningREddyProc(yearIn,siteID)
 %
 % This function invokes Micromet third-stage cleaning R-script.
@@ -11,11 +11,16 @@ function runThirdStageCleaningREddyProc(yearIn,siteID,Ustar_scenario,yearsToProc
 %                     for gap-filling even when outputing one year only
 %
 % Zoran Nesic               File created:       Oct 25, 2022
-%                           Last modification:  Oct 31, 2022
+%                           Last modification:  Nov  2, 2022
 %
 
 % Revisions
 %
+% Nov 2, 2022 (Zoran)
+%  - changed the name of main R script to Run_ThirdStage_REddyProc.R
+%  - arguments for R script are now passed mostly as data in an ini
+%    file: siteID_ThirdStageCleaningParameters.ini. Only the path to
+%    the ini file is passed directly as an input argument to Run_ThirdStage_REddyProc.R
 
     if ~ispc
         error('This function is not compatible with macOS, yet!\n');
@@ -48,7 +53,7 @@ function runThirdStageCleaningREddyProc(yearIn,siteID,Ustar_scenario,yearsToProc
     % the *.bat file that runs Rscript also goes into the log folder 
     pthBatchFile = fullfile(pthBatch,'log',[siteID '_ThirdStageCleaning.bat']);
     % The cleaning script Run_REddyProc_ThirdStage_siteID.R is under ../Biomet.net/R
-    pthCleaningScript = fullfile(pthBiometR,['Run_REddyProc_ThirdStage.R']);
+    pthCleaningScript = fullfile(pthBiometR,'Run_ThirdStage_REddyProc.R');
     
     % Create an input file for StageThreeREddyProc() function and pass 
     % all the arguments to it. Store that file with .bat and .log files:
@@ -67,22 +72,22 @@ function runThirdStageCleaningREddyProc(yearIn,siteID,Ustar_scenario,yearsToProc
     fprintf(fidIni,' %s.m\n',st(1).name);
     fprintf(fidIni,' %s\n',datestr(now));
     fprintf(fidIni,'----------------------------------------------------------\n');
-    fprintf(fidIni,'site,"%s"\n',siteID);
-    fprintf(fidIni,'years,%s\n',strYearIn);
-    fprintf(fidIni,'db_root,"%s"\n',pthDatabase);
-    fprintf(fidIni,'fx_path,"%s"\n',pthBiometR);
-    fprintf(fidIni,'Ustar_scenario,"%s"\n',Ustar_scenario);
-    fprintf(fidIni,'yearsToProcess,%d\n',yearsToProcess);
-    fprintf(fidIni,'pthDatabase,"%s"\n',pthDatabase);
-    fprintf(fidIni,'pthBiometR,"%s"\n',pthBiometR);
-    fprintf(fidIni,'pthLogFile,"%s"\n',pthLogFile);
+    fprintf(fidIni,'site,"%s",s\n',siteID);
+    fprintf(fidIni,'yrs,%s,n\n',strYearIn);
+    fprintf(fidIni,'db_root,"%s",s\n',pthDatabase);
+    fprintf(fidIni,'fx_path,"%s",s\n',pthBiometR);
+    fprintf(fidIni,'Ustar_scenario,"%s",s\n',Ustar_scenario);
+    fprintf(fidIni,'do_REddyProc,%d,n\n',do_REddyProc);
+    fprintf(fidIni,'yearsToProcess,%d,n\n',yearsToProcess);
+    fprintf(fidIni,'pthDatabase,"%s",s\n',pthDatabase);
+    fprintf(fidIni,'pthBiometR,"%s",s\n',pthBiometR);
+    fprintf(fidIni,'pthLogFile,"%s",s\n',pthLogFile);
+    fprintf(fidIni,'ini_path,"%s",s\n',fullfile(pthDatabase,'Calculation_Procedures','TraceAnalysis_ini',siteID));
     fclose(fidIni);
     
     
     % create the batch file command line 
-    cmdLine = ['"' pthRbin '" "'  pthCleaningScript '" ' siteID ...
-               ' ' strYearIn ' ' Ustar_scenario ' ' num2str(yearsToProcess) ' ' ...
-               num2str(do_REddyProc) ' "' pthDatabase '" "' pthBiometR '" ' ...
+    cmdLine = ['"' pthRbin '" "'  pthCleaningScript '" "' pthBiometR '" "' pthIniFile '" '...
                ' 2> "' pthLogFile '" 1>&2'];
     tic;
     tv_start = now;
