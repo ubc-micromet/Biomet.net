@@ -10,29 +10,28 @@
 # ini_path <- specify base path to where the ini files are
 # fx_path <- Specify path for loading functions
 
-StageThree_REddyProc <- function(site, years, db_ini, db_out, ini_path, fx_path) {
+StageThree_REddyProc <- function(site, yearIn, db_ini, db_out, ini_path, fx_path,Ustar_scenario,yearsToProcess,do_REddyProc) {
 
   # Load libraries
   library("REddyProc")
   require("dplyr")
   require("lubridate")
-  
+
   # Define specify folders
   # Output folder name for REddyProc and random forest output 
   level_REddyProc <- 'REddyProc_RF'
   
   # Folder where stage three variables should be save
   level_out <- "clean/ThirdStage"
-  
-  # Rename years to yrs
-  yrs <- years
-  
+
   # Run Stage Three for DSM
   ini_file_name <- paste(site,'_ThirdStage_ini.R',sep = "")
-  
+  cat(yearIn)
+  cat(" -> yearIn\n") 
+
   # Load ini file
   source(paste(ini_path,ini_file_name,sep="/"))
-  
+cat("Z0\n")
   #Copy files from second stage to third stage
   for (j in 1:length(yrs)) {
     in_path <- paste(db_ini,"/",as.character(yrs[j]),"/",site,"/clean/SecondStage/", sep = "")
@@ -65,8 +64,11 @@ StageThree_REddyProc <- function(site, years, db_ini, db_out, ini_path, fx_path)
       level_in <- "clean/SecondStage" # Specify that this is data from the second stage we are using as inputs
       
       # Create data frame for years & variables of interest 
+cat("start\n")
+cat(years_REddyProc[j])
+cat("\n")
       data.now <- load.export.data(db_ini,years_REddyProc[j],site,level_in,vars,tv_input,export)
-      
+cat("end\n")     
       data <- dplyr::bind_rows(data,data.now)
     }
     
