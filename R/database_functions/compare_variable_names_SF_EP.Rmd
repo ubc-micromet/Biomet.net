@@ -1,0 +1,30 @@
+---
+title: "compare variable names from SmartFlux and EddyPro"
+author: "Sara Knox"
+date: "2022-07-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = "/Users/sara/Code/MLABcode/database_functions") 
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load variable names, echo=FALSE}
+files_SF <- list.files('/Volumes/Projects/Database/2022/DSM/Flux')
+files_EP <- list.files('/Volumes/GoogleDrive/.shortcut-targets-by-id/1txCh9lZ7VGCujXGvBaJCMVnuxT-65q4K/Micromet Lab/database/2022/DSM/L3')
+```
+
+## Compare variable names
+
+```{r compare variable names, echo=FALSE}
+# Which variables are in EP but not SM
+in_EP_only <- files_EP[which(!(files_EP %in% files_SF))]
+    
+# Which variables are in SM but not EP
+in_SF_only <- files_SF[which(!(files_SF %in% files_EP))]
+
+print(cat(c("output in SmartFlux only: ",in_SF_only), sep="\n"))
+print(cat(c("output in EP only: ",in_EP_only), sep="\n"))
+
+```
