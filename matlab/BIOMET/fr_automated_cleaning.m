@@ -296,8 +296,9 @@ for i = 1:n
         %------------------------------------------------------------------
         if ~isempty(find(stages == 8))
             stage_str = '8-th';
-            disp(['============== ' stage_str ' stage. Exporiting AmeriFlux csv file for: ' SiteId ' ' yy_str ' ==============']);
-            saveDatabaseToAmeriFluxCSV(SiteId,yy(1),pth_out_third);
+            disp(['============== ' stage_str ' stage. Exporting AmeriFlux csv file for: ' SiteId ' ' yy_str ' ==============']);
+            pathAF = fullfile(db_pth,num2str(yy(1)),SiteId,'Clean','ThirdStage');
+            saveDatabaseToAmeriFluxCSV(SiteId,yy(1),pathAF);
         end          
         clear data_* ini_* pth_* mat_*
     end
