@@ -3,12 +3,12 @@
 # Aug 11, 2022
 
 # Inputs
-# pathBiometR   - path to Biomet.net/R functions
-# pathInputArgs - path to the file containing all input arguments for this site
-#                 This file is created either by Matlab (fr_automated_cleaning)
-#                 or by the user following the Matlab's template.
+# pathSetIni   - path to R function that sets up all the ini parameters
+#                usually: 
+#                  p:/database/Calculation_procedures/TraceAnalysis_ini/siteID/log/siteID_setThirdStageCleaningParameters.R"
+#
 
-ThirdStage_REddyProc <- function(pathBiometR,pathInputArgs) {
+ThirdStage_REddyProc <- function(pathSetIni) {
     
   # Load libraries
   library("REddyProc")
@@ -16,14 +16,13 @@ ThirdStage_REddyProc <- function(pathBiometR,pathInputArgs) {
   require("lubridate")
 
   # load input arguments from pathInputArgs file
-  source(paste(pathBiometR,"read_ThirdStageCleaningParametersIni.R",sep="/"))
+  source(pathSetIni)
 
   # initiate path variables
   db_ini <- db_root # base path to find the files
   db_out <- db_root # base path where to save the files
-  ini_path <- paste(db_root,"Calculation_Procedures","TraceAnalysis_ini",site,"/",sep="/") # specify base path to where the ini files are
+  ini_path <- paste(db_root,"/Calculation_Procedures/","TraceAnalysis_ini/",site,sep="") # specify base path to where the ini files are
 
-  
   # Specify folders
   
   # Output folder name for REddyProc and random forest output 
@@ -34,9 +33,10 @@ ThirdStage_REddyProc <- function(pathBiometR,pathInputArgs) {
 
   # Run Stage Three for DSM
   ini_file_name <- paste(site,'_ThirdStage_ini.R',sep = "")
-
+  pthIniFile <- paste(ini_path,"/",ini_file_name,sep="")
+ 
   # Load ini file
-  source(paste(ini_path,ini_file_name,sep="/"))
+  source(pthIniFile)
   
   #Copy files from second stage to third stage
   for (j in 1:length(yrs)) {
@@ -65,7 +65,9 @@ ThirdStage_REddyProc <- function(pathBiometR,pathInputArgs) {
     for (j in 1:length(years_REddyProc)) {
       
       # Load ini file
-      source(paste(ini_path,ini_file_name,sep = ""))
+cat("\n\nIn ThirdStage_REddyProc:\n")      
+cat("   Do we need to reload the ini file here again?\n\n")      
+      source(pthIniFile)
       
       level_in <- "clean/SecondStage" # Specify that this is data from the second stage we are using as inputs
       

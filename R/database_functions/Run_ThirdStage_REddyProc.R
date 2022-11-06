@@ -21,27 +21,33 @@
 #   - converted it into a script that can be called by Matlab 
 
 
+if(length(commandArgs(trailingOnly = TRUE))==0){
+    cat("\nIn: Run_ThirdStage_REddyProc:\nNo input parameters!\nUsing whatever is in args variable \n")
+} else {
+    # otherwise use the third argument to pass the path
+    args 		<- commandArgs(trailingOnly = TRUE)
+}    
 
-args 		<- commandArgs(trailingOnly = TRUE)
-pathBiometR   		<- args[1]
-pathInputArgs 		<- args[2]
-
+pathSetIni   		<- args[3]
 
 # load input arguments from pathInputArgs file
-source(paste(pathBiometR,"read_ThirdStageCleaningParametersIni.R",sep="/"))
+source(pathSetIni)
 
 # Load function
 source(file.path(fx_path,'ThirdStage_REddyProc.R'))
 
 # Call third stage processing
 # ThirdStage_REddyProc(site, years, db_ini, db_out, ini_path, fx_path,Ustar_scenario,yearsToProcess,do_REddyProc)
-ThirdStage_REddyProc(pathBiometR,pathInputArgs)
+#ThirdStage_REddyProc(pathBiometR,pathInputArgs)
+ThirdStage_REddyProc(pathSetIni)
+
 cat("=============================================================================\n")
 cat(" Warnings\n")
 cat("=============================================================================\n")
 warnings()
 cat("=============================================================================\n\n")
 
+cat("End of Run_ThirdStageREddyProc run.\n\n")
 
 
 
