@@ -28,7 +28,7 @@ if(length(commandArgs(trailingOnly = TRUE))==0){
     args 		<- commandArgs(trailingOnly = TRUE)
 }    
 
-pathSetIni   		<- args[3]
+pathSetIni   		<- args[2]
 
 # load input arguments from pathInputArgs file
 source(pathSetIni)
