@@ -6,16 +6,18 @@ function runThirdStageCleaningREddyProc(yearIn,siteID,Ustar_scenario,yearsToProc
 %
 % Arguments
 %   yearIn          - year to clean
-%   Ustar_scenario  - 'fast' (default) and 'slow' (see REddyProc for details)
+%   Ustar_scenario  - 'fast' (default) and 'full' (see REddyProc for details)
 %   yearsToProcess  - 1 (default) or more. REddyProc can use more years 
 %                     for gap-filling even when outputing one year only
 %
 % Zoran Nesic               File created:       Oct 25, 2022
-%                           Last modification:  Nov  5, 2022
+%                           Last modification:  Nov  6, 2022
 %
 
 % Revisions
 %
+% Nov 6, 2022 (Zoran)
+%  - Added some comments
 % Nov 5, 2022 (Zoran)
 %  - changed the way ini data gets transfered to R. Instead of having a csv
 %    ini file siteID_ThirdStageCleaningParameters.ini, we'll use an 
