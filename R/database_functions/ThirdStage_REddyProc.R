@@ -75,7 +75,7 @@ cat("   Do we need to reload the ini file here again?\n\n")
       data.now <- read_database(db_ini,years_REddyProc[j],site,level_in,vars,tv_input,export)
       data <- dplyr::bind_rows(data,data.now)
     }
-    
+ 
     # Create time variables
     data <- data %>%
       mutate(year = year(datetime),
@@ -91,7 +91,7 @@ cat("   Do we need to reload the ini file here again?\n\n")
     # Rearrange data frame and only keep relevant variables for input into REddyProc
     data_REddyProc <- data[ , -which(names(data) %in% c("datetime","hour","minute"))]
     data_REddyProc <- data_REddyProc[ , col_order]
-    
+ 
     # Rename column names to variable names in REddyProc
     colnames(data_REddyProc)<-var_names  
     
@@ -105,12 +105,11 @@ cat("   Do we need to reload the ini file here again?\n\n")
     #+++ Add time stamp in POSIX time format
     EddyDataWithPosix <- fConvertTimeToPosix(
       data_REddyProc, 'YDH',Year = 'Year',Day = 'DoY', Hour = 'Hour') 
-    
     #+++ Initalize R5 reference class sEddyProc for post-processing of eddy data
     #+++ with the variables needed for post-processing later
     EProc <- sEddyProc$new(
       site, EddyDataWithPosix, c('NEE','FC','LE','H','FCH4','Rg','Tair','VPD', 'Ustar')) 
-    
+     
     # Here we only use three ustar scenarios - for full uncertainty estimates, use the UNCERTAINTY SCRIPT (or full vs. fast run - as an option in ini)
     if (Ustar_scenario == 'full') { 
       nScen <- 39
