@@ -35,10 +35,14 @@ function fr_automated_cleaning(Years,Sites,stages,db_out,db_ini)
 %    to use a local copy of the database.
 
 
-% kai* Feb 12, 2003                     Last modified: Nov 4, 2022
+% kai* Feb 12, 2003                     Last modified: Nov 7, 2022
 %
 % Revisions:
 % 
+% Nov 7, 2022 (Zoran)
+%   - Hard coded that the stage 7 now does 'fast' EP processing and uses only
+%     (up to) 2 years of data for gap filling. Sara will decide later if those are
+%     the optimal setting.
 % Nov 4, 2022 (Zoran)
 %   - confirmed that stages 7 and 8 work.
 %   - minor edits of fprintf statements.
@@ -294,7 +298,7 @@ for i = 1:n
             stage_str = '7-th';
             disp(['============== ' stage_str ' stage cleaning ' SiteId ' ' yy_str ' ==============']);
             db_dir_ini(yy(1),SiteId,db_out,3);
-            runThirdStageCleaningREddyProc(yy(1),SiteId);
+            runThirdStageCleaningREddyProc(yy(1),SiteId,'fast',2);  % use only 2 years for gap filling
             fprintf('============== End of cleaning stage 7 =============\n');
         end
         

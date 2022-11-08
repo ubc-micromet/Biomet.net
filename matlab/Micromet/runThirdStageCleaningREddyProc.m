@@ -11,11 +11,14 @@ function runThirdStageCleaningREddyProc(yearIn,siteID,Ustar_scenario,yearsToProc
 %                     for gap-filling even when outputing one year only
 %
 % Zoran Nesic               File created:       Oct 25, 2022
-%                           Last modification:  Nov  6, 2022
+%                           Last modification:  Nov  7, 2022
 %
 
 % Revisions
 %
+% Nov 7, 2022 (Zoran)
+%  - Changed yearsToProcess from 1 to 99. Now all data for the site will be
+%    used for gap filling
 % Nov 6, 2022 (Zoran)
 %  - Added some comments
 % Nov 5, 2022 (Zoran)
@@ -34,8 +37,8 @@ function runThirdStageCleaningREddyProc(yearIn,siteID,Ustar_scenario,yearsToProc
     end
     
     % Prepare input parameters, create defaults if needed
-    arg_default('Ustar_scenario','fast')
-    arg_default('yearsToProcess',1);
+    arg_default('Ustar_scenario','fast')  % use fast processing (other option is 'full')
+    arg_default('yearsToProcess',99);     % Use all years since the site was established for gap filling
     arg_default('do_REddyProc',1);
 
 
