@@ -2,13 +2,16 @@ function db_update_Micromet_EddyPro_Recalcs(yearIn,sites)
 % Convert EddyPro recalc files to database (read_bor()) files
 %
 %
-% Zoran Nesic       File created:       Aug  24, 2022
-%                   Last modification:  Aug  29, 2022 (Zoran)
+% Zoran Nesic       File created:       Aug 24, 2022
+%                   Last modification:  Oct 24, 2022 (Zoran)
 % 
 
 
 % Revisions:
 %
+% Oct 24, 2022 (Zoran)
+%   - pointed input path for the database to be p:/ 
+%     (not //vinimet.geog.ubc.ca/projects as before.
 % Aug 29, 2022 (Zoran)
 %   - A small change in an fprintf() line.
 
@@ -40,7 +43,7 @@ for k=1:length(yearIn)
         % Then process the new files
         outputPathStr = [siteID 'FluxDatabase_Pth'];
         eval(['outputPath = ' outputPathStr ';']);     
-        inputPath = sprintf('//vinimet.geog.ubc.ca/projects/sites/%s/Flux/eddypro_%s_%d*_full_output*_adv.csv',siteID,siteID,yearIn(k));
+        inputPath = sprintf('p:/sites/%s/Flux/eddypro_%s_%d*_full_output*_adv.csv',siteID,siteID,yearIn(k));
         if filesep ~= '/'
              inputPath = regexprep(inputPath,'/',filesep);
         end

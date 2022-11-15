@@ -22,32 +22,27 @@ function tableOut = saveDatabaseToAmeriFluxCSV(siteID,yearIn,outputPath)
 %
 %
 % Zoran Nesic               File created:       Oct 20, 2022
-%                           Last modification:  Oct 21, 2022
+%                           Last modification:  Nov  4, 2022
 %
 
 %
 % Revisions:
 %
+% Nov 4, 2022 (Zoran)
+%   - Changed to proper way of finding database root path (function db_pth_root).
 % Oct 21, 2022 (Zoran)
 %   - corrected site names' typo ("CC-" -> "CA-")
 %   - added option to pass third stage variables to the table
 
 arg_default('outputPath',[]);
 pthDatabase = biomet_path(yearIn,siteID);
-% find the root path. Usually p:\Database.
-ind = strfind(upper(pthDatabase),'DATABASE');
-if isempty(ind)
-    error('Data base path (%s) must include folder: "database" in it! Check your biomet_database_default.m file.',pthDatabase);
-else
-    % extract the root path
-    pthRoot = pthDatabase(1:ind(1)+length('DATABASE'));    
-end
+
 pthDataIn{1} = fullfile(pthDatabase,'Clean','SecondStage');
-pthListOfVarNames{1} = fullfile(pthRoot,'Calculation_Procedures','AmeriFlux');
+pthListOfVarNames{1} = fullfile(db_pth_root,'Calculation_Procedures','AmeriFlux');
 afListOfVarNames{1} = readtable(fullfile(pthListOfVarNames{1},'flux-met_processing_variables_20221020.csv'));
 
 pthDataIn{2} = fullfile(pthDatabase,'Clean','ThirdStage');
-pthListOfVarNames{2} = fullfile(pthRoot,'Calculation_Procedures','AmeriFlux');
+pthListOfVarNames{2} = fullfile(db_pth_root,'Calculation_Procedures','AmeriFlux');
 afListOfVarNames{2} = readtable(fullfile(pthListOfVarNames{2},'Micromet_ThirdStageNames.txt'));
 
 % create an empty output structure

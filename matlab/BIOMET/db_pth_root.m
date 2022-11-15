@@ -5,6 +5,9 @@ function pth = db_pth_root
 
 % Last modified: 
 %
+% Nov 4, 2022 (Zoran)
+%   - changed to more robust way of finding the root path by using 
+%     biomet_path('yyyy')
 % Apr 11, 2022 (Zoran)
 %   - added call to setFolderSeparator() to deal with MacOS paths.
 % Apr 2, 2022 (Zoran)
@@ -22,18 +25,13 @@ function pth = db_pth_root
 %       from Fluxnet02
 %                              
 
-% [pc_name,loc] = fr_get_pc_name;
-% 
-% if strcmp(pc_name,'FLUXNET02') | strcmp(pc_name,'PAOA001')
-%     pth = 'y:\';
-% else
+pth = biomet_path('yyyy');      % pth will contain year 'yyyy' in it
+ind = strfind(pth,'yyyy');      % find where it starts
+pth = pth(1:ind-1);             % extract the string before the 'yyyy' part
+                                % Note: it keeps the trailing filesep (legacy issues)
+pth = fullfile(pth);            % this sorts out file separators (macOS vs Windows)
 
-if exist('biomet_database_default','file') == 2
-    pth = setFolderSeparator(biomet_database_default);
-    if pth(end) ~= '\' && pth(end) ~= '/' 
-        pth(end+1) = filesep;
-    end    
-else
-    pth = '\\Annex001\database\';
-end
+
+
+
 

@@ -35,10 +35,21 @@ function fr_automated_cleaning(Years,Sites,stages,db_out,db_ini)
 %    to use a local copy of the database.
 
 
-% kai* Feb 12, 2003                     Last modified: Sep 21, 2022
+% kai* Feb 12, 2003                     Last modified: Nov 7, 2022
 %
 % Revisions:
 % 
+% Nov 7, 2022 (Zoran)
+%   - Hard coded that the stage 7 now does 'fast' EP processing and uses only
+%     (up to) 2 years of data for gap filling. Sara will decide later if those are
+%     the optimal setting.
+% Nov 4, 2022 (Zoran)
+%   - confirmed that stages 7 and 8 work.
+%   - minor edits of fprintf statements.
+% Nov 3, 2022 (Zoran)
+%   - added 7th and 8th stages. 
+%     Stage 7  - cleans Micromet data using runThirdStageREddyProc.m
+%     Stage 8  - exports Micromet data as AmeriFlux standard csv file
 % Sep 21, 2022 (Zoran)
 %   - change path creation to make it work compatible with MacOS:
 %     Changed:
@@ -210,6 +221,7 @@ for i = 1:n
             db_dir_ini(yy(1),SiteId,db_out,1);
             data_first = fr_cleaning_siteyear(yy(1),SiteId,1,db_ini);
             ta_export(data_first,pth_out_first);
+            fprintf('============== End of cleaning stage 1 =============\n');
         end
         
         %------------------------------------------------------------------
@@ -222,6 +234,7 @@ for i = 1:n
             db_dir_ini(yy(1),SiteId,db_out,2);
             data_second = fr_cleaning_siteyear(yy(1),SiteId,2,db_ini);
             ta_export(data_second,pth_out_second);
+            fprintf('============== End of cleaning stage 2 =============\n');
         end
         
         %------------------------------------------------------------------
@@ -233,6 +246,7 @@ for i = 1:n
             db_dir_ini(yy(1),SiteId,db_out,3);
             data_third = fr_cleaning_siteyear(yy(1),SiteId,3,db_ini);
             ta_export(data_third,pth_out_third);
+            fprintf('============== End of cleaning stage 3 =============\n');
         end
         
         %------------------------------------------------------------------
@@ -242,6 +256,7 @@ for i = 1:n
             disp(['============== ' SiteId ' - FCRN Export =================================']);
             data_fcrn = fcrn_trace_str(data_first,data_second,data_third);
             fcrnexport(SiteId,data_fcrn);
+            fprintf('============== End of cleaning stage 4 =============\n');
         end
         
         % added June 28, 2007: Nick
@@ -253,6 +268,7 @@ for i = 1:n
             data_fcrn_local = fcrn_trace_str(data_first,data_second,data_third);
             flag_local = 1;
             fcrnexport(SiteId,data_fcrn_local,flag_local);
+            fprintf('============== End of cleaning stage 5 =============\n');
         end
         
         %------------------------------------------------------------------
@@ -271,11 +287,36 @@ for i = 1:n
             end
         end
         
+        %------------------------------------------------------------------
+        % Do 7th stage automated cleaning and exporting
+        % This one is done using REddyProc and Rscript.
+        % Currently in use with Sara Knox's sites only
+        % The cleaning is done using the default parameters given in
+        % runThirdStageCleaningREddyProc.
+        %------------------------------------------------------------------
+        if ~isempty(find(stages == 7))
+            stage_str = '7-th';
+            disp(['============== ' stage_str ' stage cleaning ' SiteId ' ' yy_str ' ==============']);
+            db_dir_ini(yy(1),SiteId,db_out,3);
+            runThirdStageCleaningREddyProc(yy(1),SiteId,'fast',2);  % use only 2 years for gap filling
+            fprintf('============== End of cleaning stage 7 =============\n');
+        end
+        
+        %------------------------------------------------------------------
+        % 8th stage is export of Micromet (Sara Knox's) sites to AmeriFlux
+        % format. The output data is stored to clean/ThirdStage folder
+        %------------------------------------------------------------------
+        if ~isempty(find(stages == 8))
+            stage_str = '8-th';
+            disp(['============== ' stage_str ' stage. Exporting AmeriFlux csv file for: ' SiteId ' ' yy_str ' ==============']);
+            pathAF = fullfile(db_pth,num2str(yy(1)),SiteId,'Clean','ThirdStage');
+            saveDatabaseToAmeriFluxCSV(SiteId,yy(1),pathAF);
+            fprintf('============== End of cleaning stage 8 =============\n'); 
+        end          
         clear data_* ini_* pth_* mat_*
     end
     
-    disp(['============== End ' stage_str ' stage cleaning' SiteId ' ' yy_str ' ===========']);
-    fprintf('\n');
+    fprintf('============== End of cleaning Site: %s, year: %d ===========\n',SiteId,yy(1));
     
     if ~isempty(hTimer)
         % restart the original diary file name
@@ -284,7 +325,7 @@ for i = 1:n
         try
             hTimer.start;
         catch
-            % sometimes the time is already running and we get an error
+            % sometimes the timer is already running and we get an error
         end
     end
 end
