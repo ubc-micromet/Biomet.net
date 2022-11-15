@@ -450,7 +450,7 @@ for siteNum = 1:length(siteNames)
             data(tsc(1:end-1),5:8) = data(tsc(2:end),5:8);
             
             % Blocking off values before installation (CNR4, 2021-Sep-16 17:00)
-            UNINS = find(tv<=datenum(2021,9,16,17,0,0)); % uninstalled
+            UNINS=find(tv<=datenum(2021,9,16,17,0,0)); % uninstalled
             data(UNINS,:)=NaN;
             
             % Calculate net radiation
@@ -499,7 +499,7 @@ for siteNum = 1:length(siteNames)
             data = load_data(varStruct,pth,Years);
             
             % Blocking off values before installation (CNR4, 2021-Sep-16 17:00)
-            UNINS = find(tv<=datenum(2022,6,7,19,30,0)); % uninstalled
+            UNINS=find(tv<=datenum(2022,6,7,19,30,0)); % uninstalled
             data(UNINS,:)=NaN;
             
             % Calculate net radiation
@@ -510,7 +510,7 @@ for siteNum = 1:length(siteNames)
             data = data(1:inde,:);
             
             % Blocking off values before installation (CNR4, 2021-Sep-16 17:00)
-            UNINS = find(tv<=datenum(2022,6,7,19,30,0)); % uninstalled
+            UNINS=find(tv<=datenum(2022,6,7,19,30,0)); % uninstalled
             data(UNINS,:)=NaN;
             
             data = data(1:inde,:);            
@@ -628,7 +628,7 @@ for siteNum = 1:length(siteNames)
             data = load_data(varStruct,pth,Years);
             
             % Blocking off values before installation (PARin/PARout, 2021-Sep-16 17:00)
-            UNINS = find(tv<=datenum(2021,9,16,17,0,0)); % uninstalled
+            UNINS= find(tv<=datenum(2021,9,16,17,0,0)); % uninstalled
             data(UNINS,[3:4,7:8])=NaN;
             
             % Time Shift Correction (fixed at 2021-Nov-11 09:30 am) 
@@ -682,11 +682,11 @@ for siteNum = 1:length(siteNames)
             data = load_data(varStruct,pth,Years);
             
             % Blocking off values before installation (PARin/PARout, 2022-Jun-08 08:55)
-            UNINS = find(tv<=datenum(2022,6,8,8,55,0)); % uninstalled
+            UNINS=find(tv<=datenum(2022,6,8,8,55,0)); % uninstalled
             data(UNINS,[3,4,7,8])=NaN;
             
             % Blocking off values before installation (BF5, 2022-Jun-13 11:00 PDT)
-            UNINS = find(tv<=datenum(2022,6,13,10,0,0)); % uninstalled
+            UNINS=find(tv<=datenum(2022,6,13,10,0,0)); % uninstalled
             data(UNINS,[1,2,5,6])=NaN;  
             
             % Correcting negative reflected PAR (2022-Jun-08 08:55 ~ Aug-18 12:30 PST)
@@ -800,11 +800,11 @@ for siteNum = 1:length(siteNames)
             data = load_data(varStruct,pth,Years);
             
             % Blocking off values before installation (2022-Jun-11 13:30)
-            UNINS = find(tv<=datenum(2022,6,11,14,0,0)); % uninstalled
+            UNINS= find(tv<=datenum(2022,6,11,14,0,0)); % uninstalled
             data(UNINS,1)=NaN;
             
             % Blocking off values when installing BF5 (2022-Jun-13 09:00-11:00 PDT)
-            UNINS = find(tv>=datenum(2022,6,13,8,0,0)&tv<=datenum(2022,6,13,10,0,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,6,13,8,0,0)&tv<=datenum(2022,6,13,10,0,0)); % uninstalled
             data(UNINS,1)=NaN;
             
             data = data(1:inde,:);
@@ -912,11 +912,11 @@ for siteNum = 1:length(siteNames)
             data = load_data(varStruct,pth,Years);            
             
             % Blocking off values before installation (2022-Jun-11 13:30)
-            UNINS = find(tv<=datenum(2022,6,11,14,0,0)); % uninstalled
+            UNINS= find(tv<=datenum(2022,6,11,14,0,0)); % uninstalled
             data(UNINS,1)=NaN;
             
             % north offset correction (2022-Jun-11 13:30 ~ Aug-23 08:04 PST)
-            %UNINS = find(tv<=datenum(2022,8,23,8,0,0)); % uninstalled
+            %UNINS= find(tv<=datenum(2022,8,23,8,0,0)); % uninstalled
             %data(UNINS,1)=data(UNINS,1)-180;
                         
             data = data(1:inde,:);
@@ -1247,7 +1247,7 @@ for siteNum = 1:length(siteNames)
             data(:,2) = data(:,2)/100; % Smartflux output unit: meter
             
             % Blocking off values before installation (2022-Jun-13 11:30)
-            UNINS = find(tv<=datenum(2022,6,13,12,0,0)); % uninstalled
+            UNINS= find(tv<=datenum(2022,6,13,12,0,0)); % uninstalled
             data(UNINS,:)=NaN;
             
             data = data(1:inde,:); 
@@ -1529,7 +1529,7 @@ for siteNum = 1:length(siteNames)
             data = load_data(varStruct,pth,Years);
             
             % Blocking off values before installation (2022-Jun-* **:**)
-            UNINS = find(tv<=datenum(2022,6,13,15,0,0)); % uninstalled
+            UNINS= find(tv<=datenum(2022,6,13,15,0,0)); % uninstalled
             data(UNINS,:)=NaN;
             
             data = data(1:inde,:);
@@ -1745,11 +1745,11 @@ for siteNum = 1:length(siteNames)
             data = load_data(varStruct,pth,Years);
             
             % Blocking off values before installation (2022-Jun-13 16:00 PDT)
-            UNINS = find(tv<=datenum(2022,6,13,15,0,0)); % uninstalled
+            UNINS= find(tv<=datenum(2022,6,13,15,0,0)); % uninstalled
             data(UNINS,:)=NaN;
             
             % Fix Ts-1 profile (2022-Jun-17 17:31~19:00 PDT)
-            UNINS = find(tv>=datenum(2022,6,16,16,30,0)&tv<=datenum(2022,6,16,18,0,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,6,16,16,30,0)&tv<=datenum(2022,6,16,18,0,0)); % uninstalled
             data(UNINS,:)=NaN;
             
             
@@ -1833,23 +1833,23 @@ for siteNum = 1:length(siteNames)
             data = data(1:inde,:);
             
             % Blocking off values before installation (Manta+20, 2021-Dec-02 14:00)
-            UNINS = find(tv<=datenum(2021,12,02,15,30,0)); % uninstalled
+            UNINS= find(tv<=datenum(2021,12,02,15,30,0)); % uninstalled
             data(UNINS,:)=NaN; 
             
             % maintenance (2022-Jun-25 10:55-11:28 PDT)
-            UNINS = find(tv>=datenum(2022,06,25,09,30,0)&tv<=datenum(2022,06,25,10,30,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,06,25,09,30,0)&tv<=datenum(2022,06,25,10,30,0)); % uninstalled
             data(UNINS,:)=NaN; 
             
             % maintenance (2022-Aug-30 11:18-11:30 PDT)
-            UNINS = find(tv>=datenum(2022,08,30,10,15,0)&tv<=datenum(2022,08,30,12,30,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,08,30,10,15,0)&tv<=datenum(2022,08,30,12,30,0)); % uninstalled
             data(UNINS,:)=NaN;
             
             % maintenance (2022-Sep-15 09:50 - 2022-Sep-19 14:30 PDT)
-            UNINS = find(tv>=datenum(2022,09,15,08,50,0)&tv<=datenum(2022,09,19,13,30,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,09,15,08,50,0)&tv<=datenum(2022,09,19,13,30,0)); % uninstalled
             data(UNINS,:)=NaN;     
             
             % maintenance (2022-Sep-30 10:00 - 2022-Sep-30 11:00 PST)
-            UNINS = find(tv>=datenum(2022,09,30,10,0,0)&tv<=datenum(2022,09,30,11,0,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,09,30,10,0,0)&tv<=datenum(2022,09,30,11,0,0)); % uninstalled
             data(UNINS,:)=NaN; 
             
              if plot_fig == 1
@@ -1874,11 +1874,11 @@ for siteNum = 1:length(siteNames)
             data = load_data(varStruct,pth,Years);
             
             % Blocking off values before installation (2022-Jul-14 12:30 PST)
-            UNINS = find(tv<=datenum(2022,7,14,12,30,0)); % uninstalled
+            UNINS= find(tv<=datenum(2022,7,14,12,30,0)); % uninstalled
             data(UNINS,:)=NaN;
 
             % maintenance (2022-Sep-30 13:30 - 2022-Sep-30 15:30 PST)
-            UNINS = find(tv>=datenum(2022,09,30,13,30,0)&tv<=datenum(2022,09,30,15,30,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,09,30,13,30,0)&tv<=datenum(2022,09,30,15,30,0)); % uninstalled
             data(UNINS,:)=NaN; 
             
             data = data(1:inde,:);
@@ -1925,35 +1925,24 @@ for siteNum = 1:length(siteNames)
             data = data(1:inde,:);  
             
             % Blocking off values before installation (Manta+20, 2021-Dec-02 14:00)
-            UNINS = find(tv<=datenum(2021,12,02,15,30,0)); % uninstalled
+            UNINS= find(tv<=datenum(2021,12,02,15,30,0)); % uninstalled
             data(UNINS,:)=NaN;    
             
             % maintenance (2022-Jun-25 10:55-11:28 PDT)
-            UNINS = find(tv>=datenum(2022,06,25,09,30,0)&tv<=datenum(2022,06,25,10,30,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,06,25,09,30,0)&tv<=datenum(2022,06,25,10,30,0)); % uninstalled
             data(UNINS,:)=NaN; 
             
             % maintenance (2022-Aug-30 11:18-11:30 PDT)
-            UNINS = find(tv>=datenum(2022,08,30,10,15,0)&tv<=datenum(2022,08,30,12,30,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,08,30,10,15,0)&tv<=datenum(2022,08,30,12,30,0)); % uninstalled
             data(UNINS,:)=NaN;
             
             % maintenance (2022-Sep-15 09:50 - 2022-Sep-19 14:30 PDT)
-            UNINS = find(tv>=datenum(2022,09,15,08,50,0)&tv<=datenum(2022,09,19,13,30,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,09,15,08,50,0)&tv<=datenum(2022,09,19,13,30,0)); % uninstalled
             data(UNINS,:)=NaN;     
             
             % maintenance (2022-Sep-30 10:00 - 2022-Sep-30 11:00 PST)
-            UNINS = find(tv>=datenum(2022,09,30,10,0,0)&tv<=datenum(2022,09,30,11,0,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,09,30,10,0,0)&tv<=datenum(2022,09,30,11,0,0)); % uninstalled
             data(UNINS,:)=NaN; 
-
-            
-            % delete unreasonable data (for pH & ORP)
-            % (1) Apr-23 12:00 ~ Jun-25 15:00
-            % (2) Jul-02 20:00 ~ Jul-27 13:30 
-            % (3) Jul-29 10:00 ~ Aug-30 13:00
-            % (4) Sep-09 00:00 ~ Sep-19 12:30
-            delp = find(tv>=datenum(2022,04,23,12,0,0)& tv<=datenum(2022,06,25,15,00,0)); data(delp,:)=NaN;
-            delp = find(tv>=datenum(2022,07,02,20,0,0)& tv<=datenum(2022,07,27,13,30,0)); data(delp,:)=NaN;
-            delp = find(tv>=datenum(2022,07,29,10,0,0)& tv<=datenum(2022,08,30,13,30,0)); data(delp,:)=NaN;
-            delp = find(tv>=datenum(2022,09,09,00,0,0)& tv<=datenum(2022,09,19,12,30,0)); data(delp,:)=NaN;
             
             [data,RJdata]=RunStdDev(data,wlen,thres,RJdata,tv_export,varStruct);
             
@@ -1977,11 +1966,11 @@ for siteNum = 1:length(siteNames)
             data = load_data(varStruct,pth,Years);
             
             % Blocking off values before installation (2022-Jul-14 12:30 PST)
-            UNINS = find(tv<=datenum(2022,7,14,12,30,0)); % uninstalled
+            UNINS= find(tv<=datenum(2022,7,14,12,30,0)); % uninstalled
             data(UNINS,:)=NaN;
 
             % maintenance (2022-Sep-30 13:30 - 2022-Sep-30 15:30 PST)
-            UNINS = find(tv>=datenum(2022,09,30,13,30,0)&tv<=datenum(2022,09,30,15,30,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,09,30,13,30,0)&tv<=datenum(2022,09,30,15,30,0)); % uninstalled
             data(UNINS,:)=NaN; 
             
             data = data(1:inde,:);
@@ -2063,23 +2052,23 @@ for siteNum = 1:length(siteNames)
             data = data(1:inde,:);
             
             % Blocking off values before installation (Manta+20, 2021-Dec-02 14:00)
-            UNINS = find(tv<=datenum(2021,12,02,15,30,0)); % uninstalled
+            UNINS= find(tv<=datenum(2021,12,02,15,30,0)); % uninstalled
             data(UNINS,:)=NaN;  
             
             % maintenance (2022-Jun-25 10:55-11:28 PDT)
-            UNINS = find(tv>=datenum(2022,06,25,09,30,0)&tv<=datenum(2022,06,25,10,30,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,06,25,09,30,0)&tv<=datenum(2022,06,25,10,30,0)); % uninstalled
             data(UNINS,:)=NaN; 
 
             % maintenance (2022-Aug-30 11:18-11:30 PDT)
-            UNINS = find(tv>=datenum(2022,08,30,10,15,0)&tv<=datenum(2022,08,30,12,30,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,08,30,10,15,0)&tv<=datenum(2022,08,30,12,30,0)); % uninstalled
             data(UNINS,:)=NaN;
             
             % maintenance (2022-Sep-15 09:50 - 2022-Sep-19 14:30 PDT)
-            UNINS = find(tv>=datenum(2022,09,15,08,50,0)&tv<=datenum(2022,09,19,13,30,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,09,15,08,50,0)&tv<=datenum(2022,09,19,13,30,0)); % uninstalled
             data(UNINS,:)=NaN;     
             
             % maintenance (2022-Sep-30 10:00 - 2022-Sep-30 11:00 PST)
-            UNINS = find(tv>=datenum(2022,09,30,10,0,0)&tv<=datenum(2022,09,30,11,0,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,09,30,10,0,0)&tv<=datenum(2022,09,30,11,0,0)); % uninstalled
             data(UNINS,:)=NaN; 
             
             [data,RJdata]=RunStdDev(data,wlen,thres,RJdata,tv_export,varStruct);
@@ -2133,11 +2122,11 @@ for siteNum = 1:length(siteNames)
             data = load_data(varStruct,pth,Years);
             
             % Blocking off values before installation (2022-Jul-14 12:30 PST)
-            UNINS = find(tv<=datenum(2022,7,14,12,30,0)); % uninstalled
+            UNINS= find(tv<=datenum(2022,7,14,12,30,0)); % uninstalled
             data(UNINS,:)=NaN;
 
             % maintenance (2022-Sep-30 13:30 - 2022-Sep-30 15:30 PST)
-            UNINS = find(tv>=datenum(2022,09,30,13,30,0)&tv<=datenum(2022,09,30,15,30,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,09,30,13,30,0)&tv<=datenum(2022,09,30,15,30,0)); % uninstalled
             data(UNINS,:)=NaN; 
             
             data = data(1:inde,:);
@@ -2188,35 +2177,24 @@ for siteNum = 1:length(siteNames)
             data = data(1:inde,:);
             
             % Blocking off values before installation (Manta+20, 2021-Dec-02 14:00)
-            UNINS = find(tv<=datenum(2021,12,02,15,30,0)); % uninstalled
+            UNINS= find(tv<=datenum(2021,12,02,15,30,0)); % uninstalled
             data(UNINS,:)=NaN;    
             
             % maintenance (2022-Jun-25 10:55-11:28 PDT)
-            UNINS = find(tv>=datenum(2022,06,25,09,30,0)&tv<=datenum(2022,06,25,10,30,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,06,25,09,30,0)&tv<=datenum(2022,06,25,10,30,0)); % uninstalled
             data(UNINS,:)=NaN; 
 
             % maintenance (2022-Aug-30 11:18-11:30 PDT)
-            UNINS = find(tv>=datenum(2022,08,30,10,15,0)&tv<=datenum(2022,08,30,12,30,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,08,30,10,15,0)&tv<=datenum(2022,08,30,12,30,0)); % uninstalled
             data(UNINS,:)=NaN;
             
             % maintenance (2022-Sep-15 09:50 - 2022-Sep-19 14:30 PDT)
-            UNINS = find(tv>=datenum(2022,09,15,08,50,0)&tv<=datenum(2022,09,19,13,30,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,09,15,08,50,0)&tv<=datenum(2022,09,19,13,30,0)); % uninstalled
             data(UNINS,:)=NaN;     
             
             % maintenance (2022-Sep-30 10:00 - 2022-Sep-30 11:00 PST)
-            UNINS = find(tv>=datenum(2022,09,30,10,0,0)&tv<=datenum(2022,09,30,11,0,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,09,30,10,0,0)&tv<=datenum(2022,09,30,11,0,0)); % uninstalled
             data(UNINS,:)=NaN; 
-
-            
-            % delete unreasonable data (for pH & ORP)
-            % (1) Apr-23 12:00 ~ Jun-25 15:00
-            % (2) Jul-02 20:00 ~ Jul-27 13:30 
-            % (3) Jul-29 10:00 ~ Aug-30 13:00
-            % (4) Sep-09 00:00 ~ Sep-19 12:30
-            delp = find(tv>=datenum(2022,04,23,12,0,0)& tv<=datenum(2022,06,25,15,00,0)); data(delp,:)=NaN;
-            delp = find(tv>=datenum(2022,07,02,20,0,0)& tv<=datenum(2022,07,27,13,30,0)); data(delp,:)=NaN;
-            delp = find(tv>=datenum(2022,07,29,10,0,0)& tv<=datenum(2022,08,30,13,30,0)); data(delp,:)=NaN;
-            delp = find(tv>=datenum(2022,09,09,00,0,0)& tv<=datenum(2022,09,19,12,30,0)); data(delp,:)=NaN;
             
             [data,RJdata]=RunStdDev(data,wlen,thres,RJdata,tv_export,varStruct);
             if plot_fig == 1
@@ -2238,11 +2216,11 @@ for siteNum = 1:length(siteNames)
             data = load_data(varStruct,pth,Years);
             
             % Blocking off values before installation (2022-Jul-14 12:30 PST)
-            UNINS = find(tv<=datenum(2022,7,14,12,30,0)); % uninstalled
+            UNINS= find(tv<=datenum(2022,7,14,12,30,0)); % uninstalled
             data(UNINS,:)=NaN;
 
             % maintenance (2022-Sep-30 13:30 - 2022-Sep-30 15:30 PST)
-            UNINS = find(tv>=datenum(2022,09,30,13,30,0)&tv<=datenum(2022,09,30,15,30,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,09,30,13,30,0)&tv<=datenum(2022,09,30,15,30,0)); % uninstalled
             data(UNINS,:)=NaN; 
             
             data = data(1:inde,:);
@@ -2274,23 +2252,23 @@ for siteNum = 1:length(siteNames)
             data = data(1:inde,:);
             
             % Blocking off values before installation (Manta+20, 2021-Dec-02 14:00)
-            UNINS = find(tv<=datenum(2021,12,02,15,30,0)); % uninstalled
+            UNINS= find(tv<=datenum(2021,12,02,15,30,0)); % uninstalled
             data(UNINS,:)=NaN;   
             
             % maintenance (2022-Jun-25 10:55-11:28 PDT)
-            UNINS = find(tv>=datenum(2022,06,25,09,30,0)&tv<=datenum(2022,06,25,10,30,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,06,25,09,30,0)&tv<=datenum(2022,06,25,10,30,0)); % uninstalled
             data(UNINS,:)=NaN; 
             
             % maintenance (2022-Aug-30 11:18-11:30 PDT)
-            UNINS = find(tv>=datenum(2022,08,30,10,15,0)&tv<=datenum(2022,08,30,12,30,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,08,30,10,15,0)&tv<=datenum(2022,08,30,12,30,0)); % uninstalled
             data(UNINS,:)=NaN;
 
             % maintenance (2022-Sep-15 09:50 - 2022-Sep-19 14:30 PDT)
-            UNINS = find(tv>=datenum(2022,09,15,08,50,0)&tv<=datenum(2022,09,19,13,30,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,09,15,08,50,0)&tv<=datenum(2022,09,19,13,30,0)); % uninstalled
             data(UNINS,:)=NaN;     
             
             % maintenance (2022-Sep-30 10:00 - 2022-Sep-30 11:00 PST)
-            UNINS = find(tv>=datenum(2022,09,30,10,0,0)&tv<=datenum(2022,09,30,11,0,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,09,30,10,0,0)&tv<=datenum(2022,09,30,11,0,0)); % uninstalled
             data(UNINS,:)=NaN; 
             
             data(:,[1,3])=data(:,[1,3])/1000; % convert unit from microSeimens/cm to milliSeimens/cm
@@ -2323,11 +2301,11 @@ for siteNum = 1:length(siteNames)
             data = load_data(varStruct,pth,Years);
             
             % Blocking off values before installation (2022-Jul-14 12:30 PST)
-            UNINS = find(tv<=datenum(2022,7,14,12,30,0)); % uninstalled
+            UNINS= find(tv<=datenum(2022,7,14,12,30,0)); % uninstalled
             data(UNINS,:)=NaN;
 
             % maintenance (2022-Sep-30 13:30 - 2022-Sep-30 15:30 PST)
-            UNINS = find(tv>=datenum(2022,09,30,13,30,0)&tv<=datenum(2022,09,30,15,30,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,09,30,13,30,0)&tv<=datenum(2022,09,30,15,30,0)); % uninstalled
             data(UNINS,:)=NaN; 
             
             data = data(1:inde,:);
@@ -2368,23 +2346,23 @@ for siteNum = 1:length(siteNames)
             data = data(1:inde,:);
             
             % Blocking off values before installation (Manta+20, 2021-Dec-02 14:00)
-            UNINS = find(tv<=datenum(2021,12,02,15,30,0)); % uninstalled
+            UNINS= find(tv<=datenum(2021,12,02,15,30,0)); % uninstalled
             data(UNINS,:)=NaN;  
             
             % maintenance (2022-Jun-25 10:55-11:28 PDT)
-            UNINS = find(tv>=datenum(2022,06,25,09,30,0)&tv<=datenum(2022,06,25,10,30,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,06,25,09,30,0)&tv<=datenum(2022,06,25,10,30,0)); % uninstalled
             data(UNINS,:)=NaN; 
             
             % maintenance (2022-Aug-30 11:18-11:30 PDT)
-            UNINS = find(tv>=datenum(2022,08,30,10,15,0)&tv<=datenum(2022,08,30,12,30,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,08,30,10,15,0)&tv<=datenum(2022,08,30,12,30,0)); % uninstalled
             data(UNINS,:)=NaN;
 
             % maintenance (2022-Sep-15 09:50 - 2022-Sep-19 14:30 PDT)
-            UNINS = find(tv>=datenum(2022,09,15,08,50,0)&tv<=datenum(2022,09,19,13,30,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,09,15,08,50,0)&tv<=datenum(2022,09,19,13,30,0)); % uninstalled
             data(UNINS,:)=NaN;     
             
             % maintenance (2022-Sep-30 10:00 - 2022-Sep-30 11:00 PST)
-            UNINS = find(tv>=datenum(2022,09,30,10,0,0)&tv<=datenum(2022,09,30,11,0,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,09,30,10,0,0)&tv<=datenum(2022,09,30,11,0,0)); % uninstalled
             data(UNINS,:)=NaN; 
             
             
@@ -2413,11 +2391,11 @@ for siteNum = 1:length(siteNames)
             data = load_data(varStruct,pth,Years);
             
             % Blocking off values before installation (2022-Jul-14 12:30 PST)
-            UNINS = find(tv<=datenum(2022,7,14,12,30,0)); % uninstalled
+            UNINS= find(tv<=datenum(2022,7,14,12,30,0)); % uninstalled
             data(UNINS,:)=NaN;
 
             % maintenance (2022-Sep-30 13:30 - 2022-Sep-30 15:30 PST)
-            UNINS = find(tv>=datenum(2022,09,30,13,30,0)&tv<=datenum(2022,09,30,15,30,0)); % uninstalled
+            UNINS= find(tv>=datenum(2022,09,30,13,30,0)&tv<=datenum(2022,09,30,15,30,0)); % uninstalled
             data(UNINS,:)=NaN; 
             
             data = data(1:inde,:);
@@ -2480,7 +2458,7 @@ for siteNum = 1:length(siteNames)
             data = data(1:inde,:);
 
             % Blocking off values before installation 
-            UNINS = find(tv>=datenum(2022,4,26,0,0,0)&tv<=datenum(2022,5,30,09,0,0)); % uninstalled
+            UNINS=find(tv>=datenum(2022,4,26,0,0,0)&tv<=datenum(2022,5,30,09,0,0)); % uninstalled
             data(UNINS,:)=NaN;
             
             
@@ -2534,7 +2512,7 @@ for siteNum = 1:length(siteNames)
             data = load_data(varStruct,pth,Years);
             
             % Blocking off values before installation (2022-Jun-11 13:30)
-            UNINS = find(tv<=datenum(2022,6,11,14,0,0)); % uninstalled
+            UNINS= find(tv<=datenum(2022,6,11,14,0,0)); % uninstalled
             data(UNINS,:)=NaN;
             
             data = data(1:inde,:);
@@ -2599,7 +2577,7 @@ for siteNum = 1:length(siteNames)
             data = data(1:inde,:);
             
             % Blocking off values before installation 
-            UNINS = find(tv>=datenum(2022,4,26,0,0,0)&tv<=datenum(2022,5,30,09,0,0)); % uninstalled
+            UNINS=find(tv>=datenum(2022,4,26,0,0,0)&tv<=datenum(2022,5,30,09,0,0)); % uninstalled
             data(UNINS,:)=NaN;
             
             % remove wrong data ( PRI>1 or PRI<-1) Added: 2021-Dec-21
@@ -2653,7 +2631,7 @@ for siteNum = 1:length(siteNames)
             data = load_data(varStruct,pth,Years);
             
             % Blocking off values before installation (2022-Jun-7 19:00)
-            UNINS = find(tv<=datenum(2022,6,7,19,30,0)); % uninstalled
+            UNINS= find(tv<=datenum(2022,6,7,19,30,0)); % uninstalled
             data(UNINS,:)=NaN;
             data = data(1:inde,:);
             
