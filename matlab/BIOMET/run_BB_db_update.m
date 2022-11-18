@@ -89,6 +89,8 @@ system('start /MIN C:\Ubc_flux\BiometFTPsite\BB_Web_Update.bat');
 % should be kept at the back of this function so it runs after the
 % web updates are done
 
+fprintf('\nUpdating Flags database for all sites and for the current year only...');
+tic;
 % cycle through the sites
 for cntStr = sites
     siteID = char(cntStr);
@@ -99,5 +101,6 @@ for cntStr = sites
         fprintf('An error happen while running db_update_flags_files in run_BB_db_update.m\n');
     end    
 end
+fprintf(' Finished in: %5.1f seconds.\n',toc);
 
 
