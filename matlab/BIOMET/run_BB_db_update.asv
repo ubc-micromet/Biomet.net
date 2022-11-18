@@ -79,16 +79,11 @@ fprintf(' Finished in: %5.1f seconds.\n',toc);
 % Upload CSV files to the web server
 system('start /MIN C:\Ubc_flux\BiometFTPsite\BB_Web_Update.bat');
 
-% Process the flags files. This may take some time so it
-% should be kept at the back of this function so it runs after the
-% web updates are done
-
-% cycle through the sites
+% Process the flags files. This may take some time so it's put
 for cntStr = sites
     siteID = char(cntStr);
     try
         % Run database update without Web data processing
-        dataOut = fr_flags_database(cnt, 2022, 'v:/Sites','d:\database_local');
         db_update_BB_site(yearIn,cntStr,1);
     catch
         fprintf('An error happen while running db_update_BB_site in run_BB_db_update.m\n');
