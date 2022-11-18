@@ -1,4 +1,4 @@
-function dataOut = db_update_flags_files(siteID, yearIn, sitesPathRoot, databasePathRoot,timeUnit,missingPointValue)
+function dataOut = db_update_flags_files(yearIn,siteID,sitesPathRoot, databasePathRoot,timeUnit,missingPointValue)
 % db_update_flags_files - reads an xlsx or a csv file containing data-exclusion flags and exports those flags into database format
 %                         Multiple flags can be created using one xlsx file
 %

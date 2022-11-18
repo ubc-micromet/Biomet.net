@@ -3,11 +3,14 @@ function run_BB_db_update(yearIn,sites)
 %
 %
 % Zoran Nesic           File created:               2019
-%                       Last modification:  Aug 29, 2022
+%                       Last modification:  Nov 18, 2022
 
 %
 % Revisions:
 %
+% Nov 18, 2022 (Zoran)
+%   - added processing of the Flags files (P:/Sites/siteID/MET/siteID_flags_yyyy.xlsx)
+%     For more on these files check out: db_update_flags_files function
 % Aug 29, 2022 (Zoran)
 %   - added try-catch-end call to db_update_Micromet_EddyPro_Recalcs
 %
@@ -79,6 +82,9 @@ fprintf(' Finished in: %5.1f seconds.\n',toc);
 % Upload CSV files to the web server
 system('start /MIN C:\Ubc_flux\BiometFTPsite\BB_Web_Update.bat');
 
+
+
+%----------------------------------------------------------
 % Process the flags files. This may take some time so it
 % should be kept at the back of this function so it runs after the
 % web updates are done
@@ -88,10 +94,10 @@ for cntStr = sites
     siteID = char(cntStr);
     try
         % Run database update without Web data processing
-        dataOut = fr_flags_database(cnt, 2022, 'v:/Sites','d:\database_local');
-        db_update_BB_site(yearIn,cntStr,1);
+        db_update_flags_files(yearIn,siteID, 'p:/Sites','p:/database');
     catch
-        fprintf('An error happen while running db_update_BB_site in run_BB_db_update.m\n');
+        fprintf('An error happen while running db_update_flags_files in run_BB_db_update.m\n');
     end    
+end
 
 
