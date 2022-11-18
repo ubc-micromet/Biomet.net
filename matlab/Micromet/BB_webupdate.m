@@ -1836,21 +1836,13 @@ for siteNum = 1:length(siteNames)
             UNINS = find(tv<=datenum(2021,12,02,15,30,0)); % uninstalled
             data(UNINS,:)=NaN; 
             
-            % maintenance (2022-Jun-25 10:55-11:28 PDT)
-            UNINS = find(tv>=datenum(2022,06,25,09,30,0)&tv<=datenum(2022,06,25,10,30,0)); % uninstalled
-            data(UNINS,:)=NaN; 
-            
-            % maintenance (2022-Aug-30 11:18-11:30 PDT)
-            UNINS = find(tv>=datenum(2022,08,30,10,15,0)&tv<=datenum(2022,08,30,12,30,0)); % uninstalled
-            data(UNINS,:)=NaN;
-            
-            % maintenance (2022-Sep-15 09:50 - 2022-Sep-19 14:30 PDT)
-            UNINS = find(tv>=datenum(2022,09,15,08,50,0)&tv<=datenum(2022,09,19,13,30,0)); % uninstalled
-            data(UNINS,:)=NaN;     
-            
-            % maintenance (2022-Sep-30 10:00 - 2022-Sep-30 11:00 PST)
-            UNINS = find(tv>=datenum(2022,09,30,10,0,0)&tv<=datenum(2022,09,30,11,0,0)); % uninstalled
-            data(UNINS,:)=NaN; 
+            wpm=sprintf('P:\\Sites\\%s\\Met\\%s_water-probe-maintenance-info.xlsx',siteID,siteID); % water probe maintenance            
+            wpmt=readtable(wpm);
+            for i=1:size(wpmt,1)
+                UNINS = find(tv>=datenum(wpmt{i,1})&tv<=datenum(wpmt{i,2})); % uninstalled
+                data(UNINS,:)=NaN; 
+            end
+
             
              if plot_fig == 1
                 plot(tv, data)
@@ -1877,9 +1869,13 @@ for siteNum = 1:length(siteNames)
             UNINS = find(tv<=datenum(2022,7,14,12,30,0)); % uninstalled
             data(UNINS,:)=NaN;
 
-            % maintenance (2022-Sep-30 13:30 - 2022-Sep-30 15:30 PST)
-            UNINS = find(tv>=datenum(2022,09,30,13,30,0)&tv<=datenum(2022,09,30,15,30,0)); % uninstalled
-            data(UNINS,:)=NaN; 
+            wpm=sprintf('P:\\Sites\\%s\\Met\\%s_water-probe-maintenance-info.xlsx',siteID,siteID); % water probe maintenance            
+            wpmt=readtable(wpm);
+            for i=1:size(wpmt,1)
+                UNINS = find(tv>=datenum(wpmt{i,1})&tv<=datenum(wpmt{i,2})); % uninstalled
+                data(UNINS,:)=NaN; 
+            end
+
             
             data = data(1:inde,:);
             
@@ -1928,22 +1924,12 @@ for siteNum = 1:length(siteNames)
             UNINS = find(tv<=datenum(2021,12,02,15,30,0)); % uninstalled
             data(UNINS,:)=NaN;    
             
-            % maintenance (2022-Jun-25 10:55-11:28 PDT)
-            UNINS = find(tv>=datenum(2022,06,25,09,30,0)&tv<=datenum(2022,06,25,10,30,0)); % uninstalled
-            data(UNINS,:)=NaN; 
-            
-            % maintenance (2022-Aug-30 11:18-11:30 PDT)
-            UNINS = find(tv>=datenum(2022,08,30,10,15,0)&tv<=datenum(2022,08,30,12,30,0)); % uninstalled
-            data(UNINS,:)=NaN;
-            
-            % maintenance (2022-Sep-15 09:50 - 2022-Sep-19 14:30 PDT)
-            UNINS = find(tv>=datenum(2022,09,15,08,50,0)&tv<=datenum(2022,09,19,13,30,0)); % uninstalled
-            data(UNINS,:)=NaN;     
-            
-            % maintenance (2022-Sep-30 10:00 - 2022-Sep-30 11:00 PST)
-            UNINS = find(tv>=datenum(2022,09,30,10,0,0)&tv<=datenum(2022,09,30,11,0,0)); % uninstalled
-            data(UNINS,:)=NaN; 
-
+            wpm=sprintf('P:\\Sites\\%s\\Met\\%s_water-probe-maintenance-info.xlsx',siteID,siteID); % water probe maintenance            
+            wpmt=readtable(wpm);
+            for i=1:size(wpmt,1)
+                UNINS = find(tv>=datenum(wpmt{i,1})&tv<=datenum(wpmt{i,2})); % uninstalled
+                data(UNINS,:)=NaN; 
+            end
             
             % delete unreasonable data (for pH & ORP)
             % (1) Apr-23 12:00 ~ Jun-25 15:00
@@ -1980,9 +1966,12 @@ for siteNum = 1:length(siteNames)
             UNINS = find(tv<=datenum(2022,7,14,12,30,0)); % uninstalled
             data(UNINS,:)=NaN;
 
-            % maintenance (2022-Sep-30 13:30 - 2022-Sep-30 15:30 PST)
-            UNINS = find(tv>=datenum(2022,09,30,13,30,0)&tv<=datenum(2022,09,30,15,30,0)); % uninstalled
-            data(UNINS,:)=NaN; 
+            wpm=sprintf('P:\\Sites\\%s\\Met\\%s_water-probe-maintenance-info.xlsx',siteID,siteID); % water probe maintenance            
+            wpmt=readtable(wpm);
+            for i=1:size(wpmt,1)
+                UNINS = find(tv>=datenum(wpmt{i,1})&tv<=datenum(wpmt{i,2})); % uninstalled
+                data(UNINS,:)=NaN; 
+            end
             
             data = data(1:inde,:);
             
@@ -2066,22 +2055,13 @@ for siteNum = 1:length(siteNames)
             UNINS = find(tv<=datenum(2021,12,02,15,30,0)); % uninstalled
             data(UNINS,:)=NaN;  
             
-            % maintenance (2022-Jun-25 10:55-11:28 PDT)
-            UNINS = find(tv>=datenum(2022,06,25,09,30,0)&tv<=datenum(2022,06,25,10,30,0)); % uninstalled
-            data(UNINS,:)=NaN; 
+            wpm=sprintf('P:\\Sites\\%s\\Met\\%s_water-probe-maintenance-info.xlsx',siteID,siteID); % water probe maintenance            
+            wpmt=readtable(wpm);
+            for i=1:size(wpmt,1)
+                UNINS = find(tv>=datenum(wpmt{i,1})&tv<=datenum(wpmt{i,2})); % uninstalled
+                data(UNINS,:)=NaN; 
+            end
 
-            % maintenance (2022-Aug-30 11:18-11:30 PDT)
-            UNINS = find(tv>=datenum(2022,08,30,10,15,0)&tv<=datenum(2022,08,30,12,30,0)); % uninstalled
-            data(UNINS,:)=NaN;
-            
-            % maintenance (2022-Sep-15 09:50 - 2022-Sep-19 14:30 PDT)
-            UNINS = find(tv>=datenum(2022,09,15,08,50,0)&tv<=datenum(2022,09,19,13,30,0)); % uninstalled
-            data(UNINS,:)=NaN;     
-            
-            % maintenance (2022-Sep-30 10:00 - 2022-Sep-30 11:00 PST)
-            UNINS = find(tv>=datenum(2022,09,30,10,0,0)&tv<=datenum(2022,09,30,11,0,0)); % uninstalled
-            data(UNINS,:)=NaN; 
-            
             [data,RJdata]=RunStdDev(data,wlen,thres,RJdata,tv_export,varStruct);
             
             
@@ -2135,10 +2115,15 @@ for siteNum = 1:length(siteNames)
             % Blocking off values before installation (2022-Jul-14 12:30 PST)
             UNINS = find(tv<=datenum(2022,7,14,12,30,0)); % uninstalled
             data(UNINS,:)=NaN;
+            
+            
+            wpm=sprintf('P:\\Sites\\%s\\Met\\%s_water-probe-maintenance-info.xlsx',siteID,siteID); % water probe maintenance            
+            wpmt=readtable(wpm);
+            for i=1:size(wpmt,1)
+                UNINS = find(tv>=datenum(wpmt{i,1})&tv<=datenum(wpmt{i,2})); % uninstalled
+                data(UNINS,:)=NaN; 
+            end
 
-            % maintenance (2022-Sep-30 13:30 - 2022-Sep-30 15:30 PST)
-            UNINS = find(tv>=datenum(2022,09,30,13,30,0)&tv<=datenum(2022,09,30,15,30,0)); % uninstalled
-            data(UNINS,:)=NaN; 
             
             data = data(1:inde,:);
             
@@ -2191,21 +2176,12 @@ for siteNum = 1:length(siteNames)
             UNINS = find(tv<=datenum(2021,12,02,15,30,0)); % uninstalled
             data(UNINS,:)=NaN;    
             
-            % maintenance (2022-Jun-25 10:55-11:28 PDT)
-            UNINS = find(tv>=datenum(2022,06,25,09,30,0)&tv<=datenum(2022,06,25,10,30,0)); % uninstalled
-            data(UNINS,:)=NaN; 
-
-            % maintenance (2022-Aug-30 11:18-11:30 PDT)
-            UNINS = find(tv>=datenum(2022,08,30,10,15,0)&tv<=datenum(2022,08,30,12,30,0)); % uninstalled
-            data(UNINS,:)=NaN;
-            
-            % maintenance (2022-Sep-15 09:50 - 2022-Sep-19 14:30 PDT)
-            UNINS = find(tv>=datenum(2022,09,15,08,50,0)&tv<=datenum(2022,09,19,13,30,0)); % uninstalled
-            data(UNINS,:)=NaN;     
-            
-            % maintenance (2022-Sep-30 10:00 - 2022-Sep-30 11:00 PST)
-            UNINS = find(tv>=datenum(2022,09,30,10,0,0)&tv<=datenum(2022,09,30,11,0,0)); % uninstalled
-            data(UNINS,:)=NaN; 
+            wpm=sprintf('P:\\Sites\\%s\\Met\\%s_water-probe-maintenance-info.xlsx',siteID,siteID); % water probe maintenance            
+            wpmt=readtable(wpm);
+            for i=1:size(wpmt,1)
+                UNINS = find(tv>=datenum(wpmt{i,1})&tv<=datenum(wpmt{i,2})); % uninstalled
+                data(UNINS,:)=NaN; 
+            end
 
             
             % delete unreasonable data (for pH & ORP)
@@ -2241,9 +2217,13 @@ for siteNum = 1:length(siteNames)
             UNINS = find(tv<=datenum(2022,7,14,12,30,0)); % uninstalled
             data(UNINS,:)=NaN;
 
-            % maintenance (2022-Sep-30 13:30 - 2022-Sep-30 15:30 PST)
-            UNINS = find(tv>=datenum(2022,09,30,13,30,0)&tv<=datenum(2022,09,30,15,30,0)); % uninstalled
-            data(UNINS,:)=NaN; 
+            wpm=sprintf('P:\\Sites\\%s\\Met\\%s_water-probe-maintenance-info.xlsx',siteID,siteID); % water probe maintenance            
+            wpmt=readtable(wpm);
+            for i=1:size(wpmt,1)
+                UNINS = find(tv>=datenum(wpmt{i,1})&tv<=datenum(wpmt{i,2})); % uninstalled
+                data(UNINS,:)=NaN; 
+            end
+
             
             data = data(1:inde,:);
             
@@ -2277,21 +2257,13 @@ for siteNum = 1:length(siteNames)
             UNINS = find(tv<=datenum(2021,12,02,15,30,0)); % uninstalled
             data(UNINS,:)=NaN;   
             
-            % maintenance (2022-Jun-25 10:55-11:28 PDT)
-            UNINS = find(tv>=datenum(2022,06,25,09,30,0)&tv<=datenum(2022,06,25,10,30,0)); % uninstalled
-            data(UNINS,:)=NaN; 
-            
-            % maintenance (2022-Aug-30 11:18-11:30 PDT)
-            UNINS = find(tv>=datenum(2022,08,30,10,15,0)&tv<=datenum(2022,08,30,12,30,0)); % uninstalled
-            data(UNINS,:)=NaN;
+            wpm=sprintf('P:\\Sites\\%s\\Met\\%s_water-probe-maintenance-info.xlsx',siteID,siteID); % water probe maintenance            
+            wpmt=readtable(wpm);
+            for i=1:size(wpmt,1)
+                UNINS = find(tv>=datenum(wpmt{i,1})&tv<=datenum(wpmt{i,2})); % uninstalled
+                data(UNINS,:)=NaN; 
+            end
 
-            % maintenance (2022-Sep-15 09:50 - 2022-Sep-19 14:30 PDT)
-            UNINS = find(tv>=datenum(2022,09,15,08,50,0)&tv<=datenum(2022,09,19,13,30,0)); % uninstalled
-            data(UNINS,:)=NaN;     
-            
-            % maintenance (2022-Sep-30 10:00 - 2022-Sep-30 11:00 PST)
-            UNINS = find(tv>=datenum(2022,09,30,10,0,0)&tv<=datenum(2022,09,30,11,0,0)); % uninstalled
-            data(UNINS,:)=NaN; 
             
             data(:,[1,3])=data(:,[1,3])/1000; % convert unit from microSeimens/cm to milliSeimens/cm
             
@@ -2326,9 +2298,13 @@ for siteNum = 1:length(siteNames)
             UNINS = find(tv<=datenum(2022,7,14,12,30,0)); % uninstalled
             data(UNINS,:)=NaN;
 
-            % maintenance (2022-Sep-30 13:30 - 2022-Sep-30 15:30 PST)
-            UNINS = find(tv>=datenum(2022,09,30,13,30,0)&tv<=datenum(2022,09,30,15,30,0)); % uninstalled
-            data(UNINS,:)=NaN; 
+            wpm=sprintf('P:\\Sites\\%s\\Met\\%s_water-probe-maintenance-info.xlsx',siteID,siteID); % water probe maintenance            
+            wpmt=readtable(wpm);
+            for i=1:size(wpmt,1)
+                UNINS = find(tv>=datenum(wpmt{i,1})&tv<=datenum(wpmt{i,2})); % uninstalled
+                data(UNINS,:)=NaN; 
+            end
+
             
             data = data(1:inde,:);
             
@@ -2371,21 +2347,12 @@ for siteNum = 1:length(siteNames)
             UNINS = find(tv<=datenum(2021,12,02,15,30,0)); % uninstalled
             data(UNINS,:)=NaN;  
             
-            % maintenance (2022-Jun-25 10:55-11:28 PDT)
-            UNINS = find(tv>=datenum(2022,06,25,09,30,0)&tv<=datenum(2022,06,25,10,30,0)); % uninstalled
-            data(UNINS,:)=NaN; 
-            
-            % maintenance (2022-Aug-30 11:18-11:30 PDT)
-            UNINS = find(tv>=datenum(2022,08,30,10,15,0)&tv<=datenum(2022,08,30,12,30,0)); % uninstalled
-            data(UNINS,:)=NaN;
-
-            % maintenance (2022-Sep-15 09:50 - 2022-Sep-19 14:30 PDT)
-            UNINS = find(tv>=datenum(2022,09,15,08,50,0)&tv<=datenum(2022,09,19,13,30,0)); % uninstalled
-            data(UNINS,:)=NaN;     
-            
-            % maintenance (2022-Sep-30 10:00 - 2022-Sep-30 11:00 PST)
-            UNINS = find(tv>=datenum(2022,09,30,10,0,0)&tv<=datenum(2022,09,30,11,0,0)); % uninstalled
-            data(UNINS,:)=NaN; 
+            wpm=sprintf('P:\\Sites\\%s\\Met\\%s_water-probe-maintenance-info.xlsx',siteID,siteID); % water probe maintenance            
+            wpmt=readtable(wpm);
+            for i=1:size(wpmt,1)
+                UNINS = find(tv>=datenum(wpmt{i,1})&tv<=datenum(wpmt{i,2})); % uninstalled
+                data(UNINS,:)=NaN; 
+            end
             
             
             [data,RJdata]=RunStdDev(data,wlen,thres,RJdata,tv_export,varStruct);
@@ -2416,9 +2383,13 @@ for siteNum = 1:length(siteNames)
             UNINS = find(tv<=datenum(2022,7,14,12,30,0)); % uninstalled
             data(UNINS,:)=NaN;
 
-            % maintenance (2022-Sep-30 13:30 - 2022-Sep-30 15:30 PST)
-            UNINS = find(tv>=datenum(2022,09,30,13,30,0)&tv<=datenum(2022,09,30,15,30,0)); % uninstalled
-            data(UNINS,:)=NaN; 
+            wpm=sprintf('P:\\Sites\\%s\\Met\\%s_water-probe-maintenance-info.xlsx',siteID,siteID); % water probe maintenance            
+            wpmt=readtable(wpm);
+            for i=1:size(wpmt,1)
+                UNINS = find(tv>=datenum(wpmt{i,1})&tv<=datenum(wpmt{i,2})); % uninstalled
+                data(UNINS,:)=NaN; 
+            end
+
             
             data = data(1:inde,:);
             
@@ -3888,7 +3859,7 @@ for siteNum = 1:length(siteNames)
             fileName = [siteID 'DSB.csv']; % second diagnostic signal file
             data = load_data(varStruct,pth,Years);
             data = data(1:inde,:);
-            data(abs(data)>=9999)=NaN;
+            data(data==-9999)=NaN;
 
             if plot_fig == 1, plot(tv, data);end
 
