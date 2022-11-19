@@ -11,6 +11,8 @@ function run_BB_db_update(yearIn,sites)
 % Nov 18, 2022 (Zoran)
 %   - added processing of the Flags files (P:/Sites/siteID/MET/siteID_flags_yyyy.xlsx)
 %     For more on these files check out: db_update_flags_files function
+%   - added fr_automated_cleaning() (first two stages) to the 30-minute updates
+%     We'll now have clean data available for BB_webupdate if needed.
 % Aug 29, 2022 (Zoran)
 %   - added try-catch-end call to db_update_Micromet_EddyPro_Recalcs
 %
@@ -59,6 +61,14 @@ for cntStr = sites
     catch
         fprintf('Manitoba_dailyvalues() calculation failed for siteID: %s\n',siteID);
     end
+    
+    % Run automated cleaning stages 1 and 2 so we have clean data
+    % available for plotting and exporting (if needed)
+    try
+        fr_automated_cleaning(yearIn,siteID,[1 2]);
+    catch
+        fprintf('An error happen while running fr_automated_cleaning in run_BB_db_update.m\n');
+    end    
 end
 
 %================
