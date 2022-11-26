@@ -28,6 +28,9 @@ function tableOut = saveDatabaseToAmeriFluxCSV(siteID,yearIn,outputPath)
 %
 % Revisions:
 %
+% Nov 25, 2022 (Zoran)
+%   - For the current year program now exports only data up to yesterday.
+%     Ameriflux doesn't like data files that contain only -9999.
 % Nov 4, 2022 (Zoran)
 %   - Changed to proper way of finding database root path (function db_pth_root).
 % Oct 21, 2022 (Zoran)
@@ -88,6 +91,10 @@ for cntStage = 1:2
 end
 % Convert output structure to a table
 tableOut = struct2table(structOut);
+indThisYear = find(tv < datetime('today'));
+tableOut = tableOut(indThisYear,:); %#ok<FNDSB>
+
+% export only data that older from today
 
 % if outputPath is given then save the table
 if ~isempty(outputPath)
