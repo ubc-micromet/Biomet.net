@@ -12,6 +12,9 @@ function trace_out = load_trace_from_database(trace_in)
 
 %Revisions: 
 %
+% Nov 25, 2022 (Zoran)
+%   - Warnings for missing data traces in the ini files were turned off.
+%     Turned them back on (warn_flag = 1)
 % Apr 11, 2022 (Zoran)
 %   - replaced testing:
 %       find( tmp_FileName == '\'...
@@ -22,6 +25,7 @@ function trace_out = load_trace_from_database(trace_in)
 % Elyn 07.11.01 - allow for different inputFileNames associated with different times
 %                   for eg. when a sensor is changed from one logger to another
 
+warn_flag = 1;
 Year = trace_in.Year;
 SiteID = trace_in.SiteID;
 time_shift = trace_in.Diff_GMT_to_local_time;
@@ -75,7 +79,7 @@ end
 if isfield(trace_in.ini,'inputFileName_dates')
     for i = 1:size(char(trace_in.ini.inputFileName),1)
         [temp_data_cur,timeVector] = read_db(Year,SiteID,...
-            trace_in.ini.measurementType,char(char(trace_in.ini.inputFileName(i))),0);
+            trace_in.ini.measurementType,char(char(trace_in.ini.inputFileName(i))),warn_flag);
         ind = find(timeVector >= trace_in.ini.inputFileName_dates(i,1) & ...
             timeVector < trace_in.ini.inputFileName_dates(i,2));
         if i == 1
@@ -94,7 +98,7 @@ if isfield(trace_in.ini,'inputFileName_dates')
     end
 else
     [temp_data,timeVector] = read_db(Year,SiteID,...
-        trace_in.ini.measurementType,char(tmp_inputFileName),0);
+        trace_in.ini.measurementType,char(tmp_inputFileName),warn_flag);
     %temp_data = read_bor([pth char(tmp_inputFileName)]);
 end
 

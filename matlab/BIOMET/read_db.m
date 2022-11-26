@@ -35,6 +35,12 @@ function [data,tv] = read_db(Years,SiteId,pth_subdir,var_name,warn_flag)
 
 % Revisions
 % 
+% Nov 25, 2022 (Zoran)
+%   - Under 3. Prepend subdir name to time vector names
+%     replaced: find(var_name == filesep);
+%     with:     find(var_name == '\' | var_name == '/');
+%     Program wouldn't find the correct time vector folders if this was not the case
+%     which in turn, caused a wierd bug.
 % Apr 11, 2022 (Zoran)
 %    - replaced findstr with strfind
 %    - This line is been edited a lot (strfind instead of findstr, all "filesep" strings...):
@@ -108,7 +114,7 @@ end
 % -------------------------------------------------------------------------
 % 3. Prepend subdir name to time vector names
 % -------------------------------------------------------------------------
-ind_slash = find(var_name == filesep);
+ind_slash = find(var_name == '\' | var_name == '/');
 if ~isempty(ind_slash)
     for i = 1:length(name_tv)
         name_tv(i) = {[var_name(1:ind_slash(end)) char(name_tv(i))]};    
