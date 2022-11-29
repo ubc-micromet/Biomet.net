@@ -3,12 +3,17 @@ function BB_webupdate(siteNames,outputPath)
 % BB_webupdate
 %
 % Sara Knox             File created:       Oct 21, 2019
-%                       Last modification:  Sep  2, 2022
+%                       Last modification:  Nov 29, 2022
 
 % This file is intended to create csv files to export data for web plots
 % for Burns Bog (https://ibis.geog.ubc.ca/~micromet/data/burnsbog.html#)
 
 % Revisions (latest first):
+%
+% Nov 29, 2022 (Zoran)
+%   - There was a bug in the data cleaning for records csv file:
+%     I commented out this line which caused the problem (erased all data):
+%       data(abs(data)>=9999)=NaN;
 % Sep  2, 2022 (Zoran)
 %   - added fr_round_time() when dealing with the data from xlsx file for
 %     DSM site. See below.
@@ -3888,7 +3893,7 @@ for siteNum = 1:length(siteNames)
             fileName = [siteID 'DSB.csv']; % second diagnostic signal file
             data = load_data(varStruct,pth,Years);
             data = data(1:inde,:);
-            data(abs(data)>=9999)=NaN;
+            %data(abs(data)>=9999)=NaN;
 
             if plot_fig == 1, plot(tv, data);end
 
