@@ -52,6 +52,7 @@ for cntStations = 1:length(stationIDs)
             db_ECCC_climate_station(yearsIn,monthsIn,sID,...
                                     fullfile(biomet_database_default,pathECCC),60);
         catch
+            fprintf('Error processing station: %d (year: %d, month: %d)\n',sID,yearsIn,monthsIn);
         end
     end
 end
