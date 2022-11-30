@@ -17,7 +17,7 @@ function run_ECCC_climate_station_update(yearsIn,monthsIn,stationIDs)
 %
 % Nov 29, 2022 (Zoran)
 %  - Program now defaults to processing stations:[49088 10927 925 51357 51442]
-%    Used to default to 49088 only.
+%    Used to default to 
 % Oct 19, 2022 (Zoran)
 %  - Added a generic option to create a station under yyyy\ECCC\stationID
 %    for all new stations except BB (49088) and Hogg (10927)
