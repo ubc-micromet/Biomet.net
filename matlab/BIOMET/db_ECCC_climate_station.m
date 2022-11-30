@@ -17,7 +17,7 @@ function db_ECCC_climate_station(yearRange,monthRange,stationID,dbPath,timeperio
 % Revisions:
 %
 % Nov 29, 2022 (Zoran)
-%   - Increased timeout for websave from 5s to 15s. The original value
+%   - Increased timeout for websave from 5s to 20s. The original value
 %     was not sufficient when downloading some of the ECCC data.
 % Sep 13, 2022 (Zoran)
 %   - Changed the Pbar multiplier from 1000 to 1 to keep the Pbar units as kPa
@@ -55,7 +55,7 @@ for yearNow = yearRange
         %fprintf('Processing: StationID = %d, Year = %d, Month = %d\n',stationID,yearIn,monthIn);
         urlDataSource = sprintf('https://climate.weather.gc.ca/climate_data/bulk_data_e.html?format=csv&stationID=%d&Year=%d&Month=%d&Day=14&timeframe=1&submit=%20Download+Data',...
                                 stationID,yearIn,monthIn);
-        options = weboptions('Timeout',15);             % set timeout for websave to 15seconds (default is 5)
+        options = weboptions('Timeout',20);             % set timeout for websave to 15seconds (default is 5)
         websave(tempFileName,urlDataSource,options);
         [Stats,~,~] = fr_read_EnvCanada_file(tempFileName,[],[],1);
         delete(tempFileName);
