@@ -9,32 +9,33 @@
 #
 
 ThirdStage_REddyProc <- function(pathSetIni) {
-    
+  
   # Load libraries
   library("REddyProc")
   require("dplyr")
   require("lubridate")
-
+  
   # load input arguments from pathInputArgs file
   source(pathSetIni)
-
+  
   # initiate path variables
   db_ini <- db_root # base path to find the files
   db_out <- db_root # base path where to save the files
   ini_path <- paste(db_root,"/Calculation_Procedures/","TraceAnalysis_ini/",site,sep="") # specify base path to where the ini files are
-
+  
   # Specify folders
   
   # Output folder name for REddyProc and random forest output 
-  level_REddyProc <- 'REddyProc_RF'
+  level_REddyProc_Full <- 'Clean/ThirdStage_REddyProc_RF_Full'
+  level_REddyProc_Fast <- 'Clean/ThirdStage_REddyProc_RF_Fast'
   
   # Folder where stage three variables should be save
-  level_out <- "clean/ThirdStage"
-
+  level_out <- "Clean/ThirdStage"
+  
   # Run Stage Three for DSM
   ini_file_name <- paste(site,'_ThirdStage_ini.R',sep = "")
   pthIniFile <- paste(ini_path,"/",ini_file_name,sep="")
- 
+  
   # Load ini file
   source(pthIniFile)
   
@@ -65,17 +66,17 @@ ThirdStage_REddyProc <- function(pathSetIni) {
     for (j in 1:length(years_REddyProc)) {
       
       # Load ini file
-cat("\n\nIn ThirdStage_REddyProc:\n")      
-cat("   Do we need to reload the ini file here again?\n\n")      
+      cat("\n\nIn ThirdStage_REddyProc:\n")      
+      cat("   Do we need to reload the ini file here again?\n\n")      
       source(pthIniFile)
       
-      level_in <- "clean/SecondStage" # Specify that this is data from the second stage we are using as inputs
+      level_in <- "Clean/SecondStage" # Specify that this is data from the second stage we are using as inputs
       
       # Create data frame for years & variables of interest 
       data.now <- read_database(db_ini,years_REddyProc[j],site,level_in,vars,tv_input,export)
       data <- dplyr::bind_rows(data,data.now)
     }
- 
+    
     # Create time variables
     data <- data %>%
       mutate(year = year(datetime),
@@ -91,7 +92,7 @@ cat("   Do we need to reload the ini file here again?\n\n")
     # Rearrange data frame and only keep relevant variables for input into REddyProc
     data_REddyProc <- data[ , -which(names(data) %in% c("datetime","hour","minute"))]
     data_REddyProc <- data_REddyProc[ , col_order]
- 
+    
     # Rename column names to variable names in REddyProc
     colnames(data_REddyProc)<-var_names  
     
@@ -109,7 +110,7 @@ cat("   Do we need to reload the ini file here again?\n\n")
     #+++ with the variables needed for post-processing later
     EProc <- sEddyProc$new(
       site, EddyDataWithPosix, c('NEE','FC','LE','H','FCH4','Rg','Tair','VPD', 'Ustar')) 
-     
+    
     # Here we only use three ustar scenarios - for full uncertainty estimates, use the UNCERTAINTY SCRIPT (or full vs. fast run - as an option in ini)
     if (Ustar_scenario == 'full') { 
       nScen <- 39
@@ -174,19 +175,38 @@ cat("   Do we need to reload the ini file here again?\n\n")
       
       ind <- seq(ind_s,ind_e)
       
-      # First save all REddyProc output under REddyProc
-      out_path <- paste(db_out,"/",as.character(yrs[j]),"/",site,"/",level_REddyProc, sep = "")
+      # First save all under ThirdStage_REddyProc_RF_Fast or ThirdStage_REddyProc_RF_Full
       
-      if (file.exists(out_path)){
-        setwd(out_path)
-      } else {
-        dir.create(out_path)
-        setwd(out_path)
-      }
-      
-      var_names <- colnames(FilledEddyData)
-      for (i in 1:length(var_names)) {
-        writeBin(as.numeric(FilledEddyData[ind,i]), var_names[i], size = 4)
+      if (Ustar_scenario == 'full') { 
+        
+        out_path <- paste(db_out,"/",as.character(yrs[j]),"/",site,"/",level_REddyProc_Full, sep = "")
+        
+        if (file.exists(out_path)){
+          setwd(out_path)
+        } else {
+          dir.create(out_path)
+          setwd(out_path)
+        }
+        
+        var_names <- colnames(FilledEddyData)
+        for (i in 1:length(var_names)) {
+          writeBin(as.numeric(FilledEddyData[ind,i]), var_names[i], size = 4)
+        }
+        
+      } else if (Ustar_scenario == 'fast') { 
+        out_path <- paste(db_out,"/",as.character(yrs[j]),"/",site,"/",level_REddyProc_Fast, sep = "")
+        
+        if (file.exists(out_path)){
+          setwd(out_path)
+        } else {
+          dir.create(out_path)
+          setwd(out_path)
+        }
+        
+        var_names <- colnames(FilledEddyData)
+        for (i in 1:length(var_names)) {
+          writeBin(as.numeric(FilledEddyData[ind,i]), var_names[i], size = 4)
+        }
       }
       
       # Output variables to stage three
@@ -239,18 +259,38 @@ cat("   Do we need to reload the ini file here again?\n\n")
       ind <- seq(ind_s,ind_e)
       
       # First save all RF output under REddyProc_RF
-      out_path <- paste(db_out,"/",as.character(yrs[j]),"/",site,"/",level_REddyProc, sep = "")
       
-      if (file.exists(out_path)){
-        setwd(out_path)
-      } else {
-        dir.create(out_path)
-        setwd(out_path)
-      }
-      
-      var_names <- colnames(gap_filled_FCH4)
-      for (i in 1:length(var_names)) {
-        writeBin(as.numeric(gap_filled_FCH4[ind,i]), var_names[i], size = 4)
+      if (Ustar_scenario == 'full') { 
+
+        out_path <- paste(db_out,"/",as.character(yrs[j]),"/",site,"/",level_REddyProc_Full, sep = "")
+        
+        if (file.exists(out_path)){
+          setwd(out_path)
+        } else {
+          dir.create(out_path)
+          setwd(out_path)
+        }
+        
+        var_names <- colnames(gap_filled_FCH4)
+        for (i in 1:length(var_names)) {
+          writeBin(as.numeric(gap_filled_FCH4[ind,i]), var_names[i], size = 4)
+        }
+        
+      } else if (Ustar_scenario == 'fast') { 
+
+        out_path <- paste(db_out,"/",as.character(yrs[j]),"/",site,"/",level_REddyProc_Fast, sep = "")
+        
+        if (file.exists(out_path)){
+          setwd(out_path)
+        } else {
+          dir.create(out_path)
+          setwd(out_path)
+        }
+        
+        var_names <- colnames(gap_filled_FCH4)
+        for (i in 1:length(var_names)) {
+          writeBin(as.numeric(gap_filled_FCH4[ind,i]), var_names[i], size = 4)
+        }
       }
       
       # Output variables to stage three
