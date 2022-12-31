@@ -6,6 +6,11 @@ function [t,x] = mpb_pl(ind, year, SiteID, select, fig_num_inc,pause_flag)
 
 % Revisions
 %
+% Dec 31, 2022 (Zoran)
+%   - It now uses 'yyyy' when creating paths instad of year. 
+%   - Prevented program from trying to plot data past "now". 
+%     See variable: time_now
+%   - added a bunch of try-catch-end statements
 % Oct 27, 2022 (Zoran)
 %   - Cumulative Precip for MPB1 was wrong. It had a multiplier of 2.54
 %     embeded into plt_msig. 
@@ -89,8 +94,10 @@ axis2 = [-10 5];
 axis3 = [-50 250];
 axis4 = [-50 250];    
 
+% setup properly the start and end times
+time_now = datetime('now', 'TimeZone', 'GMT', 'Format','d-MMM-y HH:mm:ss Z');
 st = min(ind);                                   % first day of measurements
-ed = max(ind)+1;                                 % last day of measurements (approx.)
+ed = min(max(ind)+1,datenum(time_now)-datenum(year,1,0));               % last day of measurements (cannot be from the "future")
 ind = st:ed;
 
 datesTmp = datenum(year,1,[st ed]);
@@ -102,14 +109,13 @@ rangeYears = [rangeYears(1):rangeYears(2)];
 %                                                 % this solves the issue and makes sure that years is the last 
 %                                                 % year in the range.
                                                 
-pthClim = biomet_path(year,SiteID,'cl');         % get the climate data path
-pthEC   = biomet_path(year,SiteID,'fl');         % get the eddy data path
+pthClim = biomet_path('yyyy',SiteID,'cl');         % get the climate data path
+pthEC   = biomet_path('yyyy',SiteID,'fl');         % get the eddy data path
 pthEC   = fullfile(pthEC,'Above_Canopy');
-pthFl   = biomet_path(year,SiteID,'Flux_Logger'); 
+pthFl   = biomet_path('yyyy',SiteID,'Flux_Logger'); 
 
 fileName = fullfile(pthClim,'clean_tv');
-indYear = strfind(fileName,sprintf('%d',year));
-fileName(indYear:indYear+3) = 'yyyy';
+
 tv_all = fr_round_time(read_bor(fileName,8,[],rangeYears));
 t = tv_all - datenum(year,1,0)-GMTshift;            % convert decimal tv (GMT) to 
                                                     % decimal DOY (local time)                                                    
@@ -191,23 +197,26 @@ if pause_flag == 1;pause;end
 %----------------------------------------------------------
 % Battery Current Cumulative
 %----------------------------------------------------------
-trace_name  = 'Climate/Diagnostics: Cumulative Battery Current';
-trace_legend= char('BattCurrent_{Avg}');
-trace_units = '(Ah)';
-y_axis      = []; %y_axis      = [-100 100];
-ax = xlim;
-[x1,tx_new] = read_sig(trace_path(1,:), ind,year, t,0);
-fig_num = fig_num + fig_num_inc;
-indBadData =  find(x1==-999 | x1 > 50);
-indGoodData = find(x1~=-999 & x1 <= 50);
-x1(indBadData) = interp1(indGoodData,x1(indGoodData),indBadData);
-indCharging = find(x1>0);
-x1(indCharging) = x1(indCharging)*0.85;  % use 85 percent efficiency in charging
-x1 = x1* 30/60;                         % convert from Amps to AmpHours
-x = plt_msig( [cumsum(x1)], ind, trace_name, [], year, trace_units, y_axis, t, fig_num,[2.54]);
-%plt_sig1( tx_new, [cumsum(x1)], trace_name, year, trace_units, ax, y_axis, fig_num ); %#ok<*NBRAK>
-indAxes = indAxes+1; allAxes(indAxes) = gca;
-if pause_flag == 1;pause;end
+try
+    trace_name  = 'Climate/Diagnostics: Cumulative Battery Current';
+    trace_legend= char('BattCurrent_{Avg}');
+    trace_units = '(Ah)';
+    y_axis      = []; %y_axis      = [-100 100];
+    ax = xlim;
+    [x1,tx_new] = read_sig(trace_path(1,:), ind,year, t,0);
+    fig_num = fig_num + fig_num_inc;
+    indBadData =  find(x1==-999 | x1 > 50);
+    indGoodData = find(x1~=-999 & x1 <= 50);
+    x1(indBadData) = interp1(indGoodData,x1(indGoodData),indBadData);
+    indCharging = find(x1>0);
+    x1(indCharging) = x1(indCharging)*0.85;  % use 85 percent efficiency in charging
+    x1 = x1* 30/60;                         % convert from Amps to AmpHours
+    x = plt_msig( [cumsum(x1)], ind, trace_name, [], year, trace_units, y_axis, t, fig_num,[2.54]);
+    %plt_sig1( tx_new, [cumsum(x1)], trace_name, year, trace_units, ax, y_axis, fig_num ); %#ok<*NBRAK>
+    indAxes = indAxes+1; allAxes(indAxes) = gca;
+    if pause_flag == 1;pause;end
+catch
+end    
 
 %----------------------------------------------------------
 % Battery Power 24V
@@ -510,32 +519,33 @@ if pause_flag == 1;pause;end
 %----------------------------------------------------------
 % CO2 mixing ratio
 %----------------------------------------------------------
+try
+    trace_name  = 'Climate/Diagnostics: CO2 mixing ratio';
+    trace_units = '(\mumol CO_{2} mol^{-1} dry air)';
+    y_axis      = [350 600];
+    co2_avg = read_sig(fullfile(pthFl,'CO2_Avg'), ind,year, t,0);
+    co2_max = read_sig(fullfile(pthFl,'CO2_Max'), ind,year, t,0);
+    co2_min = read_sig(fullfile(pthFl,'CO2_Min'), ind,year, t,0);
+    h2o_avg = read_sig(fullfile(pthFl,'H2O_Avg'), ind,year, t,0);
+    h2o_max = read_sig(fullfile(pthFl,'H2O_Max'), ind,year, t,0);
+    h2o_min = read_sig(fullfile(pthFl,'H2O_Min'), ind,year, t,0);
 
-trace_name  = 'Climate/Diagnostics: CO2 mixing ratio';
-trace_units = '(\mumol CO_{2} mol^{-1} dry air)';
-y_axis      = [350 600];
-co2_avg = read_sig(fullfile(pthFl,'CO2_Avg'), ind,year, t,0);
-co2_max = read_sig(fullfile(pthFl,'CO2_Max'), ind,year, t,0);
-co2_min = read_sig(fullfile(pthFl,'CO2_Min'), ind,year, t,0);
-h2o_avg = read_sig(fullfile(pthFl,'H2O_Avg'), ind,year, t,0);
-h2o_max = read_sig(fullfile(pthFl,'H2O_Max'), ind,year, t,0);
-h2o_min = read_sig(fullfile(pthFl,'H2O_Min'), ind,year, t,0);
-
-Tair = read_sig(fullfile(pthFl,'Tsonic_Avg'), ind,year, t,0);
-pbar = read_sig(fullfile(pthFl,'Irga_P_Avg'), ind,year, t,0);
+    Tair = read_sig(fullfile(pthFl,'Tsonic_Avg'), ind,year, t,0);
+    pbar = read_sig(fullfile(pthFl,'Irga_P_Avg'), ind,year, t,0);
 
 
-[Cmix_avg, Hmix_avg,Cmolfr_avg, Hmolfr_avg] = fr_convert_open_path_irga(co2_avg,h2o_avg,Tair,pbar); %#ok<*ASGLU>
-[Cmix_max,Hmix_max,junk,junk]               = fr_convert_open_path_irga(co2_max,h2o_max,Tair,pbar);
-[Cmix_min,Hmix_min,junk,junk]               = fr_convert_open_path_irga(co2_min,h2o_min,Tair,pbar);
+    [Cmix_avg, Hmix_avg,Cmolfr_avg, Hmolfr_avg] = fr_convert_open_path_irga(co2_avg,h2o_avg,Tair,pbar); %#ok<*ASGLU>
+    [Cmix_max,Hmix_max,junk,junk]               = fr_convert_open_path_irga(co2_max,h2o_max,Tair,pbar);
+    [Cmix_min,Hmix_min,junk,junk]               = fr_convert_open_path_irga(co2_min,h2o_min,Tair,pbar);
 
-trace_legend= char('CO2_{Avg}','CO2_{Min}','CO2_{Max}');
+    trace_legend= char('CO2_{Avg}','CO2_{Min}','CO2_{Max}');
 
-fig_num = fig_num + fig_num_inc;
-x = plt_msig( [Cmix_avg Cmix_min Cmix_max ], ind, trace_name, trace_legend, year, trace_units, y_axis, t, fig_num );
-indAxes = indAxes+1; allAxes(indAxes) = gca;
-if pause_flag == 1;pause;end
-
+    fig_num = fig_num + fig_num_inc;
+    x = plt_msig( [Cmix_avg Cmix_min Cmix_max ], ind, trace_name, trace_legend, year, trace_units, y_axis, t, fig_num );
+    indAxes = indAxes+1; allAxes(indAxes) = gca;
+    if pause_flag == 1;pause;end
+catch
+end
 
 %----------------------------------------------------------
 % H2O density
@@ -554,16 +564,18 @@ if pause_flag == 1;pause;end
 %----------------------------------------------------------
 % H2O mixing ratio
 %----------------------------------------------------------
-trace_name  = 'Climate Diagnistics: H2O mixing ratio';
-trace_units = '(mmol H_{2}O mol^{-1} dry air)';
-y_axis      = [0 25];
-trace_legend= char('H2O_{Avg}','H2O_{Min}','H20_{Max}');
+try
+    trace_name  = 'Climate Diagnistics: H2O mixing ratio';
+    trace_units = '(mmol H_{2}O mol^{-1} dry air)';
+    y_axis      = [0 25];
+    trace_legend= char('H2O_{Avg}','H2O_{Min}','H20_{Max}');
 
-fig_num = fig_num + fig_num_inc;
-x = plt_msig( [Hmix_avg Hmix_min Hmix_max ], ind, trace_name, trace_legend, year, trace_units, y_axis, t, fig_num );
-indAxes = indAxes+1; allAxes(indAxes) = gca;
-if pause_flag == 1;pause;end
-
+    fig_num = fig_num + fig_num_inc;
+    x = plt_msig( [Hmix_avg Hmix_min Hmix_max ], ind, trace_name, trace_legend, year, trace_units, y_axis, t, fig_num );
+    indAxes = indAxes+1; allAxes(indAxes) = gca;
+    if pause_flag == 1;pause;end
+catch
+end
 %----------------------------------------------------------
 % Sonic Diagnostic
 %----------------------------------------------------------
@@ -658,28 +670,31 @@ if pause_flag == 1;pause;end
 %----------------------------------------------------------
 % Cumulative Precipitation
 %----------------------------------------------------------
-indx = find( t_all >= 1 & t_all <= ed );                    % extract the period from
-tx = t_all(indx);                                           % the beginning of the year
-indNew = [1:length(indx)]+round(GMTshift*48);               % use GMTshift to align the data with time vector
+try
+    indx = find( t_all >= 1 & t_all <= ed );                    % extract the period from
+    tx = t_all(indx);                                           % the beginning of the year
+    indNew = [1:length(indx)]+round(GMTshift*48);               % use GMTshift to align the data with time vector
 
-trace_name  = 'Climate: Cumulative Rain';
-trace_units = '(mm)';
-y_axis      = [];
-ax = [st ed];
-[x1,tx_new] = read_sig(trace_path(1,:), indNew,year, tx,0);
+    trace_name  = 'Climate: Cumulative Rain';
+    trace_units = '(mm)';
+    y_axis      = [];
+    ax = [st ed];
+    [x1,tx_new] = read_sig(trace_path(1,:), indNew,year, tx,0);
 
-if strcmpi(SiteID,'MPB2')
-   x1 = x1*2.54;
-else
-   x1 = x1*1;   
-end
-fig_num = fig_num + fig_num_inc;
+    if strcmpi(SiteID,'MPB2')
+       x1 = x1*2.54;
+    else
+       x1 = x1*1;   
+    end
+    fig_num = fig_num + fig_num_inc;
 
-%plt_sig1( tx_new, [cumsum(x1)], trace_name, year, trace_units, ax, y_axis, fig_num );
-x = plt_msig( [cumsum(x1)], indNew, trace_name, [], rangeYears(end), trace_units, y_axis, tx_new, fig_num);
-xlim(originalXlim);
-indAxes = indAxes+1; allAxes(indAxes) = gca;
-if pause_flag == 1;pause;end
+    %plt_sig1( tx_new, [cumsum(x1)], trace_name, year, trace_units, ax, y_axis, fig_num );
+    x = plt_msig( [cumsum(x1)], indNew, trace_name, [], rangeYears(end), trace_units, y_axis, tx_new, fig_num);
+    xlim(originalXlim);
+    indAxes = indAxes+1; allAxes(indAxes) = gca;
+    if pause_flag == 1;pause;end
+catch
+end    
 
 %----------------------------------------------------------
 % CNR1 temperature
@@ -698,39 +713,42 @@ if pause_flag == 1;pause;end
 %-----------------------------------
 % Net radiation SW and LW
 %-----------------------------------
-trace_name  = 'Radiation Above Canopy';
-LongWaveOffset =(5.67E-8*(273.15+T_CNR1).^4);
-%Net_cnr1_AVG = read_bor(fullfile(pthClim,'CNR_net_avg'));
-S_upper_AVG = read_sig(fullfile(pthClim,'swd_Avg'), ind,year, t,0);
-S_lower_AVG = read_sig(fullfile(pthClim,'swu_Avg'), ind,year, t,0);
-lwu = read_sig(fullfile(pthClim,'lwu_Avg'), ind,year, t,0);
-lwd = read_sig(fullfile(pthClim,'lwd_Avg'), ind,year, t,0);
+try
+    trace_name  = 'Radiation Above Canopy';
+    LongWaveOffset =(5.67E-8*(273.15+T_CNR1).^4);
+    %Net_cnr1_AVG = read_bor(fullfile(pthClim,'CNR_net_avg'));
+    S_upper_AVG = read_sig(fullfile(pthClim,'swd_Avg'), ind,year, t,0);
+    S_lower_AVG = read_sig(fullfile(pthClim,'swu_Avg'), ind,year, t,0);
+    lwu = read_sig(fullfile(pthClim,'lwu_Avg'), ind,year, t,0);
+    lwd = read_sig(fullfile(pthClim,'lwd_Avg'), ind,year, t,0);
 
-trace_legend = char('swd Avg','swu Avg','lwd Avg','lwu Avg','Net_{calc}');
-trace_units = '(W m^{-2})';
-y_axis      = [-200 1400];
+    trace_legend = char('swd Avg','swu Avg','lwd Avg','lwu Avg','Net_{calc}');
+    trace_units = '(W m^{-2})';
+    y_axis      = [-200 1400];
 
-if strcmpi(SiteID,'MPB1')
-    L_upper_AVG = lwd + LongWaveOffset;
-    L_lower_AVG = lwu + LongWaveOffset;
-elseif strcmpi(SiteID,'MPB2')
-    %reverse up and down and change signs
-    L_upper_AVG = -lwu + LongWaveOffset;
-    L_lower_AVG = -lwd + LongWaveOffset;
-    % reverse up and down
-    S_upper_AVG = read_sig(fullfile(pthClim,'swu_Avg'), ind,year, t,0);
-    S_lower_AVG = read_sig(fullfile(pthClim,'swd_Avg'), ind,year, t,0);
-else
-    L_upper_AVG = lwd + LongWaveOffset;
-    L_lower_AVG = lwu + LongWaveOffset;
+    if strcmpi(SiteID,'MPB1')
+        L_upper_AVG = lwd + LongWaveOffset;
+        L_lower_AVG = lwu + LongWaveOffset;
+    elseif strcmpi(SiteID,'MPB2')
+        %reverse up and down and change signs
+        L_upper_AVG = -lwu + LongWaveOffset;
+        L_lower_AVG = -lwd + LongWaveOffset;
+        % reverse up and down
+        S_upper_AVG = read_sig(fullfile(pthClim,'swu_Avg'), ind,year, t,0);
+        S_lower_AVG = read_sig(fullfile(pthClim,'swd_Avg'), ind,year, t,0);
+    else
+        L_upper_AVG = lwd + LongWaveOffset;
+        L_lower_AVG = lwu + LongWaveOffset;
+    end
+    Net_cnr1_calc = L_upper_AVG - L_lower_AVG  + S_upper_AVG - S_lower_AVG;
+    trace_path = [S_upper_AVG S_lower_AVG L_upper_AVG L_lower_AVG Net_cnr1_calc];
+
+    fig_num = fig_num + fig_num_inc;
+    x = plt_msig( trace_path, ind, trace_name, trace_legend, year, trace_units, y_axis, t, fig_num);
+    indAxes = indAxes+1; allAxes(indAxes) = gca;
+    if pause_flag == 1;pause;end
+catch
 end
-Net_cnr1_calc = L_upper_AVG - L_lower_AVG  + S_upper_AVG - S_lower_AVG;
-trace_path = [S_upper_AVG S_lower_AVG L_upper_AVG L_lower_AVG Net_cnr1_calc];
-
-fig_num = fig_num + fig_num_inc;
-x = plt_msig( trace_path, ind, trace_name, trace_legend, year, trace_units, y_axis, t, fig_num);
-indAxes = indAxes+1; allAxes(indAxes) = gca;
-if pause_flag == 1;pause;end
 
 %----------------------------------------------------------
 % Barometric Pressure

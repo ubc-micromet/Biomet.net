@@ -9,7 +9,6 @@ function [t,x] = mpb_pl(ind, year, SiteID, select, fig_num_inc,pause_flag)
 % Oct 27, 2022 (Zoran)
 %   - Cumulative Precip for MPB1 was wrong. It had a multiplier of 2.54
 %     embeded into plt_msig. 
-%   - Added an index shift for cumulative Precip plot to account for G
 % Oct 15, 2022 (Zoran)
 %   - Added plotting of 3 new soil heatflux plates
 % Jan 23, 2022 (Zoran)
@@ -103,10 +102,10 @@ rangeYears = [rangeYears(1):rangeYears(2)];
 %                                                 % this solves the issue and makes sure that years is the last 
 %                                                 % year in the range.
                                                 
-pthClim = biomet_path(year,SiteID,'cl');         % get the climate data path
-pthEC   = biomet_path(year,SiteID,'fl');         % get the eddy data path
+pthClim = biomet_path('yyyy',SiteID,'cl');         % get the climate data path
+pthEC   = biomet_path('yyyy',SiteID,'fl');         % get the eddy data path
 pthEC   = fullfile(pthEC,'Above_Canopy');
-pthFl   = biomet_path(year,SiteID,'Flux_Logger'); 
+pthFl   = biomet_path('yyyy',SiteID,'Flux_Logger'); 
 
 fileName = fullfile(pthClim,'clean_tv');
 indYear = strfind(fileName,sprintf('%d',year));
@@ -661,7 +660,7 @@ if pause_flag == 1;pause;end
 %----------------------------------------------------------
 indx = find( t_all >= 1 & t_all <= ed );                    % extract the period from
 tx = t_all(indx);                                           % the beginning of the year
-indNew = [1:length(indx)]+round(GMTshift*24);               % use GMTshift to align the data with time vector
+indNew = [1:length(indx)]+round(GMTshift*48);               % use GMTshift to align the data with time vector
 
 trace_name  = 'Climate: Cumulative Rain';
 trace_units = '(mm)';

@@ -27,6 +27,7 @@ function [plotY,plotX] = read_sig( pth, indTimeGMT,year, t, RemoveZeros )
 
 arg_default('RemoveZeros',1);   % default is to remove zeros
 
+try
 % do some createive fixes to extract startDateIn and endDateIn as datetime
 % vars.
 tvIn = datetime(fr_round_time(datenum(year,1,t)),'convertfrom','datenum');

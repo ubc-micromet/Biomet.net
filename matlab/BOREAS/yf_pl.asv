@@ -14,8 +14,6 @@ function [t,x] = yf_pl(ind, year, select, fig_num_inc,pause_flag)
 %
 % Dec 31, 2022 (Zoran)
 %   - It now uses 'yyyy' when creating paths instad of year. 
-%   - Prevented program from trying to plot data past "now". 
-%     See variable: time_now
 % Jan 23, 2022 (Zoran)
 %   - Modifications to work with datetime plt_msig
 % Apr 29, 2021 (Zoran)
@@ -74,10 +72,9 @@ ini_clim2    = fr_get_logger_ini('yf',year,[],'yf_clim_61');   % secondary clima
 ini_climMain = rmfield(ini_climMain,'LoggerName');
 ini_clim2    = rmfield(ini_clim2,'LoggerName');
 
-% setup properly the start and end times
-time_now = datetime('now', 'TimeZone', 'GMT', 'Format','d-MMM-y HH:mm:ss Z');
+% setup prop
 st = min(ind);                                        % first day of measurements
-ed = min(max(ind)+1,datenum(time_now)-datenum(year,1,0));               % last day of measurements (cannot be from the "future")
+ed = max(ind)+1;                                      % last day of measurements (approx.)
 ind = st:ed;
 
 datesTmp = datenum(year,1,[st ed]);
@@ -90,6 +87,8 @@ rangeYears = [rangeYears(1):rangeYears(2)];
 %                                                 % year in the range.
                                                 
 fileName = fr_logger_to_db_fileName(ini_climMain, '_tv', pth);
+indYear = strfind(fileName,sprintf('%d',year));
+fileName(indYear:indYear+3) = 'yyyy';
 tv_all = fr_round_time(read_bor(fileName,8,[],rangeYears));
 t = tv_all - datenum(year,1,0) - GMTshift;          % convert decimal tv to 
                                                     % decimal DOY local time
