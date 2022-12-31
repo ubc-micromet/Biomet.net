@@ -9,6 +9,9 @@ function [t,x] = ubc_pl(ind, year, select, fig_num_inc,pause_flag,corrected)
 
 % Revisions:
 % 
+% Dec 31, 2022 (Zoran)
+%   - Prevented program from trying to plot data past "now". 
+%     See variable: time_now
 % Jan 23, 2022 (Zoran)
 %   - fixes to enable using datetime based pl_msig
 % Oct 15, 2020 (Zoran)
@@ -89,9 +92,10 @@ clean_pth = fullfile(root_pth,'Totem1\Cleaned');
 cg_pth =  fullfile(biomet_path('yyyy','UBC_CG','Climate') ,'CG\');
 TF_rad_pth = biomet_path('yyyy','UBC_Totem\Radiation\');
 
-
+% setup properly the start and end times
+time_now = datetime('now', 'TimeZone', 'GMT', 'Format','d-MMM-y HH:mm:ss Z');
 st = min(ind);                                      % first day of measurements
-ed = max(ind)+1;                                      % last day of measurements (approx.)
+ed = min(max(ind)+1,datenum(time_now)-datenum(year,1,0));               % last day of measurements (cannot be from the "future")
 ind = st:ed;
 
 datesTmp = datenum(year,1,[st ed]);
