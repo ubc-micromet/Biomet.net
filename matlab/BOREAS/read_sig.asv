@@ -12,15 +12,11 @@ function [plotY,plotX] = read_sig( pth, indTimeGMT,year, t, RemoveZeros )
 %                      0 - keeps the original signal.
 %                      
 % (c) Zoran Nesic               File created:       Jul  8, 1997
-%                               Last modification:  Dec 31, 2022
+%                               Last modification:  Jan  7, 2022
 %
 
 
 % Revisions:
-%   Dec 31, 2022 (Zoran)
-%     - Sorted out better the main try-catch-end structure. The function 
-%       now returns a proper length of NaNs as an output if something 
-%       unexpected happens.
 %   Jan 7, 2022 (Zoran)
 %     - fixing it so it works with x-axis in datetime
 %       Aug 17, 1997
@@ -105,10 +101,6 @@ function [plotY,plotX] = read_sig( pth, indTimeGMT,year, t, RemoveZeros )
 
         % convert plotX to DOY for rangeYears(end)
         plotX = datenum(plotX) - datenum(rangeYears(end),1,0);
-    catch
-        % if something bad happens, return only NaNs
-        plotX = NaN * ones(length(indTimeGMT),1); 
-        plotY = NaN * ones(length(indTimeGMT),1);
     end
 end
 
