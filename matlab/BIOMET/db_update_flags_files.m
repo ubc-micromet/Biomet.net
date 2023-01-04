@@ -5,7 +5,7 @@ function dataOut = db_update_flags_files(yearIn,siteID,sitesPathRoot, databasePa
 % dataOut = db_update_flags_files(siteID, yearIn,sitesPathRoot,databasePathRoot,timeUnit,missingPointValue)
 %
 % Example:
-%    dataOut = db_update_flags_files('DSM', 2022,'p:/Sites','p:/database') 
+%    dataOut = db_update_flags_files('DSM',2022,'p:/Sites','p:/database') 
 %    reads input file p:/Sites/DSM/MET/DSM_flags_2022.xlxs and
 %    updates or creates data base files under p:/database
 %

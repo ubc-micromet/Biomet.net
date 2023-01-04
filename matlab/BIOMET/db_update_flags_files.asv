@@ -5,7 +5,7 @@ function dataOut = db_update_flags_files(yearIn,siteID,sitesPathRoot, databasePa
 % dataOut = db_update_flags_files(siteID, yearIn,sitesPathRoot,databasePathRoot,timeUnit,missingPointValue)
 %
 % Example:
-%    dataOut = db_update_flags_files('DSM', 2022,'p:/Sites','p:/database') 
+%    dataOut = db_update_flags_files('DSM',2022,'p:/Sites','p:/database') 
 %    reads input file p:/Sites/DSM/MET/DSM_flags_2022.xlxs and
 %    updates or creates data base files under p:/database
 %
@@ -55,7 +55,9 @@ function dataOut = db_update_flags_files(yearIn,siteID,sitesPathRoot, databasePa
 % Revisions:
 %
 % Nov 25, 2022 (Zoran)
-%  
+%  - Changed the values that are inserted to indicate that the points should
+%    be excluded. Instead of 1s we should be using missingPointValue to match how the flagging
+%    works in the first stage cleaning.
 % Nov 18, 2022 (Zoran)
 %  - Added comments
 %
@@ -113,7 +115,7 @@ for cntVars = 1:length(varNames)
         % flag that period
         indData2Flag = find(dataOut.TimeVector > startPeriod ...
                           & dataOut.TimeVector <=fr_round_time(endPeriod,[],2) ); 
-        dataOut.(currVar)(indData2Flag) = 1; %#ok<FNDSB>
+        dataOut.(currVar)(indData2Flag) = missingPointValue; %#ok<FNDSB>
     end
 end
 
