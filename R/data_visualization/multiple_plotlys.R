@@ -9,7 +9,7 @@
 
 multiple_plotly_plots <- function(data,var,yaxlabel){
   
-  # Specify number of variables (e.g., G, SWC, soil/water temperature)
+  # Specify number of variables (e.g., G, soil/water temperature)
   nvariables <- length(lengths(var)) # number of variables included 
   
   # Specify number of individual measurements per variables (e.g., 3 SHFPs, 15 temperature measurements)
@@ -28,7 +28,7 @@ multiple_plotly_plots <- function(data,var,yaxlabel){
       # Plot subsequent measurements for each variable
       for (j in 1:(nmeasurements[i]-1)){
         p <- p %>% add_trace(y = as.formula(paste0("~", var[[i]][j+1])), name = as.character(var[[i]][j+1]), mode = 'lines')
-        print(var[[i]][j+1])
+        # print(var[[i]][j+1])
       }
     }
     
@@ -37,6 +37,9 @@ multiple_plotly_plots <- function(data,var,yaxlabel){
       toWebGL()
   }
   
+   
   p <- subplot(plots, nrows = nvariables, shareX = TRUE, titleX = FALSE,titleY = TRUE)%>% layout(legend = list(orientation = 'h'))
+   
   return(p)
+  
 }

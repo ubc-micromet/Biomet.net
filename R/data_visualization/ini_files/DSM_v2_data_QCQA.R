@@ -3,10 +3,10 @@
 ## @knitr LoadData
 
 # Load data
-opts_knit$set(root.dir = "/Users/sara/Code/MLABcode/data_visualization") # Specify directory
+opts_knit$set(root.dir = "/Users/sara/Code/Biomet.net/R/data_visualization") # Specify directory
 
 basepath <- "/Users/sara/Library/CloudStorage/OneDrive-UBC/UBC/database"
-yrs <- c(2021:2022)
+yrs <- c(2021:2023) # Make sure to include the most recent year
 site <- "DSM"
 level <- c("Flux/clean","Met/clean")
 vars <- c("WD_1_1_1","wind_dir","WS_1_1_1","wind_speed","USTAR","pitch","w_var",
@@ -15,22 +15,22 @@ vars <- c("WD_1_1_1","wind_dir","WS_1_1_1","wind_speed","USTAR","pitch","w_var",
           "air_pressure","air_p_mean","PA_1_1_1",
           "P_1_1_1","G_1_1_1","G_2_1_1","G_3_1_1",
           "TW_1_1_1","TS_1_1_1","TS_1_2_1","TS_1_3_1","TS_1_4_1",
-          "TS_2_1_1","TS_2_2_1","TS_2_3_1","TS_2_4_1")
+          "TS_2_1_1","TS_2_2_1","TS_2_3_1","TS_2_4_1","WTD_1_1_1")
 tv_input <- "clean_tv"
 
 export <- 0 # 1 to save a csv file of the data, 0 otherwise
 
 # Create dataframe for years & variables of interest
 # Path to function to load data
-source("/Users/sara/Code/MLABcode/database_functions/read_database.R")
-data1 <- load.export.data(basepath,yrs,site,level,vars,tv_input,export)
+source("/Users/sara/Code/Biomet.net/R/database_functions/read_database.R")
+data1 <- read_database(basepath,yrs,site,level,vars,tv_input,export)
 
 # Load traces just for plotting that aren't in clean
 basepath <- "/Users/sara/Library/CloudStorage/OneDrive-UBC/UBC/database" # Quite slow running through 
 level <- c("Flux")
 vars_other <- c("air_temperature","air_t_mean","RH","air_pressure")
 tv_input <- "Clean_tv"
-data2 <- load.export.data(basepath,yrs,site,level,vars_other,tv_input,export)
+data2 <- read_database(basepath,yrs,site,level,vars_other,tv_input,export)
 
 # Merge dataframes
 data <- merge(data1,data2, by=c("datetime"))
@@ -63,7 +63,7 @@ data$DOY <- yday(data$datetime)
 # data <- data[ind, ]
 
 # Path to plotting functions
-data_visualization_path <- "/Users/sara/Code/MLABcode/data_visualization"
+data_visualization_path <- "/Users/sara/Code/Biomet.net/R/data_visualization"
 p <- sapply(list.files(pattern="[.]R$", path=data_visualization_path, full.names=TRUE), source)
 
 # Specify variables for sonic_plots.R
@@ -111,68 +111,34 @@ long <- -122.8942
 Lat <- 49.0886
 
 # Path to function to load data
-source("/Users/sara/Code/MLABcode/data_visualization/potential_rad_generalized.R")
+source("/Users/sara/Code/Biomet.net/R/data_visualization/potential_rad_generalized.R")
 
 data$potential_radiation <- potential_rad(Standard_meridian,long,Lat,data$datetime,data$DOY)
 data$potential_radiation[is.na(data$SW_IN_1_1_1)] <- NA
 var_potential_rad <- "potential_radiation"
 
 # Compute mean diurnal pattern for 15 day moving window
-source("/Users/sara/Code/MLABcode/data_visualization/diurnal_composite_moving_window.R")
-diurnal.composite <- diurnal.composite(data$datetime,data$potential_radiation,data$SW_IN_1_1_1,15,48)
-
+source("/Users/sara/Code/Biomet.net/R/data_visualization/diurnal_composite_moving_window.R")
+diurnal.composite <- diurnal.composite(data$datetime,data$potential_radiation,data$SW_IN_1_1_1,data$PPFD_IN_1_1_1,15,48)
 diurnal.composite <- diurnal.composite[is.finite(diurnal.composite$potential_radiation), ]
 
 # # Plot diurnal pattern with moving window
-# source("/Users/sara/Code/MLABcode/diurnal_pattern_moving_window.R")
-# diurnal.summary <- diurnal.summary(data$datetime, data$SHFP_1, 30, 48)
+# source("/Users/sara/Code/MLABcode/data_visualization/diurnal_pattern_moving_window.R")
+# diurnal.summary <- diurnal.summary(data$datetime, data$G_1_1_1, 30, 48)
+# 
 # diurnal.summary.composite <- diurnal.summary %>%
-#   group_by(firstdate,HHMM) %>%
-#   dplyr::summarize(var = median(var, na.rm = TRUE),
+# group_by(firstdate,HHMM) %>%
+# dplyr::summarize(var = median(var, na.rm = TRUE),
 #                    HHMM = first(HHMM))
 # diurnal.summary.composite$time <- as.POSIXct(as.character(diurnal.summary.composite$HHMM), format="%R", tz="UTC")
-#
-# p <- ggplot() +
-#   geom_point(data = diurnal.summary, aes(x = time, y = var),color = 'Grey',size = 0.1) +
-#   geom_line(data = diurnal.summary.composite, aes(x = time, y = var),color = 'Black') +
-#   scale_x_datetime(breaks="6 hours", date_labels = "%R")
-#
-# p <- ggplotly(p+ facet_wrap(~as.factor(firstdate))) %>% toWebGL()
-# p
-
-# # Long-term trend or step change
-# p.SW_IN<- ggplot() +
-#   geom_point(data = data, aes(x = datetime, y = SHORTWAVE_IN),color = 'Grey',size = 0.1)
-#
-# p.PPFD_IN <- ggplot() +
-#   geom_point(data = data, aes(x = datetime, y = INCOMING_PAR),color = 'Grey',size = 0.1)
-#
-# p <- grid.arrange(p.SW_IN, p.PPFD_IN, # Second row with 2 plots in 2 different columns
-#              nrow = 2)                       # Number of rows
-#
-# # Specify variables to keep
-# data_keep_columns <- c("year","SHORTWAVE_IN", "INCOMING_PAR")
-#
-# df_subset <- data[ ,colnames(data) %in% data_keep_columns]  # Extract columns from data
-# df <- na.omit(df_subset) # renove NA values
-#
-# data.by.year.R2 <- df %>%
-#   group_by(year) %>%
-#   dplyr::summarize(R2 = cor(SHORTWAVE_IN, INCOMING_PAR)^2)
-#
-# data.by.year.slope <- df %>%
-#   group_by(year) %>% # You can add here additional grouping variables if your real data set enables it
-#   do(mod = lm(SHORTWAVE_IN ~ INCOMING_PAR, data = .)) %>%
-#   mutate(slope = summary(mod)$coeff[2]) %>%
-#   select(-mod)
-#
-# data.by.year <- merge(data.by.year.R2,data.by.year.slope,by="year")
-#
-# # Create plot of timeseries of R2 and slope
-# multivariate_comparison_trend(data.by.year)
-#
-# # Plot data availability
-# plot_datayear(data)
+# 
+#  p <- ggplot() +
+#    geom_point(data = diurnal.summary, aes(x = time, y = var),color = 'Grey',size = 0.1) +
+#    geom_line(data = diurnal.summary.composite, aes(x = time, y = var),color = 'Black') +
+#    scale_x_datetime(breaks="6 hours", date_labels = "%R")
+# 
+#  p <- ggplotly(p+ facet_wrap(~as.factor(firstdate))) %>% toWebGL()
+#  p
 
 # Pressure variables
 # Make sure that all pressure variables are in the same units (e.g., kPa)
@@ -181,24 +147,21 @@ data$air_p_mean_kPa <- data$air_p_mean/1000
 
 #vars_pressure <- c("air_pressure_kPa","air_p_mean_kPa","PA_1_5M","PA_EC_AIR2_5M") # note that 
 
+# Other variables to plot (can also include vegetation indices and water quality data)
+# Note that if needed, you can change the line 'Row {data-width=600}' below the line 
+# 'Other met {data-orientation=rows}' to better view all the data (i.e., increase the data-width)
+
 # Precip variables
-precip <- "PRECIP"
+vars_precip <- "P_1_1_1"
 
 # Soil heat flux
 vars_G <- c("G_1_1_1","G_2_1_1","G_3_1_1")
 
-# Volumetric water content
-#vars_VWC <- "SVWC"
+vars_WTD <- "WTD_1_1_1"
 
 # Water and soil temperature variables - note go with decreasing height/depth from highest measurement
-#vars_TS <- c("WATER_TEMP_3_5CM","WATER_TEMP_2_5CM","WATER_TEMP_3_5CM",
-#                    "SOIL_TEMP_1_5CM","SOIL_TEMP_1_10CM","SOIL_TEMP_1_30CM","SOIL_TEMP_1_50CM",
-#                    "SOIL_TEMP_2_5CM","SOIL_TEMP_2_10CM","SOIL_TEMP_2_30CM","SOIL_TEMP_2_50CM",
-#                    "SOIL_TEMP_3_5CM","SOIL_TEMP_3_10CM","SOIL_TEMP_3_30CM","SOIL_TEMP_3_50CM") 
+vars_TS <- c("TW_1_1_1","TS_1_1_1","TS_1_2_1","TS_1_3_1","TS_1_4_1",
+             "TS_2_1_1","TS_2_2_1","TS_2_3_1","TS_2_4_1") 
 
-# Specify variables for Additional meteorological variables output
-#var_other <- list(as.list(vars_G),as.list(vars_TS))
-#yaxlabel_other <- c("G (W/m2)","Temperature (°C)")
-
-var_other <- list(as.list(vars_G))
-yaxlabel_other <- c("G (W/m2)")
+var_other <- list(as.list(vars_G),as.list(vars_precip),as.list(vars_WTD),as.list(vars_TS))
+yaxlabel_other <- c("G (W/m2)","Precipiataion (mm)", "Water table depth (m)","Temperature (°C)")

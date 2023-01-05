@@ -9,6 +9,7 @@
 # var_NETRAD = Net radiation variable
 # var_PPFD = incoming and reflected PAR (e.g., c("PPFD_IN","PPFD_OUT")). Note incoming PAR should always be listed first.
 # var_potential_radiation = potential radiation calculated using the function potential_rad
+
 radiation_plots <- function(data,var_radiometer,var_NETRAD,var_PPFD, var_potential_radiation){
   
   yaxlabel <- c("Radiation (W/m2)","Net radiation (W/m2)","SW_IN & PPFD_IN","SW_OUT & PPFD_OUT")
@@ -35,5 +36,6 @@ radiation_plots <- function(data,var_radiometer,var_NETRAD,var_PPFD, var_potenti
     toWebGL() 
   
   p <- subplot(p_components,p_net, p_sw_ppfd_in, p_sw_ppfd_out, nrows = 4, shareX = TRUE, titleX = FALSE,titleY = TRUE)%>% layout(legend = list(orientation = 'h'))
+  
   return(p)
 }
