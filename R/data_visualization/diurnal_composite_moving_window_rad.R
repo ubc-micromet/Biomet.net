@@ -3,25 +3,28 @@
 # June 27, 2022
 
 # Input
-# datetime = date in format e.g., "2019-12-12 08:00:00 UTC"
+# data
 # potential_radiation = potential radiation calculated using the function potential_rad.R
-# SW_IN = incoming shortwave radiation
-# PPFD_IN = incoming PAR 
+# SW_IN = variable name for SW_IN
+# PPFD_IN = variable name for PPFD_IN
 # width = width of moving windows in days
 # ts = timestep (i.e., 48 half hour observations per day)
 
 # Loop through data frame to create mean diurnal patter for a 15 day moving average
-diurnal.composite <- function(data,potential_radiation,SW_IN,PPFD_IN,width,ts){
+diurnal.composite.rad <- function(data,potential_radiation_var,SW_IN_var,PPFD_IN_var,width,ts){
   
   # Create new dataframe with only var1, var2, and year
-  df <- (data[, (colnames(data) %in% c("datetime", potential_radiation,SW_IN,PPFD_IN))])
+  df <- (data[, (colnames(data) %in% c("datetime", potential_radiation_var,SW_IN_var,PPFD_IN_var))])
   
   # Find index of first midnight time point
-  istart <- first(which(hour(datetime) == 0 & minute(datetime) == 0))
-  iend <- last(which(hour(datetime) == 23 & minute(datetime) == 30))
+  istart <- first(which(hour(df$datetime) == 0 & minute(df$datetime) == 0))
+  iend <- last(which(hour(df$datetime) == 23 & minute(df$datetime) == 30))
   
   # Create new data frame starting from midnight and ending at 11:30pm
   df2 <- df[istart:iend, ]
+  
+  # Rename column names
+  colnames(df2) <- c("datetime", "SW_IN", "PPFD_IN", "potential_radiation")
   
   # Specify number of windows to loop through
   nwindows <- floor(nrow(df2)/width/ts)

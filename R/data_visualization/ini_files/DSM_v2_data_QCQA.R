@@ -20,9 +20,14 @@ tv_input <- "clean_tv"
 
 export <- 0 # 1 to save a csv file of the data, 0 otherwise
 
+# load all necessary functions
+fx_path <- "/Users/sara/Code/Biomet.net/R/data_visualization"
+p <- sapply(list.files(pattern="*.R$", path=fx_path, full.names=TRUE), source)
+
+source("/Users/sara/Code/Biomet.net/R/database_functions/read_database.R")
+
 # Create dataframe for years & variables of interest
 # Path to function to load data
-source("/Users/sara/Code/Biomet.net/R/database_functions/read_database.R")
 data1 <- read_database(basepath,yrs,site,level,vars,tv_input,export)
 
 # Load traces just for plotting that aren't in clean
@@ -110,17 +115,10 @@ Standard_meridian <- -120
 long <- -122.8942
 Lat <- 49.0886
 
-# Path to function to load data
-source("/Users/sara/Code/Biomet.net/R/data_visualization/potential_rad_generalized.R")
-
-data$potential_radiation <- potential_rad(Standard_meridian,long,Lat,data$datetime,data$DOY)
+# Calculate potential radiation
+data$potential_radiation <- potential_rad_generalized(Standard_meridian,long,Lat,data$datetime,data$DOY)
 data$potential_radiation[is.na(data$SW_IN_1_1_1)] <- NA
 var_potential_rad <- "potential_radiation"
-
-# Compute mean diurnal pattern for 15 day moving window
-source("/Users/sara/Code/Biomet.net/R/data_visualization/diurnal_composite_moving_window.R")
-diurnal.composite <- diurnal.composite(data$datetime,data$potential_radiation,data$SW_IN_1_1_1,data$PPFD_IN_1_1_1,15,48)
-diurnal.composite <- diurnal.composite[is.finite(diurnal.composite$potential_radiation), ]
 
 # # Plot diurnal pattern with moving window
 # source("/Users/sara/Code/MLABcode/data_visualization/diurnal_pattern_moving_window.R")

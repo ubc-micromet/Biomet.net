@@ -4,17 +4,16 @@
 
 # Input
 # data = dataframe with relevant variables
-# x = x variable name
-# y = y variable name
+# var1 = variable 1 name
+# var2 = variable 2 name
 
 # year = "year"
 
 R2_slope_QCQA <-
   function(data,
            var1,
-           var2,
-           name_var1,
-           name_var2) {
+           var2) {
+    
     # Create new dataframe with only var1, var2, and year
     df <- (data[, (colnames(data) %in% c(var1, var2, "year"))])
     
