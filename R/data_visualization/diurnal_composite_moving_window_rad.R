@@ -3,8 +3,8 @@
 # June 27, 2022
 
 # Input
-# data
-# potential_radiation = potential radiation calculated using the function potential_rad.R
+# data = data frame
+# potential_radiation = variable name for potential radiation
 # SW_IN = variable name for SW_IN
 # PPFD_IN = variable name for PPFD_IN
 # width = width of moving windows in days
@@ -13,7 +13,7 @@
 # Loop through data frame to create mean diurnal patter for a 15 day moving average
 diurnal.composite.rad <- function(data,potential_radiation_var,SW_IN_var,PPFD_IN_var,width,ts){
   
-  # Create new dataframe with only var1, var2, and year
+  # Create new dataframe with only variables of interest
   df <- (data[, (colnames(data) %in% c("datetime", potential_radiation_var,SW_IN_var,PPFD_IN_var))])
   
   # Find index of first midnight time point
