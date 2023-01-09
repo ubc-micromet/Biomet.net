@@ -6,16 +6,17 @@
 opts_knit$set(root.dir = "/Users/sara/Code/Biomet.net/R/data_visualization") # Specify directory
 
 basepath <- "/Users/sara/Library/CloudStorage/OneDrive-UBC/UBC/database"
-yrs <- c(2021:2023) # Make sure to include the most recent year
+yrs <- c(2022:2022) # Make sure to include the most recent year
 site <- "DSM"
-level <- c("Flux/clean","Met/clean")
-vars <- c("WD_1_1_1","wind_dir","WS_1_1_1","wind_speed","USTAR","pitch","w_var",
+level <- c("Clean/SecondStage","Met/clean")
+vars <- c("WD_1_1_1","wind_dir","WS_1_1_1","wind_speed","USTAR","W_SIGMA",
           "ts","TA_1_1_1","air_temperature","air_t_mean","RH_1_1_1","RH","e","es","es",
           "SW_IN_1_1_1","SW_OUT_1_1_1","LW_IN_1_1_1","LW_OUT_1_1_1","NETRAD_1_1_1","PPFD_IN_1_1_1","PPFD_OUT_1_1_1",
-          "air_pressure","air_p_mean","PA_1_1_1",
+          "air_pressure","PA_1_1_1",
           "P_1_1_1","G_1_1_1","G_2_1_1","G_3_1_1",
           "TW_1_1_1","TS_1_1_1","TS_1_2_1","TS_1_3_1","TS_1_4_1",
-          "TS_2_1_1","TS_2_2_1","TS_2_3_1","TS_2_4_1","WTD_1_1_1")
+          "TS_2_1_1","TS_2_2_1","TS_2_3_1","TS_2_4_1","WTD_1_1_1", 
+          "NEE")
 tv_input <- "clean_tv"
 
 export <- 0 # 1 to save a csv file of the data, 0 otherwise
@@ -24,6 +25,7 @@ export <- 0 # 1 to save a csv file of the data, 0 otherwise
 fx_path <- "/Users/sara/Code/Biomet.net/R/data_visualization"
 p <- sapply(list.files(pattern="*.R$", path=fx_path, full.names=TRUE), source)
 
+# Load functions from 'database_functions' folder
 source("/Users/sara/Code/Biomet.net/R/database_functions/read_database.R")
 
 # Create dataframe for years & variables of interest
@@ -31,9 +33,8 @@ source("/Users/sara/Code/Biomet.net/R/database_functions/read_database.R")
 data1 <- read_database(basepath,yrs,site,level,vars,tv_input,export)
 
 # Load traces just for plotting that aren't in clean
-basepath <- "/Users/sara/Library/CloudStorage/OneDrive-UBC/UBC/database" # Quite slow running through 
 level <- c("Flux")
-vars_other <- c("air_temperature","air_t_mean","RH","air_pressure")
+vars_other <- c("air_temperature","air_t_mean","RH","air_pressure","air_p_mean","pitch")
 tv_input <- "Clean_tv"
 data2 <- read_database(basepath,yrs,site,level,vars_other,tv_input,export)
 
@@ -55,21 +56,40 @@ if(length(ind_duplicate) > 0) {
 # Remove missing data (should be -9999)
 data <- replace(data, data == -9999, NA)
 
-# Specify end date - usually today's date
+# Specify end date if using current year - usually today's date
 inde <- which(Sys.Date() == data$datetime)
-data <- data[c(1:inde), ]
+
+if (!identical(inde, integer(0))) {
+  data <- data[c(1:inde), ] # Remove NaN for dates beyond today's date
+} else {
+  data <- data[1:nrow(data)-1, ] # Remove the last data point so that the last data point doesn't start the following year.
+}
 
 # Create year & DOY column
 data$year <- year(data$datetime)
 data$DOY <- yday(data$datetime)
 
-# # Remove empty columns for the end of the year (and start in some cases)
-# ind <- !is.nan(data$year)
-# data <- data[ind, ]
+# Load third stage fluxes
+level <- c("Clean/ThirdStage")
+vars_other <- c("NEE","NEE_PI_F_MDS")
+tv_input <- "clean_tv"
+data_thirdstage <- read_database(basepath,yrs,site,level,vars_other,tv_input,export)
 
-# Path to plotting functions
-data_visualization_path <- "/Users/sara/Code/Biomet.net/R/data_visualization"
-p <- sapply(list.files(pattern="[.]R$", path=data_visualization_path, full.names=TRUE), source)
+# Remove missing data (should be -9999)
+data_thirdstage <- replace(data_thirdstage, data_thirdstage == -9999, NA)
+
+# Specify end date - usually today's date
+inde <- which(Sys.Date() == data_thirdstage$datetime)
+
+if (!identical(inde, integer(0))) {
+  data_thirdstage <- data_thirdstage[c(1:inde), ] # Remove NaN for dates beyond today's date
+} else {
+  data_thirdstage <- data_thirdstage[1:nrow(data_thirdstage)-1, ] # Remove the last data point so that the last data point doesn't start the following year.
+}
+
+# Create year & DOY column
+data_thirdstage$year <- year(data_thirdstage$datetime)
+data_thirdstage$DOY <- yday(data_thirdstage$datetime)
 
 # Specify variables for sonic_plots.R
 vars_WS <- c("wind_speed","WS_1_1_1") # Include sonic wind speed first
@@ -78,10 +98,6 @@ vars_other_sonic <- c("USTAR","pitch") # include u* first
 units_other_sonic <- c("m/s","degrees")
 pitch_ind <- 2
 
-# Specify other sonic variables
-wind_variance <- "w_var" # If using all variances, make sure w_var is first
-
-data$W_SIGMA <- sqrt(data$w_var)
 wind_std <- "W_SIGMA"
 
 # Specify variables for temp_RH_data_plotting.R

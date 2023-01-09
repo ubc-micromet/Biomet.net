@@ -25,20 +25,6 @@ library(data.table)
 library(ggpmisc)
 library(knitr)
 ```
-
-<!-- specify init file to read -->
-```{r echo=FALSE, include=FALSE}
-read_chunk('ini_files/DSM_v2_data_QCQA.R')
-```
-
-```{r, echo=FALSE, include=FALSE}
-<<LoadData>>
-```
-
-```{r}
-data(iris)
-```
-
 ```{r echo=FALSE}
 # Comments/Notes
 # 1) See if want to update sonic, temperature, and rad plots using multiple_plotlys
@@ -214,7 +200,7 @@ dataset <- reactive({
 
 renderPlotly({
   plot_ly(data, x = ~datetime, y = ~data[[input$y]], type = 'scatter', mode = 'lines') %>%
-  layout(yaxis = list(title = input$y)) %>%
+    layout(yaxis = list(title = input$y)) %>%
     toWebGL() 
 })
 ```
@@ -238,23 +224,12 @@ Column
 
 dataset <- reactive({
   diurnal.summary(data, input$z, 30, 15)
+  
+})
 
- })
-
-  renderPlotly({
-    
-    
- # diurnal.summary.composite <- diurnal.summary %>%
-  #  group_by(firstdate,HHMM) %>%
-  #  dplyr::summarize(var = median(input$y, na.rm = TRUE),
-       #              HHMM = first(HHMM))
- # diurnal.summary.composite$time <- as.POSIXct(as.character(diurnal.summary.composite$HHMM), format="%R", tz="UTC")
-
-    # p <- ggplot(dataset(), aes_string(x = "datetime", y = input$y)) +
-    # geom_point()
-    # p
-    
-     diurnal.summary.composite <- dataset() %>%
+renderPlotly({
+  
+  diurnal.summary.composite <- dataset() %>%
     group_by(firstdate,HHMM) %>%
     dplyr::summarize(var = median(var, na.rm = TRUE),
                      HHMM = first(HHMM))
@@ -263,20 +238,41 @@ dataset <- reactive({
   p <- ggplot() +
     geom_point(data = dataset(), aes(x = time, y = var),color = 'Grey',size = 0.1) +
     geom_line(data = diurnal.summary.composite, aes(x = time, y = var),color = 'Black') +
-    scale_x_datetime(breaks="6 hours", date_labels = "%R") + ylab(input$z)
+    scale_x_datetime(breaks="6 hours", date_labels = "%H") + ylab(input$z)
   p <- ggplotly(p+ facet_wrap(~as.factor(firstdate))) %>% toWebGL()
   p
   
-  #    p <- ggplot(dataset(), aes(x = time, y = var)) +
-  #   geom_point() 
-  # p <- ggplotly(p+ facet_wrap(~as.factor(firstdate))) %>% toWebGL()
-  # p
-  
-  # p <- ggplotly(p+ facet_wrap(~as.factor(firstdate))) %>% toWebGL()
-  # p
-  # 
-  # plot_ly(data = data, x = ~datetime, y = as.formula(paste0("~",input$y)), type = 'scatter', mode = 'lines') %>%
-  # layout(yaxis = list(title = input$y)) %>%
-  #   toWebGL() 
+})
+```
+
+Flux time series - WORK STARTING HERE!
+=======================================================================
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+```{r}
+selectInput('f', 'Variable Second Stage', names(data[, !names(data) %in% c("datetime")])) 
+selectInput('f3', 'Variable Third Stage', names(data_thirdstage[, !names(data_thirdstage) %in% c("datetime")])) 
+```
+
+Column
+-----------------------------------------------------------------------
+
+### Time series of single met variable
+
+```{r}
+dataset_second <- reactive({
+  data[, c(input$x, input$f)]
+})
+
+dataset_third <- reactive({
+  data_thirdstage[, c(input$x, input$f3)]
+})
+
+renderPlotly({
+  plot_ly(dataset_second, x = ~datetime, y = ~data[[input$y]], type = 'scatter', mode = 'lines') %>%
+    layout(yaxis = list(title = input$f)) %>%
+    toWebGL() 
 })
 ```
