@@ -11,8 +11,8 @@ function BB_webupdate(siteNames,outputPath)
 % Revisions (latest first):
 %
 % Jan 9, 2023 (Zoran)
-%   - replaced all "datetime(datestr(tv))"  with much (90x) faster
-%     "tv_datetime". Saved ~9s per occurrence.
+%   - replaced all "datetime(datestr(tv))" with much (90x) faster
+%     "datetime(tv,'convertfrom','datenum')". Save ~9s per occurance
 % Nov 29, 2022 (Zoran)
 %   - There was a bug in the data cleaning for records csv file:
 %     I commented out this line which caused the problem (erased all data):
@@ -82,16 +82,15 @@ for siteNum = 1:length(siteNames)
 		tv=read_bor(fullfile(pth,'Flux',var),8,[],Years);
 	else
 		tv=read_bor(fullfile(pth,'MET',var),8,[],Years);
-    end
+	end
     
-    tv_datetime = datetime(tv,'convertfrom','datenum');
 	
     %tv = year_append(Years,'BB','Met',var,pth,8);
     
     % Define start and end indices for web plots
-    inde = find(tv_datetime == dateshift(datetime(c),'start','hour'));
+    inde = find(datetime(datestr(tv)) == dateshift(datetime(c),'start','hour'));
     if strcmp(siteID,'BB2')
-        inds = find(tv_datetime == datetime(2019,11,13));
+        inds = find(datetime(datestr(tv)) == datetime(2019,11,13));
     end
     
     formatOut = 'yyyy-mm-dd HH:MM:SS';
@@ -128,7 +127,7 @@ for siteNum = 1:length(siteNames)
             data_BB2 = load_data(varStruct,pth_BB2,Years);
             
             % Filter bad data from BB2
-            ind_bad = tv_datetime <= datetime(2019,11,13);
+            ind_bad = datetime(datestr(tv)) <= datetime(2019,11,13);
             data_BB2(ind_bad) = NaN;
             
             % Merge BB and BB2
@@ -251,7 +250,7 @@ for siteNum = 1:length(siteNames)
             data_BB2 = load_data(varStruct,pth_BB2,Years);
             
             % Filter bad data from BB2
-            ind_bad = tv_datetime <= datetime(2019,11,13);
+            ind_bad = datetime(datestr(tv)) <= datetime(2019,11,13);
             data_BB2(ind_bad) = NaN;
             
             % Merge BB and BB2
@@ -382,7 +381,7 @@ for siteNum = 1:length(siteNames)
             data_BB2 = load_data(varStruct,pth_BB2,Years);
             
             % Filter bad data from BB2
-            ind_bad = tv_datetime <= datetime(2019,11,21,14,0,0);
+            ind_bad = datetime(datestr(tv)) <= datetime(2019,11,21,14,0,0);
             data_BB2(ind_bad) = NaN;
             
             % Merge BB and BB2
@@ -551,7 +550,7 @@ for siteNum = 1:length(siteNames)
             data = load_data(varStruct,pth,Years);
             
             % Filter data before June 9th
-            ind_bad = tv_datetime <= datetime(2015,6,9);
+            ind_bad = datetime(datestr(tv)) <= datetime(2015,6,9);
             data(ind_bad,:) = NaN;
             
             if plot_fig == 1
@@ -565,7 +564,7 @@ for siteNum = 1:length(siteNames)
             data_BB2 = load_data(varStruct,pth_BB2,Years);
             
             % Filter bad data from BB2
-            ind_bad = tv_datetime <= datetime(2019,11,21,14,0,0);
+            ind_bad = datetime(datestr(tv)) <= datetime(2019,11,21,14,0,0);
             data_BB2(ind_bad) = NaN;
             
             % Merge BB and BB2
@@ -746,7 +745,7 @@ for siteNum = 1:length(siteNames)
             data_BB2 = load_data(varStruct,pth_BB2,Years);
             
             % Filter bad data from BB2
-            ind_bad = tv_datetime <= datetime(2019,11,13);
+            ind_bad = datetime(datestr(tv)) <= datetime(2019,11,13);
             data_BB2(ind_bad,:) = NaN;
             
             % Merge BB and BB2
@@ -856,7 +855,7 @@ for siteNum = 1:length(siteNames)
             data_BB2 = load_data(varStruct,pth_BB2,Years);
             
             % Filter bad data from BB2
-            ind_bad = tv_datetime <= datetime(2019,11,13);
+            ind_bad = datetime(datestr(tv)) <= datetime(2019,11,13);
             data_BB2(ind_bad,:) = NaN;
             
             % Merge BB and BB2
@@ -964,7 +963,7 @@ for siteNum = 1:length(siteNames)
             data_BB2 = load_data(varStruct,pth_BB2,Years);
             
             % Filter bad data from BB2
-            ind_bad = tv_datetime <= datetime(2019,11,13);
+            ind_bad = datetime(datestr(tv)) <= datetime(2019,11,13);
             data_BB2(ind_bad) = NaN;
             
             % Merge BB and BB2
@@ -1037,7 +1036,7 @@ for siteNum = 1:length(siteNames)
             data_BB2 = load_data(varStruct,pth_BB2,Years);
             
             % Filter bad data from BB2
-            ind_bad = tv_datetime <= datetime(2019,11,13);
+            ind_bad = datetime(datestr(tv)) <= datetime(2019,11,13);
             data_BB2(ind_bad) = NaN;
             
             % Merge BB and BB2
@@ -1171,7 +1170,7 @@ for siteNum = 1:length(siteNames)
             end
             
             % Fix precip data for period of (Dec 2, 2014 - April 29, 2015)
-            ind_fix = tv_datetime >= datetime(2014,12,2) & tv_datetime <= datetime(2015,04,29);
+            ind_fix = datetime(datestr(tv)) >= datetime(2014,12,2) & datetime(datestr(tv)) <= datetime(2015,04,29);
             data(ind_fix) = data(ind_fix).*0.4;
             
             % Load BB2 data
@@ -1181,7 +1180,7 @@ for siteNum = 1:length(siteNames)
             data_BB2 = load_data(varStruct,pth_BB2,Years);
             
             % Filter bad data from BB2
-            ind_bad = tv_datetime <= datetime(2019,11,30);
+            ind_bad = datetime(datestr(tv)) <= datetime(2019,11,30);
             data_BB2(ind_bad) = NaN;
             
             % Merge BB and BB2
@@ -1294,7 +1293,7 @@ for siteNum = 1:length(siteNames)
             data_BB2 = load_data(varStruct,pth_BB2,Years);
             
             % Filter bad data from BB2
-            ind_bad = tv_datetime <= datetime(2019,11,13);
+            ind_bad = datetime(datestr(tv)) <= datetime(2019,11,13);
             data_BB2(ind_bad) = NaN;
             
             % Merge BB and BB2
@@ -1344,7 +1343,7 @@ for siteNum = 1:length(siteNames)
             data = load_data(varStruct,pth,Years);
             
             % Fix SHFP data for period of (Dec 2, 2014 - April 17, 2015)
-            ind_fix = find(tv_datetime >= datetime(2014,12,2) & tv_datetime <= datetime(2015,04,17));
+            ind_fix = find(datetime(datestr(tv)) >= datetime(2014,12,2) & datetime(datestr(tv)) <= datetime(2015,04,17));
             
             %SHFP coefficients
             calib_shf1_neg = 61.142;
@@ -2702,7 +2701,7 @@ for siteNum = 1:length(siteNames)
             data_BB2 = load_data(varStruct,pth_BB2,Years);
             
             % Filter bad data from BB2
-            ind_bad = tv_datetime <= datetime(2019,11,13);
+            ind_bad = datetime(datestr(tv)) <= datetime(2019,11,13);
             data_BB2(ind_bad) = NaN;
             
             % Merge BB and BB2
@@ -2792,7 +2791,7 @@ for siteNum = 1:length(siteNames)
             data_BB2 = load_data(varStruct,pth_BB2,Years);
             
             % Filter bad data from BB2
-            ind_bad = tv_datetime <= datetime(2019,11,13);
+            ind_bad = datetime(datestr(tv)) <= datetime(2019,11,13);
             data_BB2(ind_bad) = NaN;
             
             % Merge BB and BB2
@@ -2881,7 +2880,7 @@ for siteNum = 1:length(siteNames)
             data_BB2 = load_data(varStruct,pth_BB2,Years);
             
             % Filter bad data from BB2
-            ind_bad = tv_datetime <= datetime(2019,11,13);
+            ind_bad = datetime(datestr(tv)) <= datetime(2019,11,13);
             data_BB2(ind_bad) = NaN;
             
             % Merge BB and BB2
@@ -2970,7 +2969,7 @@ for siteNum = 1:length(siteNames)
             data_BB2 = load_data(varStruct,pth_BB2,Years);
             
             % Filter bad data from BB2
-            ind_bad = tv_datetime <= datetime(2019,11,13);
+            ind_bad = datetime(datestr(tv)) <= datetime(2019,11,13);
             data_BB2(ind_bad) = NaN;
             
             % Merge BB and BB2
@@ -3069,7 +3068,7 @@ for siteNum = 1:length(siteNames)
             data_BB2 = load_data(varStruct,pth_BB2,Years);
             
             % Filter bad data from BB2
-            ind_bad = tv_datetime <= datetime(2019,11,13);
+            ind_bad = datetime(datestr(tv)) <= datetime(2019,11,13);
             data_BB2(ind_bad) = NaN;
             
             % Merge BB and BB2
@@ -3158,7 +3157,7 @@ for siteNum = 1:length(siteNames)
             data_BB2 = load_data(varStruct,pth_BB2,Years);
             
             % Filter bad data from BB2
-            ind_bad = tv_datetime <= datetime(2019,11,13);
+            ind_bad = datetime(datestr(tv)) <= datetime(2019,11,13);
             data_BB2(ind_bad) = NaN;
             
             % Merge BB and BB2
@@ -3252,7 +3251,7 @@ for siteNum = 1:length(siteNames)
             data_BB2 = load_data(varStruct,pth_BB2,Years);
             
             % Filter bad data from BB2
-            ind_bad = tv_datetime <= datetime(2019,11,13);
+            ind_bad = datetime(datestr(tv)) <= datetime(2019,11,13);
             data_BB2(ind_bad) = NaN;
             
             % Merge BB and BB2
@@ -3475,7 +3474,7 @@ for siteNum = 1:length(siteNames)
             data = -data;
             
             % Flip sign for battery current 1 before June 10 2015
-            ind_bad = tv_datetime <= datetime(2015,6,9);
+            ind_bad = datetime(datestr(tv)) <= datetime(2015,6,9);
             data(ind_bad,1) = -data(ind_bad,1);
             
             % Export as csv file
