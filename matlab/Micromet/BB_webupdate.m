@@ -11,8 +11,8 @@ function BB_webupdate(siteNames,outputPath)
 % Revisions (latest first):
 %
 % Jan 9, 2023 (Zoran)
-%   - replaced all "datetime(datestr(tv))"  with much (90x) faster
-%     "tv_datetime". Saved ~9s per occurrence.
+%   - replaced all 'datetime(datestr(tv))'  with much (90x) faster
+%     'tv_datetime'. Saved ~9s per occurrence.
 % Nov 29, 2022 (Zoran)
 %   - There was a bug in the data cleaning for records csv file:
 %     I commented out this line which caused the problem (erased all data):

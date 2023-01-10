@@ -5,6 +5,10 @@
 % Zoran used this script to correct the bad data files
 % after they were found by search_for_bad_files.m
 
+%-----------------------------------------------
+% PREVENT RUNNING OF THIS FUNCTION BY MISTAKE:
+return
+%-----------------------------------------------
 
 % folder with the bad files
 yearIn = 2021;
