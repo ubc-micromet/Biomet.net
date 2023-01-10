@@ -1,0 +1,47 @@
+% Search for database files that are of a wrong length 
+% (in Jan 2023 there was a bug that created extra entries 
+%  and appended them to db files for DSM and BB2 MET folder).
+% Zoran used this script to find the folders with the bad data files
+
+for cntID = {'BB','BB2','DSM','RBM'}
+    siteID = char(cntID);
+    for cntType = {'Met','Flux'}
+        dataType = char(cntType);
+        for yearIn = 2018:2023
+            find_db_files_with_wrong_length(siteID,yearIn,dataType,-1);
+            %fprintf('-----------\n');
+        end
+    end
+end
+
+return
+
+% Used this part to correct the file lengths 
+yearIn = 2021;
+siteID = 'BB2';
+dataType = 'MET';
+
+pathIn = fullfile(biomet_database_default,num2str(yearIn),siteID,dataType,'*');
+s=dir(pathIn);
+tv = fr_round_time(datenum(yearIn,1,1,0,30,0):1/48:datenum(yearIn+1,1,1,0,0,0));
+correctFileSize = length(tv)*4;
+
+for cntFile = 1:length(s)
+    if ~s(cntFile).isdir && ...
+       ~strcmpi(s(cntFile).name,'clean_tv') && ...
+       ~strcmpi(s(cntFile).name,'TimeVector') && ...
+       ~strcmpi(s(cntFile).name,'.DS_Store') && ...
+       ~strcmpi(s(cntFile).name,'.Rhistory')
+       
+        x = read_bor(fullfile(s(cntFile).folder,s(cntFile).name));
+        fprintf('%2d %10d %s',cntFile,length(x),s(cntFile).name);
+        if length(x) ~= correctFileSize/4
+            x = x(1:correctFileSize/4);
+            save_bor(fullfile(s(cntFile).folder,s(cntFile).name),[],[],x);
+            fprintf('File shortened\n');
+        else
+            fprintf('\n');
+        end
+    end
+end
+
