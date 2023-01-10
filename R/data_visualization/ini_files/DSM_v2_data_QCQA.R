@@ -71,7 +71,8 @@ data$DOY <- yday(data$datetime)
 
 # Load third stage fluxes
 level <- c("Clean/ThirdStage")
-vars_other <- c("NEE","NEE_PI_F_MDS")
+vars_other <- c("NEE","FC","H","LE","FCH4","NEE_PI_F_MDS",
+                "FC_PI_F_MDS","H_PI_F_MDS","LE_PI_F_MDS","FCH4_PI_F_MDS","FCH4_PI_F_RF")
 tv_input <- "clean_tv"
 data_thirdstage <- read_database(basepath,yrs,site,level,vars_other,tv_input,export)
 
@@ -179,3 +180,7 @@ vars_TS <- c("TW_1_1_1","TS_1_1_1","TS_1_2_1","TS_1_3_1","TS_1_4_1",
 
 var_other <- list(as.list(vars_G),as.list(vars_precip),as.list(vars_WTD),as.list(vars_TS))
 yaxlabel_other <- c("G (W/m2)","Precipiataion (mm)", "Water table depth (m)","Temperature (°C)")
+
+flux_vars <- c("NEE","FC","H","LE","FCH4") # List flux variables to plot (to compare Second and Third stages)
+flux_vars_gf <- c("NEE_PI_F_MDS","FC_PI_F_MDS","H_PI_F_MDS","LE_PI_F_MDS","FCH4_PI_F_MDS","FCH4_PI_F_RF") # List flux variables to plot (to compare Second and Third stages)
+

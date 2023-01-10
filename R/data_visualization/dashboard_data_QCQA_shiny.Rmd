@@ -98,7 +98,7 @@ scatter_plot_QCQA(data,vars_temp[1],vars_temp[2],"HMP Air temperature (°C)","Ot
 scatter_plot_QCQA(data,vars_RH[1],vars_RH[2], "HMP RH (%)","LI-7200 RH (%)",0)
 ```
 
-Radiation Time Series 
+Rad Time Series 
 =======================================================================
 
 Column {data-width=600}
@@ -123,7 +123,7 @@ scatter_plot_QCQA(data,vars_radiometer[1],vars_PPFD[1], "SW_IN (W/m2)","PPFD_IN 
 R2_slope_QCQA(data,vars_radiometer[1],vars_PPFD[1])
 ```
 
-Radiation Diagnostics
+Rad Diagnostics
 =======================================================================
 
 Row 
@@ -245,34 +245,83 @@ renderPlotly({
 })
 ```
 
-Flux time series - WORK STARTING HERE!
+Flux time series 
 =======================================================================
 
 Column {.sidebar}
 -----------------------------------------------------------------------
 
 ```{r}
-selectInput('f', 'Variable Second Stage', names(data[, !names(data) %in% c("datetime")])) 
-selectInput('f3', 'Variable Third Stage', names(data_thirdstage[, !names(data_thirdstage) %in% c("datetime")])) 
+selectInput('f', 'Variable', flux_vars) 
+selectInput('f3', 'Gap-filled Variable', flux_vars_gf) 
 ```
 
 Column
 -----------------------------------------------------------------------
 
-### Time series of single met variable
+### Time series of single flux variable
 
 ```{r}
-dataset_second <- reactive({
-  data[, c(input$x, input$f)]
+
+dataset_flux <- reactive({
+  data[, c("datetime", input$f)]
 })
 
-dataset_third <- reactive({
-  data_thirdstage[, c(input$x, input$f3)]
+dataset_thirdstage <- reactive({
+  data_thirdstage[, c("datetime", input$f3)]
 })
 
 renderPlotly({
-  plot_ly(dataset_second, x = ~datetime, y = ~data[[input$y]], type = 'scatter', mode = 'lines') %>%
-    layout(yaxis = list(title = input$f)) %>%
-    toWebGL() 
+
+  p <- ggplot() +
+    geom_line(data = dataset_thirdstage(), aes_string(x = "datetime", y = input$f3),color = "black")+
+    geom_line(data = dataset_flux(), aes_string(x = "datetime", y = input$f),color = rgb(0.2, 0.6, 0.9, 1))+
+    geom_line(data = data_thirdstage, aes_string(x = "datetime", y = input$f),color = "#69b3a2")+
+    xlab("") #ADD LEGEND
+  p <- ggplotly(p) %>% toWebGL()
+  
 })
 ```
+
+Flux summary
+=======================================================================
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+```{r}
+selectInput('fl3', 'Gap-filled Variable', flux_vars_gf) 
+```
+
+Column
+-----------------------------------------------------------------------
+
+### daily mean time series of single flux variable
+
+```{r}
+
+dataset_thirdstage_daily <- reactive({
+  data_thirdstage[, c("year","DOY", input$fl3)]
+})
+
+renderPlotly({
+
+  df <- dataset_thirdstage_daily()
+  colnames(df)[3] <- "var"
+  
+   daily.data <- df %>%
+    group_by(year,DOY) %>%
+    dplyr::summarize(var = median(var, na.rm = TRUE),
+                     DOY = first(DOY),
+                     year = as.factor(first(year)))
+  
+  p <- ggplot() +
+    geom_line(data = daily.data , aes(x = DOY, y = var))+ ## ADD YEAR
+    ylab(input$fl3)
+  p <- ggplotly(p) %>% toWebGL()
+  
+})
+```
+
+Flux diagnostics - ADD
+=======================================================================
