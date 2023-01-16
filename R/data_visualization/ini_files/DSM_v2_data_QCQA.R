@@ -16,7 +16,7 @@ vars <- c("WD_1_1_1","wind_dir","WS_1_1_1","wind_speed","USTAR","W_SIGMA",
           "P_1_1_1","G_1_1_1","G_2_1_1","G_3_1_1",
           "TW_1_1_1","TS_1_1_1","TS_1_2_1","TS_1_3_1","TS_1_4_1",
           "TS_2_1_1","TS_2_2_1","TS_2_3_1","TS_2_4_1","WTD_1_1_1", 
-          "NEE")
+          "NEE","FC","H","LE","FCH4")
 tv_input <- "clean_tv"
 
 export <- 0 # 1 to save a csv file of the data, 0 otherwise

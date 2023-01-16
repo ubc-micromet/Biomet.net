@@ -268,19 +268,26 @@ dataset_flux <- reactive({
 })
 
 dataset_thirdstage <- reactive({
-  data_thirdstage[, c("datetime", input$f3)]
+  data_thirdstage[, c(input$f3)]
 })
-
+  
 renderPlotly({
 
-  p <- ggplot() +
-    geom_line(data = dataset_thirdstage(), aes_string(x = "datetime", y = input$f3),color = "black")+
-    geom_line(data = dataset_flux(), aes_string(x = "datetime", y = input$f),color = rgb(0.2, 0.6, 0.9, 1))+
-    geom_line(data = data_thirdstage, aes_string(x = "datetime", y = input$f),color = "#69b3a2")+
-    xlab("") #ADD LEGEND
+  df <- cbind(dataset_flux(), dataset_thirdstage(),data_thirdstage[, input$f])
+  colnames(df) <- c("datetime","gap_filled","second_stage","third_stage")
+  
+  colors = c("gap-filled" = "black", "Second stage" = rgb(0.2, 0.6, 0.9, 1), "Third stage" = "#69b3a2")
+  
+  p <- ggplot(data = df) +
+    geom_line(aes_string(x = "datetime", y = "gap_filled",color = shQuote("Gap-filled")))+
+    geom_line(aes_string(x = "datetime", y = "second_stage", color = shQuote("Second stage")))+
+    geom_line(aes_string(x = "datetime", y = "third_stage", color = shQuote("Third stage")))+
+    xlab("") + ylab(input$f) +
+    scale_color_manual(values = colors) + labs(color = "Trace")
   p <- ggplotly(p) %>% toWebGL()
   
 })
+
 ```
 
 Flux summary
@@ -305,11 +312,11 @@ dataset_thirdstage_daily <- reactive({
 })
 
 renderPlotly({
-
+  
   df <- dataset_thirdstage_daily()
   colnames(df)[3] <- "var"
   
-   daily.data <- df %>%
+  daily.data <- df %>%
     group_by(year,DOY) %>%
     dplyr::summarize(var = median(var, na.rm = TRUE),
                      DOY = first(DOY),
