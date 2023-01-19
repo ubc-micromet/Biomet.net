@@ -137,7 +137,7 @@ Column {data-width=400}
 
 ```{r}
 
-dataset_thirdstage_daily <- reactive({
+dataset_thirdstage_cum <- reactive({
   data_thirdstage[, c("year","DOY", input$fl3)]
 })
 
@@ -145,23 +145,63 @@ renderPlotly({
 
   conv_fact <- 44.01/(10^6)*(60*30) # Conversion factor to account for the number of gCO2 per 30 min
   
-  df <- dataset_thirdstage_daily()
+  df <- dataset_thirdstage_cum()
   colnames(df)[3] <- "var"
   
    daily.cum <- df %>%
     group_by(year,DOY) %>%
-    dplyr::summarize(var = cumsum(var*conv_fact, na.rm = TRUE),
+    dplyr::summarize(var = sum(var*conv_fact), # Deal with the conversion factor
                      DOY = first(DOY),
                      year = as.factor(first(year)))
+   daily.cum$var_cum <- cumsum(daily.cum$var)
   
   p <- ggplot() +
-    geom_line(data = daily.cum, aes(x = DOY, y = var, color = year))+ 
+    geom_line(data = daily.cum, aes(x = DOY, y = var_cum, color = year))+ 
     ylab(input$fl3)
   p <- ggplotly(p) %>% toWebGL()
   
 })
 ```
 
+### Mean diurnal pattern - update to use non-gap-filled data!!
+
+```{r}
+
+dataset_thirdstage_diurnal <- reactive({
+  data_thirdstage[, c("datetime", input$fl3)]
+})
+
+renderPlotly({
+  
+    df <- dataset_thirdstage_diurnal()
+  colnames(df)[2] <- "var"
+  
+   data.diurnal <- df %>%
+      mutate(
+        year = as.factor(year(datetime)),
+        month = month(datetime),
+        day = day(datetime),
+        jday = yday(datetime),
+        hour = hour(datetime),
+        minute = minute(datetime),
+        HHMM = format(as.POSIXct(datetime), format = "%H:%M")
+      ) %>%  # Create hour and minute variable (HHMM)
+      group_by(year, HHMM) %>%
+      dplyr::summarize(var = median(var))
+   
+     data.diurnal$time <- as.POSIXct(as.character(data.diurnal$HHMM), format="%R", tz="UTC")
+
+    
+  
+  p <- ggplot() +
+    geom_line(data = data.diurnal, aes(x = time, y = var,color = year)) +
+    scale_x_datetime(breaks="6 hours", date_labels = "%R") + ylab(input$fl3)
+  
+  p <- ggplotly(p) %>% toWebGL()
+  p
+  
+})
+```
 
 Flux diagnostics - ADD
 =======================================================================
