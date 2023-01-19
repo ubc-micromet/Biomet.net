@@ -102,9 +102,9 @@ read_database <-
       
       if (i == 1) {
         empty_df = df[FALSE, ]
-        dfmultiyear <- rbind(empty_df, df)
+        dfmultiyear <- bind_rows(empty_df, df)
       } else {
-        dfmultiyear <- rbind(dfmultiyear, df)
+        dfmultiyear <- bind_rows(dfmultiyear, df)
       }
     }
     

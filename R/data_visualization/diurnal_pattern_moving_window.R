@@ -3,23 +3,27 @@
 # June 30, 2022
 
 # Input
-# datetime = date in format e.g., "2019-12-12 08:00:00 UTC"
-# var = variable of interest
+# data = data frame
+# var_interest = variable of interest
 # width = width of moving windows in days
 # ts = timestep (i.e., 48 half hour observations per day)
 
 # Loop through data frame to create mean diurnal patter for an n day moving average
-diurnal.summary <- function(datetime, var, width, ts) {
+diurnal.summary <- function(data, var_interest, width, ts) {
+  
+  # Create new dataframe with only variables of interest
+  df <- (data[, (colnames(data) %in% c("datetime", var_interest))])
   
   # Find index of first midnight time point
   istart <-
-    first(which(hour(datetime) == 0 & minute(datetime) == 0))
-  iend <- last(which(hour(datetime) == 23 & minute(datetime) == 30))
-  
-  df <- data.frame(datetime, var)
+    first(which(hour(df$datetime) == 0 & minute(df$datetime) == 0))
+  iend <- last(which(hour(df$datetime) == 23 & minute(df$datetime) == 30))
   
   # Create new data frame starting from midnight and ending at 11:30pm
   df2 <- df[istart:iend, ]
+  
+  # Rename column names
+  colnames(df2) <- c("datetime", "var")
   
   # Specify number of windows to loop through
   nwindows <- floor(nrow(df2) / width / ts)
@@ -62,6 +66,8 @@ diurnal.summary <- function(datetime, var, width, ts) {
   
   # Create new time variable for plotting purposes
   diurnal.summary$time <- as.POSIXct(as.character( diurnal.summary$HHMM), format="%R", tz="UTC")
+  
+  diurnal.summary <- diurnal.summary[is.finite(diurnal.summary$var), ]
   
   return(diurnal.summary)
 }

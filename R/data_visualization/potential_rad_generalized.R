@@ -7,7 +7,7 @@
 # long = longitude of site
 # Lat = latitude of site
 
-potential_rad <- function(Standard_meridian,long,Lat,datetime,DOY){
+potential_rad_generalized <- function(Standard_meridian,long,Lat,datetime,DOY){
   
   # Solar constant
   Io  <- 1366.5 # units of W m−2
