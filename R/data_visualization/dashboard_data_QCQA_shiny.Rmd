@@ -270,9 +270,9 @@ dataset_flux <- reactive({
 dataset_thirdstage <- reactive({
   data_thirdstage[, c(input$f3)]
 })
-  
-renderPlotly({
 
+renderPlotly({
+  
   df <- cbind(dataset_flux(), dataset_thirdstage(),data_thirdstage[, input$f])
   colnames(df) <- c("datetime","gap_filled","second_stage","third_stage")
   
@@ -293,17 +293,27 @@ renderPlotly({
 Flux summary
 =======================================================================
 
+```{r}
+# Create conversion factors
+conv_factor <- data.frame(44.01/(10^6)*(60*30),16.04/(10^9)*(60*30),(60*30)/(10^6))
+colnames(conv_factor) <- c("CO2","CH4","Energy")
+
+# Create string for conversion factor variable names
+conv_factor_vars <- c("CO2","CH4","Energy")
+```
+
 Column {.sidebar}
 -----------------------------------------------------------------------
 
 ```{r}
 selectInput('fl3', 'Gap-filled Variable', flux_vars_gf) 
+selectInput('conv', 'Conversion factor for cumulative flux', conv_factor_vars) 
 ```
 
-Column
+Column {data-width=600}
 -----------------------------------------------------------------------
 
-### daily mean time series of single flux variable
+### Daily mean time series of single flux variable by year
 
 ```{r}
 
@@ -323,9 +333,87 @@ renderPlotly({
                      year = as.factor(first(year)))
   
   p <- ggplot() +
-    geom_line(data = daily.data , aes(x = DOY, y = var))+ ## ADD YEAR
+    geom_line(data = daily.data , aes(x = DOY, y = var, color = year))+ 
     ylab(input$fl3)
   p <- ggplotly(p) %>% toWebGL()
+  
+})
+```
+
+Column {data-width=400}
+-----------------------------------------------------------------------
+
+### Cumulative flux
+
+```{r}
+
+dataset_thirdstage_cum <- reactive({
+  data_thirdstage[, c("year","DOY", input$fl3)]
+})
+
+convfactor <- reactive({
+  conv_factor[ ,c(input$conv)]
+})
+
+renderPlotly({
+  
+  df <- dataset_thirdstage_cum()
+  colnames(df)[3] <- "var"
+  
+  cf <- convfactor()
+  
+  daily.cum <- df %>%
+    group_by(year,DOY) %>%
+    dplyr::summarize(var = sum(var*cf), 
+                     DOY = first(DOY),
+                     year = as.factor(first(year)))
+  daily.cum$var_cum <- cumsum(daily.cum$var)
+  
+  p <- ggplot() +
+    geom_line(data = daily.cum, aes(x = DOY, y = var_cum, color = year))+ 
+    ylab(input$fl3)
+  p <- ggplotly(p) %>% toWebGL()
+  
+})
+```
+
+### Mean diurnal pattern
+
+```{r}
+
+dataset_thirdstage_diurnal <- reactive({
+  data_thirdstage[, c("datetime", input$fl3)]
+})
+
+renderPlotly({
+  
+  colname <- colnames(dataset_thirdstage_diurnal())
+  var_in <-  str_split(colname[2],"_")
+  
+  df <- data_thirdstage[, c("datetime", var_in[[1]][1])]
+  colnames(df)[2] <- "var"
+  
+  data.diurnal <- df %>%
+    mutate(
+      year = as.factor(year(datetime)),
+      month = month(datetime),
+      day = day(datetime),
+      jday = yday(datetime),
+      hour = hour(datetime),
+      minute = minute(datetime),
+      HHMM = format(as.POSIXct(datetime), format = "%H:%M")
+    ) %>%  # Create hour and minute variable (HHMM)
+    group_by(year, HHMM) %>%
+    dplyr::summarize(var = median(var,na.rm = TRUE))
+  
+  data.diurnal$time <- as.POSIXct(as.character(data.diurnal$HHMM), format="%R", tz="UTC")
+  
+  p <- ggplot() +
+    geom_line(data = data.diurnal, aes(x = time, y = var,color = year)) +
+    scale_x_datetime(breaks="6 hours", date_labels = "%R") + ylab(var_in[[1]][1])
+  
+  p <- ggplotly(p) %>% toWebGL()
+  p
   
 })
 ```
