@@ -1,4 +1,4 @@
-yearX = 2019 ;
+yearX = 2021 ;
 traceName = 'MET_Barom_Press_kPa_Avg';
 siteID = 'BB2';
 switch siteID

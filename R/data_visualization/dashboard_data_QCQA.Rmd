@@ -1,6 +1,6 @@
 ---
 title: "Data QCQA" 
-knit: (function(inputFile, encoding) { rmarkdown::render(inputFile, encoding = encoding, output_file = file.path(dirname(inputFile), 'DSM_data_QCQA.html')) })
+knit: (function(inputFile, encoding) { rmarkdown::render(inputFile, encoding = encoding, output_file = file.path(dirname(inputFile), 'BB_data_QCQA.html')) })
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
@@ -42,7 +42,7 @@ library(ggpmisc)
 
 <!-- specify init file to read -->
 ```{r echo=FALSE, include=FALSE}
-read_chunk('ini_files/DSM_v2_data_QCQA.R')
+read_chunk('C:/Biomet.net/R/data_visualization/ini_files/BB_v2_data_QCQA.R')
 ```
 
 ```{r, echo=FALSE, include=FALSE}
