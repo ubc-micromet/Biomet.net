@@ -39,7 +39,6 @@ read_database <-
     
     # Loop through years
     for (i in 1:length(yrs)) {
-      
       inpath <-
         paste(basepath,
               "/",
@@ -49,7 +48,7 @@ read_database <-
               "/",
               level[1],
               sep = "")
-      
+      inpath
       setwd(inpath)
       #Convert Matlab timevector to POSIXct
       tv <- readBin(tv_input, double(), n = 18000)
