@@ -48,7 +48,6 @@ read_database <-
               "/",
               level[1],
               sep = "")
-      inpath
       setwd(inpath)
       #Convert Matlab timevector to POSIXct
       tv <- readBin(tv_input, double(), n = 18000)
