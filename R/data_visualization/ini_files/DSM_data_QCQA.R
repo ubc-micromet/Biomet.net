@@ -25,9 +25,6 @@ export <- 0 # 1 to save a csv file of the data, 0 otherwise
 fx_path <- "/Users/sara/Code/Biomet.net/R/data_visualization"
 p <- sapply(list.files(pattern="*.R$", path=fx_path, full.names=TRUE), source)
 
-# Load functions from 'database_functions' folder
-source("/Users/sara/Code/Biomet.net/R/database_functions/read_database.R")
-
 # Create dataframe for years & variables of interest
 # Path to function to load data
 data1 <- read_database(basepath,yrs,site,level,vars,tv_input,export)

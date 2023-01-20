@@ -32,7 +32,6 @@ library(knitr)
 # 2) NEED TO ADD 7200, 7700 temp and 7200 RH & CHECK WHICH TEMP IS USED TO SONIC (cross wind corrected or no) ADD HERE after MEETING ON THURSDAY!
 # 3) Try to track down WD_CUP at all sites
 # 4) Remove duplicate variables (e.g., see google sheets for tracking)
-# 5) Think about output directory (can change by replacing 'dirname(inputFile)' above)
 # 6) Add EBC
 ```
 
