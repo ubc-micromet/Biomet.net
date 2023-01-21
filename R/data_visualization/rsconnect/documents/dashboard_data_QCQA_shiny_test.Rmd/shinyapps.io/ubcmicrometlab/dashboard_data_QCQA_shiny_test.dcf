@@ -5,10 +5,9 @@ account: ubcmicrometlab
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 8087460
-bundleId: 6756412
+bundleId: 6757252
 url: https://ubcmicrometlab.shinyapps.io/dashboard_data_QCQA_shiny_test/
-when: 1674240817.98882
-lastSyncTime: 1674240817.98883
-asMultiple: TRUE
+when: 1674259751.60769
+lastSyncTime: 1674259751.6077
+asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: dashboard_data_QCQA_shiny.Rmd

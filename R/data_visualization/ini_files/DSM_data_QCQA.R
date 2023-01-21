@@ -25,6 +25,9 @@ export <- 0 # 1 to save a csv file of the data, 0 otherwise
 fx_path <- "/Users/sara/Code/Biomet.net/R/data_visualization"
 p <- sapply(list.files(pattern="*.R$", path=fx_path, full.names=TRUE), source)
 
+# Load functions from 'database_functions' folder
+source("/Users/sara/Code/Biomet.net/R/database_functions/read_database.R")
+
 # Create dataframe for years & variables of interest
 # Path to function to load data
 data1 <- read_database(basepath,yrs,site,level,vars,tv_input,export)
@@ -133,24 +136,6 @@ Lat <- 49.0886
 data$potential_radiation <- potential_rad_generalized(Standard_meridian,long,Lat,data$datetime,data$DOY)
 data$potential_radiation[is.na(data$SW_IN_1_1_1)] <- NA
 var_potential_rad <- "potential_radiation"
-
-# # Plot diurnal pattern with moving window
-# source("/Users/sara/Code/MLABcode/data_visualization/diurnal_pattern_moving_window.R")
-# diurnal.summary <- diurnal.summary(data$datetime, data$G_1_1_1, 30, 48)
-# 
-# diurnal.summary.composite <- diurnal.summary %>%
-# group_by(firstdate,HHMM) %>%
-# dplyr::summarize(var = median(var, na.rm = TRUE),
-#                    HHMM = first(HHMM))
-# diurnal.summary.composite$time <- as.POSIXct(as.character(diurnal.summary.composite$HHMM), format="%R", tz="UTC")
-# 
-#  p <- ggplot() +
-#    geom_point(data = diurnal.summary, aes(x = time, y = var),color = 'Grey',size = 0.1) +
-#    geom_line(data = diurnal.summary.composite, aes(x = time, y = var),color = 'Black') +
-#    scale_x_datetime(breaks="6 hours", date_labels = "%R")
-# 
-#  p <- ggplotly(p+ facet_wrap(~as.factor(firstdate))) %>% toWebGL()
-#  p
 
 # Pressure variables
 # Make sure that all pressure variables are in the same units (e.g., kPa)
