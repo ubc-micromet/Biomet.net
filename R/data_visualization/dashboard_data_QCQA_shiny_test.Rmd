@@ -249,5 +249,27 @@ if (exists("data_thirdstage") == TRUE) {
 }
 ```
 
-Flux diagnostics - ADD
+Flux diagnostics
 =======================================================================
+
+Column {data-width=600}
+-----------------------------------------------------------------------
+
+### Flux diagnostics
+```{r}
+flux_diagnostic_plots(data,vars_flux_diag)
+```
+
+Column {data-width=400}
+-----------------------------------------------------------------------
+
+### EBC half-hourly
+```{r}
+scatter_plot_QCQA_EBC(data_thirdstage,vars_EBC_AE,c("H","LE"),"AE  (W m-2)","H+LE (W m-2)")
+```
+
+### EBC daily
+```{r}
+scatter_plot_QCQA_EBC_daily(data_thirdstage,vars_EBC_AE,c("H","LE"),"AE  (W m-2)","H+LE (W m-2)")
+```
+
