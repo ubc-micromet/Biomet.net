@@ -34,7 +34,8 @@ data1 <- read_database(basepath,yrs,site,level,vars,tv_input,export)
 
 # Load traces just for plotting that aren't in clean
 level <- c("Flux")
-vars_other <- c("air_temperature","air_t_mean","RH","air_pressure","air_p_mean","pitch")
+vars_other <- c("air_temperature","air_t_mean","RH","air_pressure","air_p_mean","pitch",
+                "avg_signal_strength_7200_mean","rssi_77_mean","flowrate_mean","file_records","used_records")  
 tv_input <- "Clean_tv"
 data2 <- read_database(basepath,yrs,site,level,vars_other,tv_input,export)
 
@@ -72,7 +73,7 @@ data$DOY <- yday(data$datetime)
 # Load third stage fluxes
 level <- c("Clean/ThirdStage")
 vars_other <- c("NEE","FC","H","LE","FCH4","NEE_PI_F_MDS",
-                "FC_PI_F_MDS","H_PI_F_MDS","LE_PI_F_MDS","FCH4_PI_F_MDS","FCH4_PI_F_RF")
+                "FC_PI_F_MDS","H_PI_F_MDS","LE_PI_F_MDS","FCH4_PI_F_MDS","FCH4_PI_F_RF","G_1","NETRAD_1_1_1")
 tv_input <- "clean_tv"
 data_thirdstage <- read_database(basepath,yrs,site,level,vars_other,tv_input,export)
 
@@ -166,3 +167,6 @@ yaxlabel_other <- c("G (W/m2)","Precipiataion (mm)", "Water table depth (m)","Te
 flux_vars <- c("NEE","FC","H","LE","FCH4") # List flux variables to plot (to compare Second and Third stages)
 flux_vars_gf <- c("NEE_PI_F_MDS","FC_PI_F_MDS","H_PI_F_MDS","LE_PI_F_MDS","FCH4_PI_F_MDS","FCH4_PI_F_RF") # List flux variables to plot (to compare Second and Third stages)
 
+vars_flux_diag <- c("avg_signal_strength_7200_mean","rssi_77_mean","flowrate_mean","file_records","used_records") # This list should be consistent across all sites and the order should be the same
+
+vars_EBC_AE <- c("NETRAD_1_1_1","G_1") # Include all terms for available energy. it should always include net radiation. Other terms to include if available are G, and other key storage terms.
