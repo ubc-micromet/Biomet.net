@@ -38,7 +38,7 @@ library(knitr)
 
 <!-- specify init file to read -->
 ```{r echo=FALSE, include=FALSE}
-read_chunk('ini_files/BB_data_QCQA.R')
+read_chunk('ini_files/DSM_data_QCQA.R')
 ```
 
 ```{r, echo=FALSE, include=FALSE}
