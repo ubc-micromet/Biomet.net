@@ -30,7 +30,7 @@ for i = years
        if ismember(SiteId,{'MPB1','MPB2','MPB3','HP09','HP11'})
            do_dir(db_pth,base_dir,fullfile(yyyy,SiteId,'Flux_Logger','Clean')); 
        end
-       if ismember(SiteId,{'BB','BB1','DSM','RBM','HOGG','YOUNG'})
+       if ismember(SiteId,{'BB','BB2','DSM','RBM','HOGG','YOUNG'})
            do_dir(db_pth,base_dir,fullfile(yyyy,SiteId,'Met','Clean'));
        else
            do_dir(db_pth,base_dir,fullfile(yyyy,SiteId,'Climate','Clean'));

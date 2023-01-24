@@ -10,8 +10,9 @@ yrs <- c(2021:2021) # Make sure to include the most recent year
 site <- "BB"
 level <- c("Clean/SecondStage","Met/clean")
 vars <- c("WD_1_1_1","wind_dir","WS_1_1_1","wind_speed","USTAR","W_SIGMA",
-          "ts","TA_1_1_1","air_temperature","air_t_mean","RH_1_1_1","RH","e","es","es",
-          "SW_IN_1_1_1","SW_OUT_1_1_1","LW_IN_1_1_1","LW_OUT_1_1_1","NETRAD_1_1_1","PPFD_IN_1_1_1","PPFD_OUT_1_1_1",
+          "ts","TA_1_1_1","RH_1_1_1","RH","e","es","es",
+          "SW_IN_1_1_1","SW_OUT_1_1_1","LW_IN_1_1_1","LW_OUT_1_1_1",
+          "NETRAD_1_1_1","PPFD_IN_1_1_1","PPFD_OUT_1_1_1",
           "air_pressure","PA_1_1_1",
           "P_1_1_1","G_1_1_1","G_2_1_1","G_3_1_1",
           "TW_1_1_1","TS_1_1_1","TS_1_2_1","TS_1_3_1","TS_1_4_1","WTD_1_1_1", 
