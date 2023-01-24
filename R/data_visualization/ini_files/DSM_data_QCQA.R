@@ -34,7 +34,8 @@ data1 <- read_database(basepath,yrs,site,level,vars,tv_input,export)
 
 # Load traces just for plotting that aren't in clean
 level <- c("Flux")
-vars_other <- c("air_temperature","air_t_mean","RH","air_pressure","air_p_mean","pitch")
+vars_other <- c("air_temperature","air_t_mean","RH","air_pressure","air_p_mean","pitch",
+                "avg_signal_strength_7200_mean","rssi_77_mean","flowrate_mean","file_records","used_records")  
 tv_input <- "Clean_tv"
 data2 <- read_database(basepath,yrs,site,level,vars_other,tv_input,export)
 
@@ -72,7 +73,7 @@ data$DOY <- yday(data$datetime)
 # Load third stage fluxes
 level <- c("Clean/ThirdStage")
 vars_other <- c("NEE","FC","H","LE","FCH4","NEE_PI_F_MDS",
-                "FC_PI_F_MDS","H_PI_F_MDS","LE_PI_F_MDS","FCH4_PI_F_MDS","FCH4_PI_F_RF")
+                "FC_PI_F_MDS","H_PI_F_MDS","LE_PI_F_MDS","FCH4_PI_F_MDS","FCH4_PI_F_RF","G_1","NETRAD_1_1_1")
 tv_input <- "clean_tv"
 data_thirdstage <- read_database(basepath,yrs,site,level,vars_other,tv_input,export)
 
@@ -137,24 +138,6 @@ data$potential_radiation <- potential_rad_generalized(Standard_meridian,long,Lat
 data$potential_radiation[is.na(data$SW_IN_1_1_1)] <- NA
 var_potential_rad <- "potential_radiation"
 
-# # Plot diurnal pattern with moving window
-# source("/Users/sara/Code/MLABcode/data_visualization/diurnal_pattern_moving_window.R")
-# diurnal.summary <- diurnal.summary(data$datetime, data$G_1_1_1, 30, 48)
-# 
-# diurnal.summary.composite <- diurnal.summary %>%
-# group_by(firstdate,HHMM) %>%
-# dplyr::summarize(var = median(var, na.rm = TRUE),
-#                    HHMM = first(HHMM))
-# diurnal.summary.composite$time <- as.POSIXct(as.character(diurnal.summary.composite$HHMM), format="%R", tz="UTC")
-# 
-#  p <- ggplot() +
-#    geom_point(data = diurnal.summary, aes(x = time, y = var),color = 'Grey',size = 0.1) +
-#    geom_line(data = diurnal.summary.composite, aes(x = time, y = var),color = 'Black') +
-#    scale_x_datetime(breaks="6 hours", date_labels = "%R")
-# 
-#  p <- ggplotly(p+ facet_wrap(~as.factor(firstdate))) %>% toWebGL()
-#  p
-
 # Pressure variables
 # Make sure that all pressure variables are in the same units (e.g., kPa)
 data$air_pressure_kPa <- data$air_pressure/1000
@@ -184,3 +167,6 @@ yaxlabel_other <- c("G (W/m2)","Precipiataion (mm)", "Water table depth (m)","Te
 flux_vars <- c("NEE","FC","H","LE","FCH4") # List flux variables to plot (to compare Second and Third stages)
 flux_vars_gf <- c("NEE_PI_F_MDS","FC_PI_F_MDS","H_PI_F_MDS","LE_PI_F_MDS","FCH4_PI_F_MDS","FCH4_PI_F_RF") # List flux variables to plot (to compare Second and Third stages)
 
+vars_flux_diag <- c("avg_signal_strength_7200_mean","rssi_77_mean","flowrate_mean","file_records","used_records") # This list should be consistent across all sites and the order should be the same
+
+vars_EBC_AE <- c("NETRAD_1_1_1","G_1") # Include all terms for available energy. it should always include net radiation. Other terms to include if available are G, and other key storage terms.
