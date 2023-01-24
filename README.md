@@ -49,6 +49,9 @@ The biomet_database_default.m and localDataCleaning_ini.mat files will be stored
 
 * Run `setupLocalDataCleaning` from the command line. 
 
+* **Note**: You need to be logged into the VPN and connected to vinimet.  However, the application won't necessarily prompt you for the vinimet login.
+ * If the application fails - try connecting to vinimet via your file manager first (e.g. \\vinimet.geog.ubc.ca\ubc_flux$) so you are prompted for the logon - then try again.
+
 * Change the app settings if needed. The program always saves the settings after each successful run. Those settings become the defaults for the next app run. If the user starts the app while being in the same folder, the setup info saved during the previous run (file localDataCleaning_ini.mat) will be loaded with the default settings for the GUI.
 
 * Here are the app settings you may need to change:<br />
