@@ -379,6 +379,6 @@ end
 % and checking that inside biomet_path. But biomet_path would need to make sure that 
 % it uses this info *only* if called by a few TA functions 
 % (read_data,read_single_trace and their children). The main program(s) 
-% (like fr_automated_cleaning should always start by dreleting this field from UserData before 
+% (like fr_automated_cleaning should always start by deleting this field from UserData before 
 %  setting or not setting user-path). Think about it.
 
