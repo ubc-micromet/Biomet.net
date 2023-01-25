@@ -36,6 +36,9 @@ function [npp_trace, npp_total, a_new, ra, rh] = fr_npp_trace(Xyear,SiteID,style
 % 
 % Revisions:
 %
+% Jan 24, 2023 (Zoran)
+%   - Pulled "B = 100; " from within the loop to before the loop to avoid
+%     errors if the function does not enter the RNG loop
 % Apr 24, 2020 (Zoran)
 %   - corrected the cases here: replaced fcrn_gapsize with FCRN_gapsize
 %   - accepted matlab's new way of checking the number of input parameters:
@@ -195,6 +198,7 @@ r = r(1:length(t));
 %setup loop
 tic
 count = 0; %tracks # of many RNG calls
+B = 100; %number of bootstrap replicates/samples per datum
 for ind = 1:length(t)
     %check for actual data using NaNs...  NaN's at this point indicate no data possible
     if isnan(nep(ind))
@@ -222,7 +226,7 @@ for ind = 1:length(t)
         %ntrials = 100 to calculate NPP as follows: npp = p ( (1 - a_bootstrap)/(1 + r) )
         %Note: the mathematics preclude mighttime NPP as P = 0!  Also, using NEP -
         %ER is unhelpful as nighttime NEP = ER (EC measures ER at night).
-        B = 100; %number of bootstrap replicates/samples per datum
+
         npp_bootstrap = zeros(B,1); %create empty vectors
         a_bootstrap = zeros(B,1);
         for i = 1:B
