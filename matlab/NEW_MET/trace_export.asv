@@ -6,15 +6,11 @@ function [export_mat] = trace_export(file_opts,trc,export_mat)
 % of the matrix export_mat. Text export then has to be completed elsewhere.
 %
 %	kai* 	Created:			14 Dec, 2000
-%			Last Modified:      Jan 25, 2023
+%			Last Modified:      Sep 21, 2022
 
 
 % Revisions:
 %
-% Jan 25, 2023 (Zoran)
-%   - Automated Clean folder creation for the sites that don't have them.
-%     If missing, it will create 'Clean\SecondStage', 'Flux\Clean',...
-%     and such folder.
 % Sep 21, 2022 (Zoran)
 %   - fixed up the very-old-style dealing with paths. That avoids hard coding '\'
 %     and doubling them up. 
@@ -142,26 +138,20 @@ if ~strcmpi(file_opts.out_path, 'database')
                % if the path doesn't exist, create it but only for "clean" folders
                % confirm that the lowermost folder is named
                % either: "clean", "secondstage" or "thirdstage"
-               if strcmp(pathOut(end),'\') || strcmp(pathOut(end),'/')
-                   % remove trailing filesep otherwise fileparts below
-                   % not do what we want
-                   pathOut(end) = [];
-               end
                 [pthN,fldN] = fileparts(pathOut);
                 if strcmpi(fldN,'clean')
                     % path name gets recreated here to 
                     % make sure the consistency in uppercase/lowercase naming
                     % The first letter in the "measurement type" is in caps
-                    % ("Met" instead of "met", "Flux" instead of "flux")
-                    [pthN1,fldN1] = fileparts(pthN);
-                    fldN1(1) = upper(fldN1(1));
-                    mkdir(fullfile(pthN1,fldN1,'Clean'));
+                    % 
+                    pthN1 = fileparts(pthN);
+                    mkdir(fullfile(pthN,'Clean'));
                 elseif strcmpi(fldN,'SecondStage')
                     pthN1 = fileparts(pthN);
-                    mkdir(fullfile(pthN1,'Clean','SecondStage'))
+                    mkdir(fullfile(pthN1),'Clean','SecondStage')
                 elseif strcmpi(fldN,'ThirdStage')
                     pthN1 = fileparts(pthN);
-                    mkdir(fullfile(pthN1,'Clean','ThirdStage'))
+                    mkdir(fullfile(pthN1),'Clean','ThirdStage')
                 end
            end
            
