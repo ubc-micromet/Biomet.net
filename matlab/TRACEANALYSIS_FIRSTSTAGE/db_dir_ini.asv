@@ -18,9 +18,6 @@ function db_dir_ini(years,SiteId,base_dir,stages,dir)
 %
 % Jan 25, 2023 (Zoran)
 %   - Added standard db_pth_root function instead of 3-line hack below
-%   - fixed the bug created in the previous revision (20220921) that stopped creation
-%     of the missing SecondStage and ThirdStage folders (they need to be
-%     created if they don't exist.
 % 
 
 arg_default('stages',[1 2 3]);
@@ -72,15 +69,6 @@ function do_dir(db_pth,base_dir,pth)
 % On all other computers, default in and out is \\annex001, which is read-only and 
 % won't work.
 
-% 20230125 (Zoran)
-%   - changed 
-%      strcmpi(db_pth,base_dir) 
-%     to
-%      strcmpi(fullfile(db_pth,filesep),fullfile(base_dir,filesep)) 
-%     Fixed bug that made the db_pth ~= base_dir look different if one of them
-%     but not both had a filesep at the end.
-%     This bug was created after 20220921 revision.
-%
 % 20220921 (Zoran)
 % Removed the following lines. Not needed when using fullfile but causing trouble
 % on MacOS by adding the wrong filesep ('\').
@@ -92,18 +80,16 @@ function do_dir(db_pth,base_dir,pth)
 % end
 
 if  isempty(db_pth) ...
-  || exist(fullfile(db_pth,pth),'file')==7 ...
-  || strcmpi(fullfile(db_pth,filesep),fullfile(base_dir,filesep)) 
-  % Using fullfile(db_pth,filesep) adds filesep at the end of the
-  % string but only if needed. That enables comparison db_pth == base_dir
-        if exist(fullfile(base_dir,pth),'file')==7
-            warning off;
-            delete(fullfile(base_dir,pth,'*'));
-            warning on;
-            disp(['Deleted contents of ' fullfile(base_dir,pth)]);
-        else
-            mkdir(base_dir,pth)
-            disp(['Created ' fullfile(base_dir,pth)]);
-        end
+  | exist(fullfile(db_pth,pth),'file')==7 ...
+  | strcmpi(db_pth,base_dir) %#ok<OR2>
+    if exist(fullfile(base_dir,pth),'file')==7
+        warning off;
+        delete(fullfile(base_dir,pth,'*'));
+        warning on;
+        disp(['Deleted contents of ' fullfile(base_dir,pth)]);
+    else
+        mkdir(base_dir,pth)
+        disp(['Created ' fullfile(base_dir,pth)]);
+    end
 end
 
