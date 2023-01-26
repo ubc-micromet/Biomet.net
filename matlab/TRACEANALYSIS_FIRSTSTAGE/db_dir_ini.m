@@ -20,7 +20,10 @@ function db_dir_ini(years,SiteId,base_dir,stages,dir)
 %   - Added standard db_pth_root function instead of 3-line hack below
 %   - fixed the bug created in the previous revision (20220921) that stopped creation
 %     of the missing SecondStage and ThirdStage folders (they need to be
-%     created if they don't exist.
+%     created if they don't exist).
+%   - automated cleaning of the FirstStage Clean folders. Program now find
+%     which folders to empty based on the FirstStage ini files not on the 
+%     hardcoded entries here.
 % 
 
 arg_default('stages',[1 2 3]);
@@ -36,16 +39,24 @@ for i = years
     yyyy = num2str(i);
 
    if find(stages == 1)
-       do_dir(db_pth,base_dir,fullfile(yyyy,SiteId,'Flux','Clean'));  
-       if ismember(SiteId,{'MPB1','MPB2','MPB3','HP09','HP11'})
-           do_dir(db_pth,base_dir,fullfile(yyyy,SiteId,'Flux_Logger','Clean')); 
-       end
-       if ismember(SiteId,{'BB','BB2','DSM','RBM','HOGG','YOUNG'})
-           do_dir(db_pth,base_dir,fullfile(yyyy,SiteId,'Met','Clean'));
-       else
-           do_dir(db_pth,base_dir,fullfile(yyyy,SiteId,'Climate','Clean'));
-           do_dir(db_pth,base_dir,fullfile(yyyy,SiteId,'Profile','Clean'));
-       end       
+        % Find folders to empty based on the ones actually used in the ini files
+        foldersToClean = db_find_folders_to_clean(yyyy,SiteId,1);
+        for cntFolders = 1:length(foldersToClean)
+            do_dir(db_pth,base_dir,char(foldersToClean(cntFolders)));
+        end
+                % The above replaces all these lines for the past, the present and the
+                % future sites:
+                % 
+                %         do_dir(db_pth,base_dir,fullfile(yyyy,SiteId,'Flux','Clean'));  
+                %         if ismember(SiteId,{'MPB1','MPB2','MPB3','HP09','HP11'})
+                %            do_dir(db_pth,base_dir,fullfile(yyyy,SiteId,'Flux_Logger','Clean')); 
+                %         end
+                %         if ismember(SiteId,{'BB','BB2','DSM','RBM','HOGG','YOUNG'})
+                %            do_dir(db_pth,base_dir,fullfile(yyyy,SiteId,'Met','Clean'));
+                %         else
+                %            do_dir(db_pth,base_dir,fullfile(yyyy,SiteId,'Climate','Clean'));
+                %            do_dir(db_pth,base_dir,fullfile(yyyy,SiteId,'Profile','Clean'));
+                %         end       
    end
    
    if find(stages == 2)
