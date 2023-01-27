@@ -27,9 +27,6 @@ function trace_str = read_data(yearIn, SiteID, ini_file, sourceDB, options)
 %     as 'Met,Flux' instead of 'low_level'. This makes ini files very flexible
 %     and remove need to edit this function every time we add a folder name
 %     that hasn't been standardized until that moment. 
-%   - also added 'auto' option for the searchPath. This option loads all 
-%     Clean traces from the traces that are mentioned in FirstStage.ini 
-%     for this site
 %   - Changed misleading message 'Reading traces from database' to 
 %     'Cleaning traces...' which is what is happening at that point.
 % July 18, 2022 (Zoran)
@@ -258,7 +255,7 @@ while ~isempty( searchPath )
          % Use this option in the future if you want to initialize all Clean variables
          % from the FirstStage.ini.
          % The program reads the siteID_FirstStage.ini file and initializes all folders
-         foldersToInitialize = db_find_folders_to_clean(yearIn,SiteID,1);
+         foldersToInitialize = db_find_folders_to_clean(currentYear,SiteId,1);
          for cntFolders = 1:length(foldersToInitialize)
              folderName = fullfile(db_pth_root,char(foldersToInitialize{cntFolders}));
              initializeWorkSpaceTraces( folderName );
@@ -267,21 +264,14 @@ while ~isempty( searchPath )
          % Also a future-proof option. In can be used in addition to 'auto' 
          % Enables adding new sites and folders without
          % need to edit this file. Phases out 'low_level'
-         % The input is the name of the folder ('Flux/Clean','Met/Clean','Profile/Clean',...)
-         % First letter of the name should be caps followed  
+         % The input is the name of the folder ('Flux/Clean','Met/Clean','Climate','Profile',...)
+         % First letter of the name should be caps followed by filesep and 'Clean' 
          searchPath(searchPath=='\' | searchPath == '/') = filesep; % insure that all file separators are correct for this OS
-         % also make all first letters of the folder name caps. 
+         % also make all first letters of the folder names caps. 
          folderName = lower(searchPath);
          folderName(1) = upper(folderName(1));
-         % and all first letters after filesep should be caps too
-         indCaps = find(folderName == filesep)+1;
-         if indCaps(end) > length(folderName)
-             indCaps(end)=[];
-         end
-         folderName(indCaps) = upper(folderName(indCaps));
-         % complete full folder path
-         folderName = fullfile(biomet_path(yearIn,SiteID),folderName);
-         % initialize the folder
+         % and all first letters af
+         folderName = fullfile(biomet_path(yearIn,SiteID),folderName,'Clean');
          initializeWorkSpaceTraces( folderName );
     end
     
