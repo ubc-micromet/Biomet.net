@@ -1,4 +1,4 @@
-function trace_str = read_data(year, SiteID, ini_file, sourceDB, options)
+function trace_str = read_data(yearIn, SiteID, ini_file, sourceDB, options)
 % This function reads the data from the database.  Given the ini_file the function
 % is able to determine what stage of the cleaning process should be applied (ie first of second stage)
 % Note however that data is not cleaned in this stage;  data is mearly read from the database
@@ -27,6 +27,9 @@ function trace_str = read_data(year, SiteID, ini_file, sourceDB, options)
 %     as 'Met,Flux' instead of 'low_level'. This makes ini files very flexible
 %     and remove need to edit this function every time we add a folder name
 %     that hasn't been standardized until that moment. 
+%   - also added 'auto' option for the searchPath. This option loads all 
+%     Clean traces from the traces that are mentioned in FirstStage.ini 
+%     for this site
 %   - Changed misleading message 'Reading traces from database' to 
 %     'Cleaning traces...' which is what is happening at that point.
 % July 18, 2022 (Zoran)
@@ -105,7 +108,7 @@ end
 % with each trace to the array of traces. 
 flag_read_ini = 0;
 if exist('ini_file') & ~isempty(ini_file)   
-   trace_str = read_ini_file(fid,year);     
+   trace_str = read_ini_file(fid,yearIn);     
    fclose(fid);
    if isempty(trace_str)
       return
@@ -220,10 +223,10 @@ end
 while ~isempty( searchPath )
    switch searchPath
 	  case 'low_level'
-         pth_full = biomet_path(year,SiteID,'cl');
+         pth_full = biomet_path(yearIn,SiteID,'cl');
          ind_y = strfind(pth_full,num2str(1999));
          if ~isempty(ind_y)
-            pth_full(ind_y:ind_y+3) = num2str(year);
+            pth_full(ind_y:ind_y+3) = num2str(yearIn);
          end
          pth_full = pth_full(1:end-8);
          initializeWorkSpaceTraces( [pth_full 'Climate\Clean\'] ); %load all the traces into the workspace, used by second stage reading
@@ -240,10 +243,10 @@ while ~isempty( searchPath )
 
      case 'high_level'
         for pth = trace_str(1).high_level_path
-           pth_full = biomet_path(year,SiteID,char(pth));
+           pth_full = biomet_path(yearIn,SiteID,char(pth));
            ind_y = strfind(pth_full,num2str(1999));
            if ~isempty(ind_y)
-              pth_full(ind_y:ind_y+3) = num2str(year);
+              pth_full(ind_y:ind_y+3) = num2str(yearIn);
            end
            initializeWorkSpaceTraces(pth_full); %load all the traces into the workspace, used by second stage reading
         end
@@ -251,14 +254,34 @@ while ~isempty( searchPath )
          %currently not used as when the trace is evaluated it is saved in the current workspace,
          %  over-writing any variable with the same name (ie current is always on, with the highest priority)
          currentFlag = 1;   
+       case 'auto'
+         % Use this option in the future if you want to initialize all Clean variables
+         % from the FirstStage.ini.
+         % The program reads the siteID_FirstStage.ini file and initializes all folders
+         foldersToInitialize = db_find_folders_to_clean(yearIn,SiteID,1);
+         for cntFolders = 1:length(foldersToInitialize)
+             folderName = fullfile(db_pth_root,char(foldersToInitialize{cntFolders}));
+             initializeWorkSpaceTraces( folderName );
+         end
        otherwise
-         % Use this option in the future. Enables adding new sites and folders without
-         % need to edit this file. Phase out 'low_level'
-         % the input is the name of the folder ('Flux','Met','Climate','Profile',...)
-         % First letter of the name should be caps followed by filesep and 'Clean'         
+         % Also a future-proof option. In can be used in addition to 'auto' 
+         % Enables adding new sites and folders without
+         % need to edit this file. Phases out 'low_level'
+         % The input is the name of the folder ('Flux/Clean','Met/Clean','Profile/Clean',...)
+         % First letter of the name should be caps followed  
+         searchPath(searchPath=='\' | searchPath == '/') = filesep; % insure that all file separators are correct for this OS
+         % also make all first letters of the folder name caps. 
          folderName = lower(searchPath);
          folderName(1) = upper(folderName(1));
-         folderName = fullfile(biomet_path(year,SiteID),folderName,'Clean');
+         % and all first letters after filesep should be caps too
+         indCaps = find(folderName == filesep)+1;
+         if indCaps(end) > length(folderName)
+             indCaps(end)=[];
+         end
+         folderName(indCaps) = upper(folderName(indCaps));
+         % complete full folder path
+         folderName = fullfile(biomet_path(yearIn,SiteID),folderName);
+         % initialize the folder
          initializeWorkSpaceTraces( folderName );
     end
     

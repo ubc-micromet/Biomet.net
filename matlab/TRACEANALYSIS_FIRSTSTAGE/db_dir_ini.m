@@ -34,13 +34,13 @@ arg_default('dir','');
 % db_pth = db_pth(1:ind(end-2));
 db_pth = db_pth_root;
 
-for i = years
+for currentYear = years
 
-    yyyy = num2str(i);
+    yyyy = num2str(currentYear);
 
    if find(stages == 1)
         % Find folders to empty based on the ones actually used in the ini files
-        foldersToClean = db_find_folders_to_clean(yyyy,SiteId,1);
+        foldersToClean = db_find_folders_to_clean(currentYear,SiteId,1);
         for cntFolders = 1:length(foldersToClean)
             do_dir(db_pth,base_dir,char(foldersToClean(cntFolders)));
         end
