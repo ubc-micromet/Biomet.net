@@ -439,7 +439,7 @@ for siteNum = 1:length(siteNames)
             varStruct(2).name = var2_name;varStruct(2).type = 'MET';
             varStruct(3).name = var3_name;varStruct(3).type = 'MET';
             varStruct(4).name = var4_name;varStruct(4).type = 'MET';
-            varStruct(5).name = var5_name;varStruct(5).type = 'Flux/Clean';
+            varStruct(5).name = var5_name;varStruct(5).type = 'Flux';
             varStruct(6).name = var6_name;varStruct(6).type = 'Flux';
             varStruct(7).name = var7_name;varStruct(7).type = 'Flux';
             varStruct(8).name = var8_name;varStruct(8).type = 'Flux';
@@ -2365,10 +2365,10 @@ for siteNum = 1:length(siteNames)
             var3_name = 'DO_1_1_1';
             var4_name = 'DOperc_1_1_1 ';
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET/Clean';
-            varStruct(2).name = var2_name;varStruct(2).type = 'MET/Clean';
-            varStruct(3).name = var3_name;varStruct(3).type = 'Flux/Clean';
-            varStruct(4).name = var4_name;varStruct(4).type = 'Flux/Clean';
+            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
+            varStruct(2).name = var2_name;varStruct(2).type = 'MET';
+            varStruct(3).name = var3_name;varStruct(3).type = 'Flux';
+            varStruct(4).name = var4_name;varStruct(4).type = 'Flux';
             cHeader = {'Time (PST)' 'Water dissolve oxygen (-2m)' 'Water dissolve oxygen percentage (-2m)'...
                 '[Smartflux] Water dissolve oxygen (-2m)' '[Smartflux] Water dissolve oxygen percentage (-2m)'};
             cFormat = '%12.6f, %12.6f, %12.6f, %12.6f\n';
