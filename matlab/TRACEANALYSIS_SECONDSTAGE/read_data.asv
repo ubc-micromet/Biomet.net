@@ -28,7 +28,7 @@ function trace_str = read_data(year, SiteID, ini_file, sourceDB, options)
 %     and remove need to edit this function every time we add a folder name
 %     that hasn't been standardized until that moment. 
 %   - Changed misleading message "Reading traces from database" to 
-%     "Cleaning traces..." which is what is happening at that point.
+%     "Cleaning traces..." which is what is actuall
 % July 18, 2022 (Zoran)
 %   - added try-catch-end around fr_set_site statements. That should keep
 %       it compatible with the legacy operation at Biomet and the new setup at
