@@ -6,7 +6,7 @@ function tmp_traces = initializeWorkSpaceTraces(path_to_load)
 % Revisions
 %
 % Jan 26, 2023 (Zoran)
-%  - Added "Reading data from:..." display line to improve troubleshooting
+%  - Added 'Reading data from:...' display line to improve troubleshooting
 
 % Added Apr 11, 2022 to handle MacOS folder separators
 path_to_load = setFolderSeparator(path_to_load);

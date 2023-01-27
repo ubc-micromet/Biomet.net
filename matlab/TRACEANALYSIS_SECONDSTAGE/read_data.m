@@ -27,8 +27,8 @@ function trace_str = read_data(year, SiteID, ini_file, sourceDB, options)
 %     as 'Met,Flux' instead of 'low_level'. This makes ini files very flexible
 %     and remove need to edit this function every time we add a folder name
 %     that hasn't been standardized until that moment. 
-%   - Changed misleading message "Reading traces from database" to 
-%     "Cleaning traces..." which is what is happening at that point.
+%   - Changed misleading message 'Reading traces from database' to 
+%     'Cleaning traces...' which is what is happening at that point.
 % July 18, 2022 (Zoran)
 %   - added try-catch-end around fr_set_site statements. That should keep
 %       it compatible with the legacy operation at Biomet and the new setup at
