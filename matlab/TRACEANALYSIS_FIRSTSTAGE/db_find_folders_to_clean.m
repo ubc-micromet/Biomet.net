@@ -5,11 +5,13 @@ function foldersToClean = db_find_folders_to_clean(yearIn,siteID,stageNum)
 %
 %
 % Zoran Nesic           File created:       Jan 25, 2023
-%                       Last modification:  Jan 25, 2023
+%                       Last modification:  Jan 26, 2023
 
 %
 % Revisions
 %
+% Jan 26, 2023 (Zoran)
+%   - initialized variable foldersToClean{}
 
 trace_str = readIniFileDirect(yearIn,siteID,stageNum);
 nAll = length(trace_str);
@@ -19,6 +21,7 @@ for cnt=1:nAll
 end
 foldersToCleanTmp = unique(names1);
 nClean = length(foldersToCleanTmp);
+foldersToClean{nClean} = {}; 
 % Clean the folder names and replace the abbreviation with full names
 for cnt=1:nClean
     newName = foldersToCleanTmp{cnt};
@@ -47,7 +50,7 @@ for cnt=1:nClean
         end
     end
     % at this point newName contains a folder that needs to be emptied
-    foldersToClean{cnt} = fullfile(yearIn,siteID,newName);
+    foldersToClean{cnt} = fullfile(num2str(yearIn),siteID,newName);
     %fprintf('Folder to empty: %s\n',foldersToClean{cnt});
 end
 
