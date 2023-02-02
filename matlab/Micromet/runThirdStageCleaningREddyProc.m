@@ -11,11 +11,14 @@ function runThirdStageCleaningREddyProc(yearIn,siteID,Ustar_scenario,yearsToProc
 %                     for gap-filling even when outputing one year only
 %
 % Zoran Nesic               File created:       Oct 25, 2022
-%                           Last modification:  Nov  7, 2022
+%                           Last modification:  Feb  2, 2023
 %
 
 % Revisions
 %
+% Feb 2, 2022 (Zoran/June)
+%   - fixed a bug in sub-function findRPath that incorrectly identified 
+%     the newest Rscript installation.
 % Nov 7, 2022 (Zoran)
 %  - Changed yearsToProcess from 1 to 99. Now all data for the site will be
 %    used for gap filling
@@ -159,14 +162,8 @@ function Rpath = findRPath
     if length(s) < 1
         error ('Cannot find location of R inside of %s\n',pathBin);
     end
-    Rpath = "";
-    N = 0;
-    for cntFolders = 1:length(s)
-        if s(cntFolders).name > Rpath
-            Rpath = s(cntFolders).name;
-            N = cntFolders;
-        end
-    end
+    [~,N ]=sort({s(:).name});
+    N = N(end);
     Rpath = fullfile(s(N).folder,s(N).name,'bin','Rscript.exe');
 end
         
