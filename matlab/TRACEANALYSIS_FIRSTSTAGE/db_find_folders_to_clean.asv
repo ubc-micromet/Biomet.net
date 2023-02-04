@@ -5,15 +5,11 @@ function foldersToClean = db_find_folders_to_clean(yearIn,siteID,stageNum)
 %
 %
 % Zoran Nesic           File created:       Jan 25, 2023
-%                       Last modification:  Feb  3, 2023
+%                       Last modification:  Jan 26, 2023
 
 %
 % Revisions
 %
-% Feb 3, 2023 (Zoran)
-%   - added the last line: foldersToClean = unique(foldersToClean);
-%     to avoid issues with measurementType varibles. See the comments in
-%     the code.
 % Jan 26, 2023 (Zoran)
 %   - initialized variable foldersToClean{}
 
@@ -59,7 +55,4 @@ for cnt=1:nClean
 end
 % Make sure that all the folder names are unique.
 % That may not be the case if ini file contains 
-% measurementType ='met' and measurementType ='Met'
-% or similar
-foldersToClean = unique(foldersToClean);
 
