@@ -45,27 +45,20 @@ if isfield(trace_in.ini,'inputFileName_dates')
     % output)
     tvYear = fr_round_time(datenum(Year,1,1,0,30,0):1/48:datenum(Year+1,1,1,0,0,0));
     for i = 1:size(char(trace_in.ini.inputFileName),1)
-        ind = find(tvYear >= trace_in.ini.inputFileName_dates(i,1) & ...
-            tvYear < trace_in.ini.inputFileName_dates(i,2));        
-        if ~isempty(ind)
-            % load data only if this input file is relevant for this year.
-            % (this data trace could be non-existent for this year in which
-            % case program would output errors. This way only relevant
-            % files are read.
-            [temp_data_cur,timeVector] = read_db(Year,SiteID,...
-                trace_in.ini.measurementType,char(char(trace_in.ini.inputFileName(i))),warn_flag);
-            if i == 1
-                % Create a NaN array of the appropriate length.
-                temp_data = NaN.*ones(length(timeVector),1);
-            end
-            try
-                temp_data(ind) = temp_data_cur(ind);
-            catch
-                if ~isempty(ind)
-                    try
-                        temp_data(ind) = read_bor([pth char(trace_in.ini.inputFileName(i))],[],[],[],ind);			%read from database
-                    catch
-                    end
+        ind = find(timeVector >= trace_in.ini.inputFileName_dates(i,1) & ...
+            timeVector < trace_in.ini.inputFileName_dates(i,2));        
+        [temp_data_cur,timeVector] = read_db(Year,SiteID,...
+            trace_in.ini.measurementType,char(char(trace_in.ini.inputFileName(i))),warn_flag);
+        if i == 1
+            temp_data = NaN.*ones(length(timeVector),1);
+        end
+        try
+            temp_data(ind) = temp_data_cur(ind);
+        catch
+            if ~isempty(ind)
+                try
+                    temp_data(ind) = read_bor([pth char(trace_in.ini.inputFileName(i))],[],[],[],ind);			%read from database
+                catch
                 end
             end
         end
