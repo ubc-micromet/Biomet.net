@@ -157,73 +157,46 @@ for siteNum = 1:length(siteNames)
             % Export as csv file
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(inds:inde,:)),cFormat,data)
 			
-		case 'DSM'
-            
-            var1_name = 'MET_HMP_T_2m_Avg';
-			var2_name = 'MET_HMP_T_350cm_Avg';
-            var3_name = 'TA_1_1_1';
-			var4_name = 'TA_1_2_1';   
+		case 'DSM'            
+            var1_name = 'TA_1_1_1';
+			var2_name = 'TA_1_2_1';
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-			varStruct(2).name = var2_name;varStruct(2).type = 'MET';
-            varStruct(3).name = var3_name;varStruct(3).type = 'Flux';
-			varStruct(4).name = var4_name;varStruct(4).type = 'Flux';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+			varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
             
-            cHeader = {'Time (PST)' 'Air Temperature (2m)' 'Air Temperature (3.5m)'...
-                '[Smartflux] Air Temperature (2m)' '[Smartflux] Air Temperature (3.5m)'};
-            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f\n';
+            cHeader = {'Time (PST)' 'Air Temperature (2m)' 'Air Temperature (3.5m)'};
+            cFormat = '%12.6f, %12.6f\n';
             fileName = [siteID 'DTA.csv'];
             data = load_data(varStruct,pth,Years);
-            data(:,3:4) = data(:,3:4) - 273.15; % Smartflux output unit: K
-            
-            
-            % Time Shift Correction (fixed at 2021-Nov-11 09:30 am)            
-            tsc=find(tv<=datenum(2021,11,11,09,30,0));            
-            data(tsc(1:end-1),3:4) = data(tsc(2:end),3:4);
-            
             data = data(1:inde,:);
             
             if plot_fig == 1
                 plot(tv, data)
             end
-            
-            [data,RJdata]=RunStdDev(data,wlen,thres,RJdata,tv_export,varStruct);
-            
             
             % Export as csv file
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
             
         case 'RBM'
-            var1_name = 'MET_HMP_T_4m_Avg';
-            var2_name = 'MET_HMP_T_6m_Avg';
-            var3_name = 'TA_1_1_1';
-            var4_name = 'TA_1_2_1';
-            
-            clear varStruct       
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'MET';
-            varStruct(3).name = var3_name;varStruct(3).type = 'Flux';
-            varStruct(4).name = var4_name;varStruct(4).type = 'Flux';
-            cHeader = {'Time (PST)' 'Air Temperature (4m)' 'Air Temperature (6m)'...
-                '[Smartflux] Air Temperature (4m)' '[Smartflux] Air Temperature (6m)'};
-           cFormat = '%12.6f, %12.6f, %12.6f, %12.6f\n';
-            
+            var1_name = 'TA_1_1_1';
+            var2_name = 'TA_1_2_1';
+            clear varStruct  
+
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
+            cHeader = {'Time (PST)' 'Air Temperature (4m)' 'Air Temperature (6m)'};
+            cFormat = '%12.6f, %12.6f\n';
 
             fileName = [siteID 'DTA.csv'];
             data = load_data(varStruct,pth,Years);
-            data(:,3:4) = data(:,3:4) - 273.15; % Smartflux output unit: K
             data = data(1:inde,:);
             
             if plot_fig == 1
                 plot(tv, data)
             end
             
-            [data,RJdata]=RunStdDev(data,wlen,thres,RJdata,tv_export,varStruct);
-            
-            
             % Export as csv file
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
-            
     end
     
     %% Relative humidity (BBRHA)
@@ -281,32 +254,17 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(inds:inde,:)),cFormat,data)
 			
 		case 'DSM'
-            var1_name = 'MET_HMP_RH_2m_Avg';
-			var2_name = 'MET_HMP_RH_350cm_Avg';
-            var3_name = 'RH_1_1_1';
-			var4_name = 'RH_1_2_1';
-            
+            var1_name = 'RH_1_1_1';
+			var2_name = 'RH_1_2_1';
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-			varStruct(2).name = var2_name;varStruct(2).type = 'MET';
-            varStruct(3).name = var3_name;varStruct(3).type = 'Flux';
-			varStruct(4).name = var4_name;varStruct(4).type = 'Flux';
-            
-            cHeader = {'Time (PST)' 'Relative Humidity (2m)' 'Relative Humidity (3.5m)'...
-                '[Smartflux] Relative Humidity (2m)' '[Smartflux] Relative Humidity (3.5m)'};
-            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f\n';
+
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+			varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
+            cHeader = {'Time (PST)' 'Relative Humidity (2m)' 'Relative Humidity (3.5m)'};
+            cFormat = '%12.6f, %12.6f\n';
             fileName = [siteID 'RHA.csv'];
             data = load_data(varStruct,pth,Years);
-            
-            
-            % Time Shift Correction (fixed at 2021-Nov-11 09:30 am)
-            tsc=find(tv<=datenum(2021,11,11,09,30,0));
-            data(tsc(1:end-1),3:4) = data(tsc(2:end),3:4);
-            
             data = data(1:inde,:);
-            data(data>100|data<0) = NaN;
-            
-            [data,RJdata]=RunStdDev(data,wlen,thres,RJdata,tv_export,varStruct);
             
             if plot_fig == 1
                 plot(tv, data)
@@ -317,36 +275,24 @@ for siteNum = 1:length(siteNames)
             
         case 'RBM'
             
-          var1_name = 'MET_HMP_RH_4m_Avg';
-          var2_name = 'MET_HMP_RH_6m_Avg';
-          var3_name = 'RH_1_1_1';
-          var4_name = 'RH_1_2_1';
+          var1_name = 'RH_1_1_1';
+          var2_name = 'RH_1_2_1';
           clear varStruct 
-          varStruct(1).name = var1_name;varStruct(1).type= 'MET';
-          varStruct(2).name = var2_name;varStruct(2).type = 'MET';
-          varStruct(3).name = var3_name;varStruct(3).type = 'Flux';
-			varStruct(4).name = var4_name;varStruct(4).type = 'Flux';
-            
-          cHeader = {'Time (PST)' 'Relative Humidity (4m)' 'Relative Humidity (6m)'...
-                '[Smartflux] Relative Humidity (4m)' '[Smartflux] Relative Humidity (6m)'};
-          cFormat = '%12.6f, %12.6f, %12.6f, %12.6f\n';
-          
+
+          varStruct(1).name = var1_name;varStruct(1).type= 'Clean/SecondStage';
+          varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
+          cHeader = {'Time (PST)' 'Relative Humidity (4m)' 'Relative Humidity (6m)'};
+          cFormat = '%12.6f, %12.6f\n';
           fileName = [siteID 'RHA.csv'];
-            data = load_data(varStruct,pth,Years);
-            
-            data = data(1:inde,:);
-            data(data>100|data<0) = NaN;
-            
-            
-            [data,RJdata]=RunStdDev(data,wlen,thres,RJdata,tv_export,varStruct);
-            
-            if plot_fig == 1
-                plot(tv, data)
-            end
-            
-            % Export as csv file
-            csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)            
-    
+          data = load_data(varStruct,pth,Years);
+          data = data(1:inde,:);
+          
+          if plot_fig == 1
+              plot(tv, data)
+          end
+          
+          % Export as csv file
+          csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)            
     end
     
     
@@ -424,51 +370,24 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(inds:inde,:)),cFormat,data)
             
         case 'DSM'
-            
-            var1_name = 'MET_CNR4_SWi_Avg';
-            var2_name = 'MET_CNR4_SWo_Avg';
-            var3_name = 'MET_CNR4_LWi_Avg';
-            var4_name = 'MET_CNR4_LWo_Avg';
-            var5_name = 'SWIN_1_1_1';
-            var6_name = 'SWOUT_1_1_1';
-            var7_name = 'LWIN_1_1_1';
-            var8_name = 'LWOUT_1_1_1';
+            var1_name = 'SWIN_1_1_1';
+            var2_name = 'SWOUT_1_1_1';
+            var3_name = 'LWIN_1_1_1';
+            var4_name = 'LWOUT_1_1_1';
             
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'MET';
-            varStruct(3).name = var3_name;varStruct(3).type = 'MET';
-            varStruct(4).name = var4_name;varStruct(4).type = 'MET';
-            varStruct(5).name = var5_name;varStruct(5).type = 'Flux';
-            varStruct(6).name = var6_name;varStruct(6).type = 'Flux';
-            varStruct(7).name = var7_name;varStruct(7).type = 'Flux';
-            varStruct(8).name = var8_name;varStruct(8).type = 'Flux';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
+            varStruct(3).name = var3_name;varStruct(3).type = 'Clean/SecondStage';
+            varStruct(4).name = var4_name;varStruct(4).type = 'Clean/SecondStage';
+
             cHeader = {'Time (PST)' 'Shortwave Irradiance (3.5m)' 'Shortwave Reflectance (3.5m)'...
-                'Longwave Downward Radiation (3.5m)' 'Longwave Upward Radiation (3.5m)','Net Radiation (3.5m)',...
-                '[Smartflux] Shortwave Irradiance (3.5m)' '[Smartflux] Shortwave Reflectance (3.5m)'...
-                '[Smartflux] Longwave Downward Radiation (3.5m)' '[Smartflux] Longwave Upward Radiation (3.5m)',...
-                '[Smartflux] Net Radiation (3.5m)'};
-            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f\n';
+                'Longwave Downward Radiation (3.5m)' 'Longwave Upward Radiation (3.5m)'};
+            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f\n';
             fileName = [siteID 'RAD.csv'];
-            
             data = load_data(varStruct,pth,Years);
-            
-            
-            % Time Shift Correction (fixed at 2021-Nov-11 09:30 am)
-            tsc=find(tv<=datenum(2021,11,11,09,30,0));           
-            data(tsc(1:end-1),5:8) = data(tsc(2:end),5:8);
-            
-            % Blocking off values before installation (CNR4, 2021-Sep-16 17:00)
-            UNINS = find(tv<=datenum(2021,9,16,17,0,0)); % uninstalled
-            data(UNINS,:)=NaN;
-            
-            % Calculate net radiation
-            data0=data;
-            data(:,1:4)=data0(:,1:4);data(:,6:9)=data0(:,5:8);
-            data(:,5)=data0(:,1)-data0(:,2)+data0(:,3)-data0(:,4);
-            data(:,10)=data0(:,5)-data0(:,6)+data0(:,7)-data0(:,8);
             data = data(1:inde,:);
-            
+
             if plot_fig == 1
                 plot(tv, data)
             end
@@ -478,61 +397,30 @@ for siteNum = 1:length(siteNames)
 
         
         case 'RBM'
-            
-            var1_name = 'MET_CNR4_SWi_Avg';
-            var2_name = 'MET_CNR4_SWo_Avg';
-            var3_name = 'MET_CNR4_LWi_Avg';
-            var4_name = 'MET_CNR4_LWo_Avg';
-            var5_name = 'SWIN_1_1_1';
-            var6_name = 'SWOUT_1_1_1';
-            var7_name = 'LWIN_1_1_1';
-            var8_name = 'LWOUT_1_1_1';
+            var1_name = 'SWIN_1_1_1';
+            var2_name = 'SWOUT_1_1_1';
+            var3_name = 'LWIN_1_1_1';
+            var4_name = 'LWOUT_1_1_1';
             
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'MET';
-            varStruct(3).name = var3_name;varStruct(3).type = 'MET';
-            varStruct(4).name = var4_name;varStruct(4).type = 'MET';
-            varStruct(5).name = var5_name;varStruct(5).type = 'Flux';
-            varStruct(6).name = var6_name;varStruct(6).type = 'Flux';
-            varStruct(7).name = var7_name;varStruct(7).type = 'Flux';
-            varStruct(8).name = var8_name;varStruct(8).type = 'Flux';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
+            varStruct(3).name = var3_name;varStruct(3).type = 'Clean/SecondStage';
+            varStruct(4).name = var4_name;varStruct(4).type = 'Clean/SecondStage';
             cHeader = {'Time (PST)' 'Shortwave Irradiance (3.5m)' 'Shortwave Reflectance (3.5m)'...
-                'Longwave Downward Radiation (3.5m)' 'Longwave Upward Radiation (3.5m)','Net Radiation (3.5m)',...
-                '[Smartflux] Shortwave Irradiance (3.5m)' '[Smartflux] Shortwave Reflectance (3.5m)'...
-                '[Smartflux] Longwave Downward Radiation (3.5m)' '[Smartflux] Longwave Upward Radiation (3.5m)',...
-                '[Smartflux] Net Radiation (3.5m)'};
-            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f\n';
+                'Longwave Downward Radiation (3.5m)' 'Longwave Upward Radiation (3.5m)'};
+            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f\n';
             fileName = [siteID 'RAD.csv'];
-            
             data = load_data(varStruct,pth,Years);
-            
-            % Blocking off values before installation (CNR4, 2021-Sep-16 17:00)
-            UNINS = find(tv<=datenum(2022,6,7,19,30,0)); % uninstalled
-            data(UNINS,:)=NaN;
-            
-            % Calculate net radiation
-            data0=data;
-            data(:,1:4)=data0(:,1:4);data(:,6:9)=data0(:,5:8);
-            data(:,5)=data0(:,1)-data0(:,2)+data0(:,3)-data0(:,4);
-            data(:,10)=data0(:,5)-data0(:,6)+data0(:,7)-data0(:,8);
             data = data(1:inde,:);
-            
-            % Blocking off values before installation (CNR4, 2021-Sep-16 17:00)
-            UNINS = find(tv<=datenum(2022,6,7,19,30,0)); % uninstalled
-            data(UNINS,:)=NaN;
-            
-            data = data(1:inde,:);            
-            
+
             if plot_fig == 1
                 plot(tv, data)
             end
             
             % Export as csv file
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
-
-       end
-    
+       end    
     
     %% PAR (BBPAR)
     switch siteID
@@ -601,51 +489,25 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(inds:inde,:)),cFormat,data)
             
         case 'DSM'
-            var1_name = 'MET_BF5_Tpar_Avg'; % total PAR
-            var2_name = 'MET_BF5_diffuse_Avg';  % Diffuse PAR
-            var3_name = 'MET_PARin_Avg';  % PAR in
-            var4_name = 'MET_PARout_Avg'; % PAR out
-            var5_name = 'PPFD_2_1_1'; % total PAR
-            var6_name = 'PPFDD_1_1_1';  % Diffuse PAR  
-            var7_name = 'PPFD_1_1_1'; % total PAR
-            var8_name = 'PPFDR_1_1_1';  % Diffuse PAR 
+            var1_name = 'PPFD_2_1_1';   % total PAR (BF5)
+            var2_name = 'PPFDD_1_1_1';  % Diffuse PAR (BF5)
+            var3_name = 'PPFD_1_1_1';   % PAR in (PQSL-1)
+            var4_name = 'PPFDR_1_1_1';  % PAR out (LI-190)
             
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'MET';
-            varStruct(3).name = var3_name;varStruct(3).type = 'MET';
-            varStruct(4).name = var4_name;varStruct(4).type = 'MET';
-
-            varStruct(5).name = var5_name;varStruct(5).type = 'Flux';
-            varStruct(6).name = var6_name;varStruct(6).type = 'Flux';
-            varStruct(7).name = var7_name;varStruct(7).type = 'Flux';
-            varStruct(8).name = var8_name;varStruct(8).type = 'Flux';
-            
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
+            varStruct(3).name = var3_name;varStruct(3).type = 'Clean/SecondStage';
+            varStruct(4).name = var4_name;varStruct(4).type = 'Clean/SecondStage';        
             cHeader = {'Time (PST)' ...
                 'BF5 Incoming Total Photosynthetic Active Radiation (3.5m)'...
                 'BF5 Incoming Diffuse Photosynthetic Active Radiation (3.5m)'...
                 'Incoming Photosynthetic Active Radiation (3.5m)'...
-                'Reflected Photosynthetic Active Radiation (3.5m)'...
-                '[Smartflux] BF5 Incoming Total PAR (3.5m)'...
-                '[Smartflux] BF5 Incoming Diffuse PAR (3.5m)'...
-                '[Smartflux] Incoming Photosynthetic Active Radiation (3.5m)'...
-                '[Smartflux] Reflected Photosynthetic Active Radiation (3.5m)'};
-            
-            
-            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f\n';
+                'Reflected Photosynthetic Active Radiation (3.5m)'};
+            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f\n';
             fileName = [siteID 'PAR.csv'];
             data = load_data(varStruct,pth,Years);
-            
-            % Blocking off values before installation (PARin/PARout, 2021-Sep-16 17:00)
-            UNINS = find(tv<=datenum(2021,9,16,17,0,0)); % uninstalled
-            data(UNINS,[3:4,7:8])=NaN;
-            
-            % Time Shift Correction (fixed at 2021-Nov-11 09:30 am) 
-            tsc=find(tv<=datenum(2021,11,11,09,30,0));      
-            data(tsc(1:end-1),5:8) = data(tsc(2:end),5:8);
-            
             data = data(1:inde,:);
-            
             
             if plot_fig == 1
                 plot(tv, data)
@@ -655,60 +517,25 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
             
         case 'RBM'
-            var1_name = 'MET_BF5_Tpar_Avg'; % total PAR
-            var2_name = 'MET_BF5_diffuse_Avg';  % Diffuse PAR
-            var3_name = 'MET_PARin_Avg';  % PAR in
-            var4_name = 'MET_PARout_Avg'; % PAR out
-            var5_name = 'PPFD_2_1_1'; % total PAR
-            var6_name = 'PPFDD_1_1_1';  % Diffuse PAR  
-            var7_name = 'PPFD_1_1_1'; % total PAR
-            var8_name = 'PPFDR_1_1_1';  % Diffuse PAR 
+            var1_name = 'PPFD_2_1_1';   % total PAR (BF5)
+            var2_name = 'PPFDD_1_1_1';  % Diffuse PAR (BF5)
+            var3_name = 'PPFD_1_1_1';   % PAR in (PQSL-1)
+            var4_name = 'PPFDR_1_1_1';  % PAR out (LI-190)
             
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'MET';
-            varStruct(3).name = var3_name;varStruct(3).type = 'MET';
-            varStruct(4).name = var4_name;varStruct(4).type = 'MET';
-
-            varStruct(5).name = var5_name;varStruct(5).type = 'Flux';
-            varStruct(6).name = var6_name;varStruct(6).type = 'Flux';
-            varStruct(7).name = var7_name;varStruct(7).type = 'Flux';
-            varStruct(8).name = var8_name;varStruct(8).type = 'Flux';
-            
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
+            varStruct(3).name = var3_name;varStruct(3).type = 'Clean/SecondStage';
+            varStruct(4).name = var4_name;varStruct(4).type = 'Clean/SecondStage';        
             cHeader = {'Time (PST)' ...
                 'BF5 Incoming Total Photosynthetic Active Radiation (3.5m)'...
                 'BF5 Incoming Diffuse Photosynthetic Active Radiation (3.5m)'...
                 'Incoming Photosynthetic Active Radiation (3.5m)'...
-                'Reflected Photosynthetic Active Radiation (3.5m)'...
-                '[Smartflux] BF5 Incoming Total PAR (3.5m)'...
-                '[Smartflux] BF5 Incoming Diffuse PAR (3.5m)'...
-                '[Smartflux] Incoming Photosynthetic Active Radiation (3.5m)'...
-                '[Smartflux] Reflected Photosynthetic Active Radiation (3.5m)'};
-            
-            
-            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f\n';
+                'Reflected Photosynthetic Active Radiation (3.5m)'};
+            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f\n';
             fileName = [siteID 'PAR.csv'];
             data = load_data(varStruct,pth,Years);
-            
-            % Blocking off values before installation (PARin/PARout, 2022-Jun-08 08:55)
-            UNINS = find(tv<=datenum(2022,6,8,8,55,0)); % uninstalled
-            data(UNINS,[3,4,7,8])=NaN;
-            
-            % Blocking off values before installation (BF5, 2022-Jun-13 11:00 PDT)
-            UNINS = find(tv<=datenum(2022,6,13,10,0,0)); % uninstalled
-            data(UNINS,[1,2,5,6])=NaN;  
-            
-            % Correcting negative reflected PAR (2022-Jun-08 08:55 ~ Aug-18 12:30 PST)
-            tt=find(tv<=datenum(2022,8,18,12,30,0)); % target time
-            dd=find(data(tt,[4,8])<0);
-            data(dd,[4,8])=NaN;
-            
-            % Swapping PAR out sensor (2022-Aug-18 12:30 ~ 14:00 PST)
-            tt=find(tv<=datenum(2022,8,18,12,30,0)&tv<=datenum(2022,8,18,14,0,0));  % target time
-            data(tt,[4,8])=NaN;
-            
             data = data(1:inde,:);
-            
             
             if plot_fig == 1
                 plot(tv, data)
@@ -780,15 +607,15 @@ for siteNum = 1:length(siteNames)
         case 'DSM'
             var1_name = 'MET_Young_WS_WVc1'; % RM Young 
             var2_name = 'wind_speed';        % EC
+
             clear varStruct
             varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Flux';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
             cHeader = {'Time (PST)' 'Wind Velocity Cup Anemometer (3.5m)' 'Wind Velocity EC System [Smartflux] (1.8m)'};
             cFormat = '%12.6f, %12.6f\n';
             fileName = [siteID 'WVA.csv'];
             data = load_data(varStruct,pth,Years);
             data = data(1:inde,:);
-            data(abs(data)>=9999)=NaN;
             
             if plot_fig == 1
                 plot(tv, data)
@@ -800,24 +627,15 @@ for siteNum = 1:length(siteNames)
         case 'RBM'
             var1_name = 'MET_Young_WS_WVc1'; % RM Young 
             var2_name = 'wind_speed';        % EC
+
             clear varStruct
             varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Flux';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
             cHeader = {'Time (PST)' 'Wind Velocity Cup Anemometer (6m)' 'Wind Velocity EC System [Smartflux] (4m)'};
             cFormat = '%12.6f, %12.6f\n';
             fileName = [siteID 'WVA.csv'];
             data = load_data(varStruct,pth,Years);
-            
-            % Blocking off values before installation (2022-Jun-11 13:30)
-            UNINS = find(tv<=datenum(2022,6,11,14,0,0)); % uninstalled
-            data(UNINS,1)=NaN;
-            
-            % Blocking off values when installing BF5 (2022-Jun-13 09:00-11:00 PDT)
-            UNINS = find(tv>=datenum(2022,6,13,8,0,0)&tv<=datenum(2022,6,13,10,0,0)); % uninstalled
-            data(UNINS,1)=NaN;
-            
             data = data(1:inde,:);
-            data(abs(data)>=9999)=NaN;
             
             if plot_fig == 1
                 plot(tv, data)
@@ -890,16 +708,16 @@ for siteNum = 1:length(siteNames)
         case 'DSM'
             var1_name = 'MET_Young_WS_WVc2';
             var2_name = 'wind_dir';
+
             clear varStruct
             varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Flux';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
             cHeader = {'Time (PST)' 'Wind Direction Cup Anemometer (3.5m)'...
                 'Wind Direction EC System [Smartflux] (1.8m)'};
             cFormat = '%12.6f, %12.6f\n';
             fileName = [siteID 'WDA.csv'];
             data = load_data(varStruct,pth,Years);
             data = data(1:inde,:);
-            data(abs(data)>=9999)=NaN;
             
             if plot_fig == 1
                 plot(tv, data)
@@ -911,34 +729,23 @@ for siteNum = 1:length(siteNames)
         case 'RBM'
             var1_name = 'MET_Young_WS_WVc2';
             var2_name = 'wind_dir';
+
             clear varStruct
             varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Flux';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
             cHeader = {'Time (PST)' 'Wind Direction Cup Anemometer (6m)'...
                 'Wind Direction EC System [Smartflux] (4m)'};
             cFormat = '%12.6f, %12.6f\n';
             fileName = [siteID 'WDA.csv'];
-            data = load_data(varStruct,pth,Years);            
-            
-            % Blocking off values before installation (2022-Jun-11 13:30)
-            UNINS = find(tv<=datenum(2022,6,11,14,0,0)); % uninstalled
-            data(UNINS,1)=NaN;
-            
-            % north offset correction (2022-Jun-11 13:30 ~ Aug-23 08:04 PST)
-            %UNINS = find(tv<=datenum(2022,8,23,8,0,0)); % uninstalled
-            %data(UNINS,1)=data(UNINS,1)-180;
-                        
+            data = load_data(varStruct,pth,Years);  
             data = data(1:inde,:);
-            data(abs(data)>=9999)=NaN;
             
             if plot_fig == 1
                 plot(tv, data)
             end
             
             % Export as csv file
-            csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
-
-            
+            csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)            
     end
     
     %% Turbulent Kinteric Energy (BBTKE)
@@ -1082,70 +889,46 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(inds:inde,:)),cFormat,data)
             
         case 'DSM'
-            var1_name = 'air_pressure'; % - ADD CR1000 data
-            var2_name = 'MET_Barom_Press_kPa_Avg';
-            var3_name = 'PA_1_1_1';
+            var1_name = 'air_pressure'; % EC
+            var2_name = 'PA_1_1_1';
             
             clear varStruct
             varStruct(1).name = var1_name;varStruct(1).type = 'Flux';
-            varStruct(2).name = var2_name;varStruct(2).type = 'MET';
-            varStruct(3).name = var3_name;varStruct(3).type = 'Flux';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
             cHeader = {'Time (PST)' 'Barometric Pressure EC System [Air](1.8m)' ...
-                'Barometric Pressure Barometer (CS106) (1.2m)'...
-                '[Smartflux] Barometric Pressure Barometer (CS106) (1.2m)'};
-            cFormat = '%12.6f, %12.6f, %12.6f\n';
+                'Barometric Pressure Barometer (CS106) (1.2m)'};
+            cFormat = '%12.6f, %12.6f\n';
             fileName = [siteID 'PSA.csv'];
             data = load_data(varStruct,pth,Years);
-            
-            % Time Shift Correction (fixed at 2021-Nov-11 09:30 am)            
-            tsc=find(tv<=datenum(2021,11,11,09,30,0));            
-            data(tsc(1:end-1),3) = data(tsc(2:end),3);
-            
             data = data(1:inde,:);
             
             % Unit conversion
             data(:,1) = data(:,1)./1000; % Smartflux output unit: Pa
-            data(:,3) = data(:,3)./1000;
-            
-            % Basic filtering
-            data(data<95) = NaN;
-            
-            [data,RJdata]=RunStdDev(data,wlen,thres,RJdata,tv_export,varStruct);
-            
+
             if plot_fig == 1
                 plot(tv, data)
             end
             
             % Export as csv file
-            csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
-            
+            csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)            
                     
         case 'RBM'
-            var1_name = 'air_pressure'; % - ADD CR1000 data
-            var2_name = 'MET_Barom_Press_kPa_Avg';
-            var3_name = 'PA_1_1_1';
+            var1_name = 'air_pressure'; % EC
+            var2_name = 'PA_1_1_1';
             
             clear varStruct
             varStruct(1).name = var1_name;varStruct(1).type = 'Flux';
-            varStruct(2).name = var2_name;varStruct(2).type = 'MET';
-            varStruct(3).name = var3_name;varStruct(3).type = 'Flux';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
             cHeader = {'Time (PST)' 'Barometric Pressure EC System [Air](4m)' ...
-                'Barometric Pressure Barometer (CS106) (2.5m)'...
-                '[Smartflux] Barometric Pressure Barometer (CS106) (2.5m)'};
-            cFormat = '%12.6f, %12.6f, %12.6f\n';
+                'Barometric Pressure Barometer (CS106) (2.5m)'};
+            cFormat = '%12.6f, %12.6f\n';
             fileName = [siteID 'PSA.csv'];
             data = load_data(varStruct,pth,Years);
             data = data(1:inde,:);
             
             % Unit conversion
             data(:,1) = data(:,1)./1000; % Smartflux output unit: Pa
-            data(:,3) = data(:,3)./1000;
-            
-            % Basic filtering
-            data(data<95) = NaN;
-            
-            [data,RJdata]=RunStdDev(data,wlen,thres,RJdata,tv_export,varStruct);
-            
+
             if plot_fig == 1
                 plot(tv, data)
             end
@@ -1215,23 +998,14 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(inds:inde,:)),cFormat,data)
             
         case 'DSM'
-            var1_name = 'MET_RainTips_Tot';
-            var2_name = 'P_1_1_1';
+            var1_name = 'P_1_1_1';
             
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Flux';
-            
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
             cHeader = {'Time (PST)' 'Precipitation (1.05m)'};
             cFormat = '%12.6f\n';
             fileName = [siteID 'PCT.csv'];
             data = load_data(varStruct,pth,Years);
-            
-            % Time Shift Correction (fixed at 2021-Nov-11 09:30 am)            
-            tsc=find(tv<=datenum(2021,11,11,09,30,0));            
-            data(tsc(1:end-1),2) = data(tsc(2:end),2);
-            
-            data(:,2) = data(:,2)/100; % Smartflux output unit: meter
             data = data(1:inde,:); 
                         
             if plot_fig == 1
@@ -1242,23 +1016,14 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
             
         case 'RBM'
-            var1_name = 'MET_RainTips_Tot';
-            var2_name = 'P_1_1_1';
+            var1_name = 'P_1_1_1';
             
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Flux';
-            
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
             cHeader = {'Time (PST)' 'Precipitation (1.60m)'};
             cFormat = '%12.6f\n';
             fileName = [siteID 'PCT.csv'];
             data = load_data(varStruct,pth,Years);
-            data(:,2) = data(:,2)/100; % Smartflux output unit: meter
-            
-            % Blocking off values before installation (2022-Jun-13 11:30)
-            UNINS = find(tv<=datenum(2022,6,13,12,0,0)); % uninstalled
-            data(UNINS,:)=NaN;
-            
             data = data(1:inde,:); 
                         
             if plot_fig == 1
@@ -1267,7 +1032,6 @@ for siteNum = 1:length(siteNames)
             
             % Export as csv file
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
-            
     end
     
     %% SVWC (BBSMA)
@@ -1455,55 +1219,20 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(inds:inde,:)),cFormat,data)
             
         case 'DSM'
-            var1_name = 'MET_SHFP_1_Avg';
-            var2_name = 'MET_SHFP_2_Avg';
-            var3_name = 'MET_SHFP_3_Avg';
-            var4_name = 'SHF_1_1_1';
-            var5_name = 'SHF_2_1_1';
-            var6_name = 'SHF_3_1_1';
+            var1_name = 'G_1_1_1';
+            var2_name = 'G_2_1_1';
+            var3_name = 'G_3_1_1';
             
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'MET';
-            varStruct(3).name = var3_name;varStruct(3).type = 'MET';
-            varStruct(4).name = var4_name;varStruct(4).type = 'Flux';
-            varStruct(5).name = var5_name;varStruct(5).type = 'Flux';
-            varStruct(6).name = var6_name;varStruct(6).type = 'Flux';
-            
-            cHeader = {'Time (PST)' 'Soil Heat Flux Density (uncorrected) (5cm) 1' ...
-                'Soil Heat Flux Density (uncorrected) (5cm) 2'...
-                'Soil Heat Flux Density (uncorrected) (5cm) 3'...
-                '[Smartflux] SHF1' '[Smartflux] SHF2' '[Smartflux] SHF3' };
-            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f\n';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met/clean';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Met/clean';
+            varStruct(3).name = var3_name;varStruct(3).type = 'Met/clean';         
+            cHeader = {'Time (PST)' 'Soil Heat Flux Density (5cm, east) 1' ...
+                'Soil Heat Flux Density (5cm, west) 2'...
+                'Soil Heat Flux Density(5cm, south) 3'};
+            cFormat = '%12.6f, %12.6f, %12.6f\n';
             fileName = [siteID 'SHA.csv'];
             data = load_data(varStruct,pth,Years);
-            
-                       
-            % Time Shift Correction (fixed at 2021-Nov-11 09:30 am)            
-            tsc=find(tv<=datenum(2021,11,11,09,30,0));            
-            data(tsc(1:end-1),4:6) = data(tsc(2:end),4:6);
-            
-            % Scale correction (incorrect installation: 2021-Aug-25 ~ Sep-09)
-              tcb=datenum(2021,8,24,15,30,0); % begin of corrected period
-              tce=datenum(2021,9,9,12,30,0);  % end of corrected period
-              trb=datenum(2021,9,18,15,30,0);
-              tre=datenum(2021,9,27,12,30,0);              
-              pc=find(tv>=tcb&tv<=tce);
-              pr=find(tv>=trb&tv<=tre);
-              
-              % data1: to be corrected; data2: reference
-                data1=data(pc,:);max1=nanmax(data1);min1=nanmin(data1);
-                n1=(data1-min1)./(max1-min1);              
-                data2=data(pr,:);max2=nanmax(data2); max2(4:6)=max2(1:3);min2=nanmin(data2); min2(4:6)=min2(1:3);
-                n2=(data2-min2)./(max2-min2);
-              % scaling coefficients (a: slope, b:intercept)
-                a=max2-min2; b=min2;
-              % data correction
-                n1c=n1.*a+b;               
-                data(pc,:)=n1c;  
-
-            
-            
             data = data(1:inde,:);
                         
             if plot_fig == 1
@@ -1514,33 +1243,20 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
             
         case 'RBM'
-            var1_name = 'MET_SHFP_1_Avg';
-            var2_name = 'MET_SHFP_2_Avg';
-            var3_name = 'MET_SHFP_3_Avg';
-            var4_name = 'SHF_1_1_1';
-            var5_name = 'SHF_2_1_1';
-            var6_name = 'SHF_3_1_1';
+            var1_name = 'G_1_1_1';
+            var2_name = 'G_2_1_1';
+            var3_name = 'G_3_1_1';
             
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'MET';
-            varStruct(3).name = var3_name;varStruct(3).type = 'MET';
-            varStruct(4).name = var4_name;varStruct(4).type = 'Flux';
-            varStruct(5).name = var5_name;varStruct(5).type = 'Flux';
-            varStruct(6).name = var6_name;varStruct(6).type = 'Flux';
-            
-            cHeader = {'Time (PST)' 'Soil Heat Flux Density (uncorrected) (5cm) 1' ...
-                'Soil Heat Flux Density (uncorrected) (5cm) 2'...
-                'Soil Heat Flux Density (uncorrected) (5cm) 3'...
-                '[Smartflux] SHF1' '[Smartflux] SHF2' '[Smartflux] SHF3' };
-            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f\n';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met/clean';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Met/clean';
+            varStruct(3).name = var3_name;varStruct(3).type = 'Met/clean';          
+            cHeader = {'Time (PST)' 'Soil Heat Flux Density (5cm, east) 1' ...
+                'Soil Heat Flux Density (5cm, west) 2'...
+                'Soil Heat Flux Density(5cm, south) 3'};
+            cFormat = '%12.6f, %12.6f, %12.6f\n';
             fileName = [siteID 'SHA.csv'];
             data = load_data(varStruct,pth,Years);
-            
-            % Blocking off values before installation (2022-Jun-* **:**)
-            UNINS = find(tv<=datenum(2022,6,13,15,0,0)); % uninstalled
-            data(UNINS,:)=NaN;
-            
             data = data(1:inde,:);
                         
             if plot_fig == 1
@@ -1633,68 +1349,35 @@ for siteNum = 1:length(siteNames)
             % Export as csv file
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(inds:inde,:)),cFormat,data)
             
-            
         case 'DSM'
-            var1_name = 'MET_SoilT_P1_5cm_Avg';
-            var2_name = 'MET_SoilT_P1_10cm_Avg';
-            var3_name = 'MET_SoilT_P1_20cm_Avg';
-            var4_name = 'MET_SoilT_P1_50cm_Avg';
-            var5_name = 'MET_SoilT_P2_5cm_Avg';
-            var6_name = 'MET_SoilT_P2_10cm_Avg';
-            var7_name = 'MET_SoilT_P2_20cm_Avg';
-            var8_name = 'MET_SoilT_P2_50cm_Avg';
-            
-            var9_name = 'TS_1_1_1';
-            var10_name = 'TS_1_2_1';
-            var11_name = 'TS_1_3_1';
-            var12_name = 'TS_1_4_1';
-            
-            var13_name = 'TS_2_1_1';
-            var14_name = 'TS_2_2_1';
-            var15_name = 'TS_2_3_1';
-            var16_name = 'TS_2_4_1';
+            var1_name = 'TS_1_1_1';
+            var2_name = 'TS_1_2_1';
+            var3_name = 'TS_1_3_1';
+            var4_name = 'TS_1_4_1';            
+            var5_name = 'TS_2_1_1';
+            var6_name = 'TS_2_2_1';
+            var7_name = 'TS_2_3_1';
+            var8_name = 'TS_2_4_1';
             
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'MET';
-            varStruct(3).name = var3_name;varStruct(3).type = 'MET';
-            varStruct(4).name = var4_name;varStruct(4).type = 'MET';
-            varStruct(5).name = var5_name;varStruct(5).type = 'MET';
-            varStruct(6).name = var6_name;varStruct(6).type = 'MET';
-            varStruct(7).name = var7_name;varStruct(7).type = 'MET';
-            varStruct(8).name = var8_name;varStruct(8).type = 'MET';
-            
-            varStruct(9).name = var9_name;varStruct(9).type = 'Flux';
-            varStruct(10).name = var10_name;varStruct(10).type = 'Flux';
-            varStruct(11).name = var11_name;varStruct(11).type = 'Flux';
-            varStruct(12).name = var12_name;varStruct(12).type = 'Flux';
-            varStruct(13).name = var13_name;varStruct(13).type = 'Flux';
-            varStruct(14).name = var14_name;varStruct(14).type = 'Flux';
-            varStruct(15).name = var15_name;varStruct(15).type = 'Flux';
-            varStruct(16).name = var16_name;varStruct(16).type = 'Flux';
-            
-            
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met/clean';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Met/clean';
+            varStruct(3).name = var3_name;varStruct(3).type = 'Met/clean';
+            varStruct(4).name = var4_name;varStruct(4).type = 'Met/clean';
+            varStruct(5).name = var5_name;varStruct(5).type = 'Met/clean';
+            varStruct(6).name = var6_name;varStruct(6).type = 'Met/clean';
+            varStruct(7).name = var7_name;varStruct(7).type = 'Met/clean';
+            varStruct(8).name = var8_name;varStruct(8).type = 'Met/clean';
             cHeader = {'Time (PST)'...
                 'Soil Temperature Profile 1 (-0.05m)' 'Soil Temperature Profile 1 (-0.10m)' ...
                 'Soil Temperature Profile 1 (-0.20m)' 'Soil Temperature Profile 1 (-0.50m)' ...
                 'Soil Temperature Profile 2 (-0.05m)' 'Soil Temperature Profile 2 (-0.10m)' ...
-                'Soil Temperature Profile 2 (-0.20m)' 'Soil Temperature Profile 2 (-0.50m)' ...
-                '[Smartflux] Ts1-5cm' '[Smartflux] Ts1-10cm' '[Smartflux] Ts1-20cm' '[Smartflux] Ts1-50cm'...
-                '[Smartflux] Ts2-5cm' '[Smartflux] Ts2-10cm' '[Smartflux] Ts2-20cm' '[Smartflux] Ts2-50cm'};
-            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f\n';
+                'Soil Temperature Profile 2 (-0.20m)' 'Soil Temperature Profile 2 (-0.50m)'};
+            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f\n';
             fileName = [siteID 'STA.csv'];
             data = load_data(varStruct,pth,Years);
-            data(:,9:16) = data(:,9:16)- 273.15; % Smartflux output unit: K
-            
-            % Time Shift Correction (fixed at 2021-Nov-11 09:30 am)            
-            tsc=find(tv<=datenum(2021,11,11,09,30,0));            
-            data(tsc(1:end-1),9:16) = data(tsc(2:end),9:16);
-            
             data = data(1:inde,:);
-            data(abs(data)>100)=NaN; % Weird data at 2021-Sep-03
-            
-            [data,RJdata]=RunStdDev(data,wlen,thres,RJdata,tv_export,varStruct);
-                        
+
             if plot_fig == 1
                 plot(tv, data)
             end
@@ -1703,70 +1386,33 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
             
         case 'RBM'
-            var1_name = 'MET_SoilT_P1_5cm_Avg';
-            var2_name = 'MET_SoilT_P1_10cm_Avg';
-            var3_name = 'MET_SoilT_P1_20cm_Avg';
-            var4_name = 'MET_SoilT_P1_50cm_Avg';
-            var5_name = 'MET_SoilT_P2_5cm_Avg';
-            var6_name = 'MET_SoilT_P2_10cm_Avg';
-            var7_name = 'MET_SoilT_P2_20cm_Avg';
-            var8_name = 'MET_SoilT_P2_50cm_Avg';
-            
-            var9_name = 'TS_1_1_1';
-            var10_name = 'TS_1_2_1';
-            var11_name = 'TS_1_3_1';
-            var12_name = 'TS_1_4_1';
-            
-            var13_name = 'TS_2_1_1';
-            var14_name = 'TS_2_2_1';
-            var15_name = 'TS_2_3_1';
-            var16_name = 'TS_2_4_1';
+            var1_name = 'TS_1_1_1';
+            var2_name = 'TS_1_2_1';
+            var3_name = 'TS_1_3_1';
+            var4_name = 'TS_1_4_1';            
+            var5_name = 'TS_2_1_1';
+            var6_name = 'TS_2_2_1';
+            var7_name = 'TS_2_3_1';
+            var8_name = 'TS_2_4_1';
             
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'MET';
-            varStruct(3).name = var3_name;varStruct(3).type = 'MET';
-            varStruct(4).name = var4_name;varStruct(4).type = 'MET';
-            varStruct(5).name = var5_name;varStruct(5).type = 'MET';
-            varStruct(6).name = var6_name;varStruct(6).type = 'MET';
-            varStruct(7).name = var7_name;varStruct(7).type = 'MET';
-            varStruct(8).name = var8_name;varStruct(8).type = 'MET';
-            
-            varStruct(9).name = var9_name;varStruct(9).type = 'Flux';
-            varStruct(10).name = var10_name;varStruct(10).type = 'Flux';
-            varStruct(11).name = var11_name;varStruct(11).type = 'Flux';
-            varStruct(12).name = var12_name;varStruct(12).type = 'Flux';
-            varStruct(13).name = var13_name;varStruct(13).type = 'Flux';
-            varStruct(14).name = var14_name;varStruct(14).type = 'Flux';
-            varStruct(15).name = var15_name;varStruct(15).type = 'Flux';
-            varStruct(16).name = var16_name;varStruct(16).type = 'Flux';
-            
-            
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met/clean';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Met/clean';
+            varStruct(3).name = var3_name;varStruct(3).type = 'Met/clean';
+            varStruct(4).name = var4_name;varStruct(4).type = 'Met/clean';
+            varStruct(5).name = var5_name;varStruct(5).type = 'Met/clean';
+            varStruct(6).name = var6_name;varStruct(6).type = 'Met/clean';
+            varStruct(7).name = var7_name;varStruct(7).type = 'Met/clean';
+            varStruct(8).name = var8_name;varStruct(8).type = 'Met/clean';
             cHeader = {'Time (PST)'...
                 'Soil Temperature Profile 1 (-0.05m)' 'Soil Temperature Profile 1 (-0.10m)' ...
                 'Soil Temperature Profile 1 (-0.20m)' 'Soil Temperature Profile 1 (-0.50m)' ...
                 'Soil Temperature Profile 2 (-0.05m)' 'Soil Temperature Profile 2 (-0.10m)' ...
-                'Soil Temperature Profile 2 (-0.20m)' 'Soil Temperature Profile 2 (-0.50m)' ...
-                '[Smartflux] Ts1-5cm' '[Smartflux] Ts1-10cm' '[Smartflux] Ts1-20cm' '[Smartflux] Ts1-50cm'...
-                '[Smartflux] Ts2-5cm' '[Smartflux] Ts2-10cm' '[Smartflux] Ts2-20cm' '[Smartflux] Ts2-50cm'};
-            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f\n';
+                'Soil Temperature Profile 2 (-0.20m)' 'Soil Temperature Profile 2 (-0.50m)'};
+            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f\n';
             fileName = [siteID 'STA.csv'];
             data = load_data(varStruct,pth,Years);
-            
-            % Blocking off values before installation (2022-Jun-13 16:00 PDT)
-            UNINS = find(tv<=datenum(2022,6,13,15,0,0)); % uninstalled
-            data(UNINS,:)=NaN;
-            
-            % Fix Ts-1 profile (2022-Jun-17 17:31~19:00 PDT)
-            UNINS = find(tv>=datenum(2022,6,16,16,30,0)&tv<=datenum(2022,6,16,18,0,0)); % uninstalled
-            data(UNINS,:)=NaN;
-            
-            
-            data(:,9:16) = data(:,9:16)- 273.15; % Smartflux output unit: K
             data = data(1:inde,:);
-            
-            
-            [data,RJdata]=RunStdDev(data,wlen,thres,RJdata,tv_export,varStruct);
             
             if plot_fig == 1
                 plot(tv, data)
@@ -1829,78 +1475,40 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(inds:inde,:)),cFormat,data)
             
         case 'DSM'
-            var1_name = 'MET_WaterT_Avg';
-            var2_name = 'TW_1_1_1';
+            var1_name = 'TW_1_1_1';
+
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Flux';
-            cHeader = {'Time (PST)' 'Water Temperature' '[Smartflux] Water Temperature'};
-            cFormat = '%12.6f, %12.6f\n';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            cHeader = {'Time (PST)' 'Water Temperature'};
+            cFormat = '%12.6f\n';
             fileName = [siteID 'WTA.csv'];
-            
             data = load_data(varStruct,pth,Years);
             data = data(1:inde,:);
-            
-            % Blocking off values before installation (Manta+20, 2021-Dec-02 14:00)
-            UNINS = find(tv<=datenum(2021,12,02,15,30,0)); % uninstalled
-            data(UNINS,:)=NaN; 
-            
-            % maintenance (2022-Jun-25 10:55-11:28 PDT)
-            UNINS = find(tv>=datenum(2022,06,25,09,30,0)&tv<=datenum(2022,06,25,10,30,0)); % uninstalled
-            data(UNINS,:)=NaN; 
-            
-            % maintenance (2022-Aug-30 11:18-11:30 PDT)
-            UNINS = find(tv>=datenum(2022,08,30,10,15,0)&tv<=datenum(2022,08,30,12,30,0)); % uninstalled
-            data(UNINS,:)=NaN;
-            
-            % maintenance (2022-Sep-15 09:50 - 2022-Sep-19 14:30 PDT)
-            UNINS = find(tv>=datenum(2022,09,15,08,50,0)&tv<=datenum(2022,09,19,13,30,0)); % uninstalled
-            data(UNINS,:)=NaN;     
-            
-            % maintenance (2022-Sep-30 10:00 - 2022-Sep-30 11:00 PST)
-            UNINS = find(tv>=datenum(2022,09,30,10,0,0)&tv<=datenum(2022,09,30,11,0,0)); % uninstalled
-            data(UNINS,:)=NaN; 
-            
+
              if plot_fig == 1
                 plot(tv, data)
              end
-             
-            [data,RJdata]=RunStdDev(data,wlen,thres,RJdata,tv_export,varStruct);
-            
+
             % Export as csv file
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
             
         case 'RBM'
-            var1_name = 'MET_WaterT_Avg';
-            var2_name = 'TW_1_1_1';
-            clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Flux';
-            cHeader = {'Time (PST)' 'Water Temperature' '[Smartflux] Water Temperature'};
-            cFormat = '%12.6f, %12.6f\n';
-            fileName = [siteID 'WTA.csv'];
-            
-            data = load_data(varStruct,pth,Years);
-            
-            % Blocking off values before installation (2022-Jul-14 12:30 PST)
-            UNINS = find(tv<=datenum(2022,7,14,12,30,0)); % uninstalled
-            data(UNINS,:)=NaN;
+            var1_name = 'TW_1_1_1';
 
-            % maintenance (2022-Sep-30 13:30 - 2022-Sep-30 15:30 PST)
-            UNINS = find(tv>=datenum(2022,09,30,13,30,0)&tv<=datenum(2022,09,30,15,30,0)); % uninstalled
-            data(UNINS,:)=NaN; 
-            
+            clear varStruct
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            cHeader = {'Time (PST)' 'Water Temperature'};
+            cFormat = '%12.6f\n';
+            fileName = [siteID 'WTA.csv'];
+            data = load_data(varStruct,pth,Years);
             data = data(1:inde,:);
             
             if plot_fig == 1
                 plot(tv, data)
             end
-             
-            [data,RJdata]=RunStdDev(data,wlen,thres,RJdata,tv_export,varStruct);
-            
+
             % Export as csv file
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
-
     end
     
     %% Oxidation Reduction Potential (BBORP)
@@ -1921,51 +1529,16 @@ for siteNum = 1:length(siteNames)
             data = data(1:inde,:);
             
         case 'DSM'
-            var1_name = 'MET_WaterORP_Avg';
-            var2_name = 'ORP_1_1_1';
-            clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Flux';
-            cHeader = {'Time (PST)' 'Oxidation Reduction Potential (-2m)' '[Smartflux] Oxidation Reduction Potential (-2m)'};
-            cFormat = '%12.6f, %12.6f\n';
-            fileName = [siteID 'ORP.csv'];
-            
-            data = load_data(varStruct,pth,Years);
-            data = data(1:inde,:);  
-            
-            % Blocking off values before installation (Manta+20, 2021-Dec-02 14:00)
-            UNINS = find(tv<=datenum(2021,12,02,15,30,0)); % uninstalled
-            data(UNINS,:)=NaN;    
-            
-            % maintenance (2022-Jun-25 10:55-11:28 PDT)
-            UNINS = find(tv>=datenum(2022,06,25,09,30,0)&tv<=datenum(2022,06,25,10,30,0)); % uninstalled
-            data(UNINS,:)=NaN; 
-            
-            % maintenance (2022-Aug-30 11:18-11:30 PDT)
-            UNINS = find(tv>=datenum(2022,08,30,10,15,0)&tv<=datenum(2022,08,30,12,30,0)); % uninstalled
-            data(UNINS,:)=NaN;
-            
-            % maintenance (2022-Sep-15 09:50 - 2022-Sep-19 14:30 PDT)
-            UNINS = find(tv>=datenum(2022,09,15,08,50,0)&tv<=datenum(2022,09,19,13,30,0)); % uninstalled
-            data(UNINS,:)=NaN;     
-            
-            % maintenance (2022-Sep-30 10:00 - 2022-Sep-30 11:00 PST)
-            UNINS = find(tv>=datenum(2022,09,30,10,0,0)&tv<=datenum(2022,09,30,11,0,0)); % uninstalled
-            data(UNINS,:)=NaN; 
+            var1_name = 'ORP_1_1_1';
 
-            
-            % delete unreasonable data (for pH & ORP)
-            % (1) Apr-23 12:00 ~ Jun-25 15:00
-            % (2) Jul-02 20:00 ~ Jul-27 13:30 
-            % (3) Jul-29 10:00 ~ Aug-30 13:00
-            % (4) Sep-09 00:00 ~ Sep-19 12:30
-            delp = find(tv>=datenum(2022,04,23,12,0,0)& tv<=datenum(2022,06,25,15,00,0)); data(delp,:)=NaN;
-            delp = find(tv>=datenum(2022,07,02,20,0,0)& tv<=datenum(2022,07,27,13,30,0)); data(delp,:)=NaN;
-            delp = find(tv>=datenum(2022,07,29,10,0,0)& tv<=datenum(2022,08,30,13,30,0)); data(delp,:)=NaN;
-            delp = find(tv>=datenum(2022,09,09,00,0,0)& tv<=datenum(2022,09,19,12,30,0)); data(delp,:)=NaN;
-            
-            [data,RJdata]=RunStdDev(data,wlen,thres,RJdata,tv_export,varStruct);
-            
+            clear varStruct
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            cHeader = {'Time (PST)' 'Oxidation Reduction Potential (-2m)'};
+            cFormat = '%12.6f\n';
+            fileName = [siteID 'ORP.csv'];
+            data = load_data(varStruct,pth,Years);
+            data = data(1:inde,:);
+
             if plot_fig == 1
                 plot(tv, data)
             end
@@ -1974,28 +1547,15 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
             
         case 'RBM'
-            var1_name = 'MET_WaterORP_Avg';
-            var2_name = 'ORP_1_1_1';
-            clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Flux';
-            cHeader = {'Time (PST)' 'Oxidation Reduction Potential (-2m)' '[Smartflux] Oxidation Reduction Potential (-2m)'};
-            cFormat = '%12.6f, %12.6f\n';
-            fileName = [siteID 'ORP.csv'];
-            
-            data = load_data(varStruct,pth,Years);
-            
-            % Blocking off values before installation (2022-Jul-14 12:30 PST)
-            UNINS = find(tv<=datenum(2022,7,14,12,30,0)); % uninstalled
-            data(UNINS,:)=NaN;
+            var1_name = 'ORP_1_1_1';
 
-            % maintenance (2022-Sep-30 13:30 - 2022-Sep-30 15:30 PST)
-            UNINS = find(tv>=datenum(2022,09,30,13,30,0)&tv<=datenum(2022,09,30,15,30,0)); % uninstalled
-            data(UNINS,:)=NaN; 
-            
+            clear varStruct
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            cHeader = {'Time (PST)' 'Oxidation Reduction Potential (-2m)'};
+            cFormat = '%12.6f\n';
+            fileName = [siteID 'ORP.csv'];
+            data = load_data(varStruct,pth,Years);
             data = data(1:inde,:);
-            
-            [data,RJdata]=RunStdDev(data,wlen,thres,RJdata,tv_export,varStruct);
             
             if plot_fig == 1
                 plot(tv, data)
@@ -2003,7 +1563,6 @@ for siteNum = 1:length(siteNames)
             
             % Export as csv file
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
-
     end
 
     %% Water table depth & bog height (BBWPT)
@@ -2058,176 +1617,56 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(inds:inde,:)),cFormat,data)
             
         case 'DSM'
-            var1_name = 'MET_WaterLevel_Avg';   
-            var2_name = 'WL_1_1_1';     
+            var1_name = 'WTD_1_1_1';    
+
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Flux';
-            
-            %cHeader = {'Time (PST)' 'Water Table Height (-2m)' '[Smartflux] Water Table Height (-2m)'};
-            cFormat = '%12.6f, %12.6f\n';
-            cHeader = {'Time (PST)' 'WTH (-2m)'  '[Smartflux] WTH (-2m)'};    
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            cFormat = '%12.6f\n';
+            cHeader = {'Time (PST)' 'WTH (-2m)'};    
             fileName = [siteID 'WPT.csv'];
             data = load_data(varStruct,pth,Years);
             data = data(1:inde,:);
             
-            % Blocking off values before installation (Manta+20, 2021-Dec-02 14:00)
-            UNINS = find(tv<=datenum(2021,12,02,15,30,0)); % uninstalled
-            data(UNINS,:)=NaN;  
-            
-            % maintenance (2022-Jun-25 10:55-11:28 PDT)
-            UNINS = find(tv>=datenum(2022,06,25,09,30,0)&tv<=datenum(2022,06,25,10,30,0)); % uninstalled
-            data(UNINS,:)=NaN; 
-
-            % maintenance (2022-Aug-30 11:18-11:30 PDT)
-            UNINS = find(tv>=datenum(2022,08,30,10,15,0)&tv<=datenum(2022,08,30,12,30,0)); % uninstalled
-            data(UNINS,:)=NaN;
-            
-            % maintenance (2022-Sep-15 09:50 - 2022-Sep-19 14:30 PDT)
-            UNINS = find(tv>=datenum(2022,09,15,08,50,0)&tv<=datenum(2022,09,19,13,30,0)); % uninstalled
-            data(UNINS,:)=NaN;     
-            
-            % maintenance (2022-Sep-30 10:00 - 2022-Sep-30 11:00 PST)
-            UNINS = find(tv>=datenum(2022,09,30,10,0,0)&tv<=datenum(2022,09,30,11,0,0)); % uninstalled
-            data(UNINS,:)=NaN; 
-            
-            [data,RJdata]=RunStdDev(data,wlen,thres,RJdata,tv_export,varStruct);
-            
-            
-            % WTH correction
-            mWTHfn='P:\Sites\DSM\Met\MeasuredWTH_DSM.xlsx';
-            mWTHd=readtable(mWTHfn);   % manually measured WTH data
-            % Had to round up to 30-min the time vector in the xlsx file so that
-            % the data() can find the time marks properly
-            % Zoran replaced (20220902):
-            % mt=datenum(mWTHd{:,1:6})'; % time
-            % with:
-            mt = fr_round_time(datenum(mWTHd{:,1:6})');            
-            my=mWTHd{:,8}/100;         % manually measured WTH, unit:cm
-            mp=datefind(mt,tv);
-            mx=data(mp,1);             % relative WTH
-            
-            if length(mx)==1
-                WLc=(mx-0.02);         % (ref: 2021-12-15 12:30 2cm high)
-                data=(data-WLc)*100;
-                p=[1,0];
-            else
-                p=polyfit(mx,my,1);    % p(1)=slope, p(2)=intercept. my=mx*p(1)+p(2)
-                data=(data*p(1)+p(2))*100;
-            end
-            mWTHd{end,9:10}=p;
-            
-            
-            
             if plot_fig == 1
                 plot(tv, data)
             end
-            
+
             % Export as csv file
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
-            writetable(mWTHd,mWTHfn);
-            
                     
         case 'RBM'
-            var1_name = 'MET_WaterLevel_Avg';   
-            var2_name = 'WL_1_1_1';     
-            clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Flux';
+            var1_name = 'WTD_1_1_1';    
             
-            %cHeader = {'Time (PST)' 'Water Table Height (-2m)' '[Smartflux] Water Table Height (-2m)'};
-            cFormat = '%12.6f, %12.6f\n';
-            cHeader = {'Time (PST)' 'WTH (-2m)'  '[Smartflux] WTH (-2m)'};    
+            clear varStruct
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            cFormat = '%12.6f\n';
+            cHeader = {'Time (PST)' 'WTH (-2m)'};    
             fileName = [siteID 'WPT.csv'];
             data = load_data(varStruct,pth,Years);
-            
-            % Blocking off values before installation (2022-Jul-14 12:30 PST)
-            UNINS = find(tv<=datenum(2022,7,14,12,30,0)); % uninstalled
-            data(UNINS,:)=NaN;
-
-            % maintenance (2022-Sep-30 13:30 - 2022-Sep-30 15:30 PST)
-            UNINS = find(tv>=datenum(2022,09,30,13,30,0)&tv<=datenum(2022,09,30,15,30,0)); % uninstalled
-            data(UNINS,:)=NaN; 
-            
             data = data(1:inde,:);
-            
-            % WTH correction for the first time calculation (ref: 2022-08-30 13:30 -36.5cm high)
-            mWTHfn='P:\Sites\RBM\Met\MeasuredWTH_RBM.xlsx';
-            mWTHd=readtable(mWTHfn);   % manually measured WTH data
-            mt = fr_round_time(datenum(mWTHd{:,1:6})');   
-            my=mWTHd{:,8}/100;         % manually measured WTH, unit:cm
-            mp=datefind(mt,tv);
-            mx=data(mp,1);             % relative WTH
-            
-            if length(mx)==1
-                WLc=(mx+0.365);        % (ref: 2022-08-30 13:30 -36.5cm high)
-                data=(data-WLc)*100;
-                p=[1,0];
-            else
-                p=polyfit(mx,my,1);    % p(1)=slope, p(2)=intercept. my=mx*p(1)+p(2)
-                data=(data*p(1)+p(2))*100;
-            end
-            mWTHd{end,9:10}=p;
-            
-            [data,RJdata]=RunStdDev(data,wlen,thres,RJdata,tv_export,varStruct);
             
             if plot_fig == 1
                 plot(tv, data)
             end
-            
+
             % Export as csv file
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
-            writetable(mWTHd,mWTHfn);
-
     end
     
     %% Water ph (*WpH) New device at DSM/RBM
     switch siteID
-        
+
         case 'DSM'
-            var1_name = 'MET_WaterpH_Avg';
-            var2_name = 'pH_1_1_1';
+            var1_name = 'pH_1_1_1';
+
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Flux';
-            cHeader = {'Time (PST)' 'Water pH (-2m)' '[Smartflux] Water pH (-2m)'};
-            cFormat = '%12.6f, %12.6f\n';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            cHeader = {'Time (PST)' 'Water pH (-2m)'};
+            cFormat = '%12.6f\n';
             fileName = [siteID 'WpH.csv'];
             data = load_data(varStruct,pth,Years);
             data = data(1:inde,:);
             
-            % Blocking off values before installation (Manta+20, 2021-Dec-02 14:00)
-            UNINS = find(tv<=datenum(2021,12,02,15,30,0)); % uninstalled
-            data(UNINS,:)=NaN;    
-            
-            % maintenance (2022-Jun-25 10:55-11:28 PDT)
-            UNINS = find(tv>=datenum(2022,06,25,09,30,0)&tv<=datenum(2022,06,25,10,30,0)); % uninstalled
-            data(UNINS,:)=NaN; 
-
-            % maintenance (2022-Aug-30 11:18-11:30 PDT)
-            UNINS = find(tv>=datenum(2022,08,30,10,15,0)&tv<=datenum(2022,08,30,12,30,0)); % uninstalled
-            data(UNINS,:)=NaN;
-            
-            % maintenance (2022-Sep-15 09:50 - 2022-Sep-19 14:30 PDT)
-            UNINS = find(tv>=datenum(2022,09,15,08,50,0)&tv<=datenum(2022,09,19,13,30,0)); % uninstalled
-            data(UNINS,:)=NaN;     
-            
-            % maintenance (2022-Sep-30 10:00 - 2022-Sep-30 11:00 PST)
-            UNINS = find(tv>=datenum(2022,09,30,10,0,0)&tv<=datenum(2022,09,30,11,0,0)); % uninstalled
-            data(UNINS,:)=NaN; 
-
-            
-            % delete unreasonable data (for pH & ORP)
-            % (1) Apr-23 12:00 ~ Jun-25 15:00
-            % (2) Jul-02 20:00 ~ Jul-27 13:30 
-            % (3) Jul-29 10:00 ~ Aug-30 13:00
-            % (4) Sep-09 00:00 ~ Sep-19 12:30
-            delp = find(tv>=datenum(2022,04,23,12,0,0)& tv<=datenum(2022,06,25,15,00,0)); data(delp,:)=NaN;
-            delp = find(tv>=datenum(2022,07,02,20,0,0)& tv<=datenum(2022,07,27,13,30,0)); data(delp,:)=NaN;
-            delp = find(tv>=datenum(2022,07,29,10,0,0)& tv<=datenum(2022,08,30,13,30,0)); data(delp,:)=NaN;
-            delp = find(tv>=datenum(2022,09,09,00,0,0)& tv<=datenum(2022,09,19,12,30,0)); data(delp,:)=NaN;
-            
-            [data,RJdata]=RunStdDev(data,wlen,thres,RJdata,tv_export,varStruct);
             if plot_fig == 1
                 plot(tv, data)
             end
@@ -2236,27 +1675,16 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
             
         case 'RBM'
-            var1_name = 'MET_WaterpH_Avg';
-            var2_name = 'pH_1_1_1';
+            var1_name = 'pH_1_1_1';
+
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Flux';
-            cHeader = {'Time (PST)' 'Water pH (-2m)' '[Smartflux] Water pH (-2m)'};
-            cFormat = '%12.6f, %12.6f\n';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            cHeader = {'Time (PST)' 'Water pH (-2m)'};
+            cFormat = '%12.6f\n';
             fileName = [siteID 'WpH.csv'];
             data = load_data(varStruct,pth,Years);
-            
-            % Blocking off values before installation (2022-Jul-14 12:30 PST)
-            UNINS = find(tv<=datenum(2022,7,14,12,30,0)); % uninstalled
-            data(UNINS,:)=NaN;
-
-            % maintenance (2022-Sep-30 13:30 - 2022-Sep-30 15:30 PST)
-            UNINS = find(tv>=datenum(2022,09,30,13,30,0)&tv<=datenum(2022,09,30,15,30,0)); % uninstalled
-            data(UNINS,:)=NaN; 
-            
             data = data(1:inde,:);
             
-            [data,RJdata]=RunStdDev(data,wlen,thres,RJdata,tv_export,varStruct);
             if plot_fig == 1
                 plot(tv, data)
             end
@@ -2265,50 +1693,25 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
     end
     %% Water Conductivity (*WCd) New device at DSM/RBM    
-    switch siteID
-        
+    switch siteID     
+
         case 'DSM'
-            var1_name = 'MET_WaterCond_Avg';
-            var2_name = 'MET_WaterCond_Avg';
-            var3_name = 'COND_1_1_1';
+            var1_name = 'COND_WATER_1_1_1';
+            var2_name = 'COND_WATER_1_1_1';
+
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'MET';
-            varStruct(3).name = var3_name;varStruct(3).type = 'Flux';
-            cHeader = {'Time (PST)' 'Water conductivity (mS/cm) (-2m)' 'Salinity (g/L)'...
-                '[Smartflux] Water conductivity (mS/cm) (-2m)'};
-            cFormat = '%12.6f, %12.6f, %12.6f\n';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
+            cHeader = {'Time (PST)' 'Water conductivity (mS/cm) (-2m)' 'Salinity (ppt) (-2m)'};
+            cFormat = '%12.6f, %12.6f\n';
             fileName = [siteID 'WCd.csv'];
             data = load_data(varStruct,pth,Years);
             data = data(1:inde,:);
-            
-            % Blocking off values before installation (Manta+20, 2021-Dec-02 14:00)
-            UNINS = find(tv<=datenum(2021,12,02,15,30,0)); % uninstalled
-            data(UNINS,:)=NaN;   
-            
-            % maintenance (2022-Jun-25 10:55-11:28 PDT)
-            UNINS = find(tv>=datenum(2022,06,25,09,30,0)&tv<=datenum(2022,06,25,10,30,0)); % uninstalled
-            data(UNINS,:)=NaN; 
-            
-            % maintenance (2022-Aug-30 11:18-11:30 PDT)
-            UNINS = find(tv>=datenum(2022,08,30,10,15,0)&tv<=datenum(2022,08,30,12,30,0)); % uninstalled
-            data(UNINS,:)=NaN;
-
-            % maintenance (2022-Sep-15 09:50 - 2022-Sep-19 14:30 PDT)
-            UNINS = find(tv>=datenum(2022,09,15,08,50,0)&tv<=datenum(2022,09,19,13,30,0)); % uninstalled
-            data(UNINS,:)=NaN;     
-            
-            % maintenance (2022-Sep-30 10:00 - 2022-Sep-30 11:00 PST)
-            UNINS = find(tv>=datenum(2022,09,30,10,0,0)&tv<=datenum(2022,09,30,11,0,0)); % uninstalled
-            data(UNINS,:)=NaN; 
-            
-            data(:,[1,3])=data(:,[1,3])/1000; % convert unit from microSeimens/cm to milliSeimens/cm
+            data=data/1000; % convert unit from microSeimens/cm to milliSeimens/cm
             
             % Salinity computation:
             % result=salinity in grams (of salt) per liter (of solution)
-            data(:,2)=(data(:,1).^1.0878).*0.4665; % unit: g/L
-            
-            [data,RJdata]=RunStdDev(data,wlen,thres,RJdata,tv_export,varStruct);
+            data(:,2)=(data(:,1).^1.0878).*0.4665; % unit: g/L, ppt
             
             if plot_fig == 1
                 plot(tv, data)
@@ -2318,36 +1721,22 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
             
         case 'RBM'
-            var1_name = 'MET_WaterCond_Avg';
-            var2_name = 'MET_WaterCond_Avg';
-            var3_name = 'COND_1_1_1';
+            var1_name = 'COND_WATER_1_1_1';
+            var2_name = 'COND_WATER_1_1_1';
+
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'MET';
-            varStruct(3).name = var3_name;varStruct(3).type = 'Flux';
-            cHeader = {'Time (PST)' 'Water conductivity (mS/cm) (-2m)' 'Salinity (g/L)'...
-                '[Smartflux] Water conductivity (mS/cm) (-2m)'};
-            cFormat = '%12.6f, %12.6f, %12.6f\n';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
+            cHeader = {'Time (PST)' 'Water conductivity (mS/cm) (-2m)' 'Salinity (ppt) (-2m)'};
+            cFormat = '%12.6f, %12.6f\n';
             fileName = [siteID 'WCd.csv'];
             data = load_data(varStruct,pth,Years);
-            
-            % Blocking off values before installation (2022-Jul-14 12:30 PST)
-            UNINS = find(tv<=datenum(2022,7,14,12,30,0)); % uninstalled
-            data(UNINS,:)=NaN;
-
-            % maintenance (2022-Sep-30 13:30 - 2022-Sep-30 15:30 PST)
-            UNINS = find(tv>=datenum(2022,09,30,13,30,0)&tv<=datenum(2022,09,30,15,30,0)); % uninstalled
-            data(UNINS,:)=NaN; 
-            
             data = data(1:inde,:);
-            
-            data(:,[1,3])=data(:,[1,3])/1000; % convert unit from microSeimens/cm to milliSeimens/cm
+            data=data/1000; % convert unit from microSeimens/cm to milliSeimens/cm
             
             % Salinity computation:
             % result=salinity in grams (of salt) per liter (of solution)
-            data(:,2)=(data(:,1).^1.0878).*0.4665; % unit: g/L
-            
-            [data,RJdata]=RunStdDev(data,wlen,thres,RJdata,tv_export,varStruct);
+            data(:,2)=(data(:,1).^1.0878).*0.4665; % unit: g/L, ppt
             
             if plot_fig == 1
                 plot(tv, data)
@@ -2357,47 +1746,21 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
     end
     %% Water Dissolved Oxygen(*WDO) New device at DSM/RBM   
-    switch siteID
-        
+    switch siteID      
+
         case 'DSM'
-            var1_name = 'MET_WaterDO_Avg';
-            var2_name = 'MET_WaterDO_perc_Avg';
-            var3_name = 'DO_1_1_1';
-            var4_name = 'DOperc_1_1_1 ';
+            var1_name = 'DO_1_1_1';
+            var2_name = 'DOperc_1_1_1';
+
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'MET';
-            varStruct(3).name = var3_name;varStruct(3).type = 'Flux';
-            varStruct(4).name = var4_name;varStruct(4).type = 'Flux';
-            cHeader = {'Time (PST)' 'Water dissolve oxygen (-2m)' 'Water dissolve oxygen percentage (-2m)'...
-                '[Smartflux] Water dissolve oxygen (-2m)' '[Smartflux] Water dissolve oxygen percentage (-2m)'};
-            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f\n';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
+            cHeader = {'Time (PST)' 'Water dissolve oxygen (-2m)' 'Water dissolve oxygen percentage (-2m)'};
+            cFormat = '%12.6f, %12.6f\n';
             fileName = [siteID 'WDO.csv'];
             data = load_data(varStruct,pth,Years);
             data = data(1:inde,:);
-            
-%             % Blocking off values before installation (Manta+20, 2021-Dec-02 14:00)
-%             UNINS = find(tv<=datenum(2021,12,02,15,30,0)); % uninstalled
-%             data(UNINS,:)=NaN;  
-%             
-%             % maintenance (2022-Jun-25 10:55-11:28 PDT)
-%             UNINS = find(tv>=datenum(2022,06,25,09,30,0)&tv<=datenum(2022,06,25,10,30,0)); % uninstalled
-%             data(UNINS,:)=NaN; 
-%             
-%             % maintenance (2022-Aug-30 11:18-11:30 PDT)
-%             UNINS = find(tv>=datenum(2022,08,30,10,15,0)&tv<=datenum(2022,08,30,12,30,0)); % uninstalled
-%             data(UNINS,:)=NaN;
-% 
-%             % maintenance (2022-Sep-15 09:50 - 2022-Sep-19 14:30 PDT)
-%             UNINS = find(tv>=datenum(2022,09,15,08,50,0)&tv<=datenum(2022,09,19,13,30,0)); % uninstalled
-%             data(UNINS,:)=NaN;     
-%             
-%             % maintenance (2022-Sep-30 10:00 - 2022-Sep-30 11:00 PST)
-%             UNINS = find(tv>=datenum(2022,09,30,10,0,0)&tv<=datenum(2022,09,30,11,0,0)); % uninstalled
-%             data(UNINS,:)=NaN; 
-%             
-%             
-%             [data,RJdata]=RunStdDev(data,wlen,thres,RJdata,tv_export,varStruct);
+
             if plot_fig == 1
                 plot(tv, data)
             end
@@ -2406,97 +1769,52 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
             
         case 'RBM'
-            var1_name = 'MET_WaterDO_Avg';
-            var2_name = 'MET_WaterDO_perc_Avg';
-            var3_name = 'DO_1_1_1';
-            var4_name = 'DOperc_1_1_1 ';
+            var1_name = 'DO_1_1_1';
+            var2_name = 'DOperc_1_1_1';
+
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'MET';
-            varStruct(3).name = var3_name;varStruct(3).type = 'Flux';
-            varStruct(4).name = var4_name;varStruct(4).type = 'Flux';
-            cHeader = {'Time (PST)' 'Water dissolve oxygen (-2m)' 'Water dissolve oxygen percentage (-2m)'...
-                '[Smartflux] Water dissolve oxygen (-2m)' '[Smartflux] Water dissolve oxygen percentage (-2m)'};
-            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f\n';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
+            cHeader = {'Time (PST)' 'Water dissolve oxygen (-2m)' 'Water dissolve oxygen percentage (-2m)'};
+            cFormat = '%12.6f, %12.6f\n';
             fileName = [siteID 'WDO.csv'];
             data = load_data(varStruct,pth,Years);
-            
-            % Blocking off values before installation (2022-Jul-14 12:30 PST)
-            UNINS = find(tv<=datenum(2022,7,14,12,30,0)); % uninstalled
-            data(UNINS,:)=NaN;
-
-            % maintenance (2022-Sep-30 13:30 - 2022-Sep-30 15:30 PST)
-            UNINS = find(tv>=datenum(2022,09,30,13,30,0)&tv<=datenum(2022,09,30,15,30,0)); % uninstalled
-            data(UNINS,:)=NaN; 
-            
             data = data(1:inde,:);
             
-            [data,RJdata]=RunStdDev(data,wlen,thres,RJdata,tv_export,varStruct);
             if plot_fig == 1
                 plot(tv, data)
             end
             
             % Export as csv file
-            csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
+            csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)    
     end
     
 
     %% NDVI (*NDVI) New device at DSM/RBM       
-    switch siteID
-        
+    switch siteID    
+
         case 'DSM'
             var1_name = 'MET_REDin_Avg';
             var2_name = 'MET_REDout_Avg';
             var3_name = 'MET_NIRin_Avg';
             var4_name = 'MET_NIRout_Avg';
-            var5_name = 'MET_NDVI_Avg';
+            var5_name = 'NDVI_1_1_1';
             
-            var6_name = 'REDin_1_1_1';
-            var7_name = 'REDout_1_1_1';
-            var8_name = 'NIRin_1_1_1';
-            var9_name = 'NIRout_1_1_1';
-            var10_name = 'NDVI_1_1_1';
-            
-            clear varStruct
-            
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'MET';
-            varStruct(3).name = var3_name;varStruct(3).type = 'MET';
-            varStruct(4).name = var4_name;varStruct(4).type = 'MET';
-            varStruct(5).name = var5_name;varStruct(5).type = 'MET';
-            
-            varStruct(6).name = var6_name;varStruct(6).type = 'Flux';
-            varStruct(7).name = var7_name;varStruct(7).type = 'Flux';
-            varStruct(8).name = var8_name;varStruct(8).type = 'Flux';
-            varStruct(9).name = var9_name;varStruct(9).type = 'Flux';
-            varStruct(10).name = var10_name;varStruct(10).type = 'Flux';
-            
+            clear varStruct            
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Met';
+            varStruct(3).name = var3_name;varStruct(3).type = 'Met';
+            varStruct(4).name = var4_name;varStruct(4).type = 'Met';
+            varStruct(5).name = var5_name;varStruct(5).type = 'Clean/SecondStage';            
             cHeader = {'Time (PST)'...
                 'Incoming RED light (W/m^2 nm)' 'Reflected RED light (W/m^2 nm)'...
                 'Incoming NIR light (W/m^2 nm)' 'Reflected NIR light (W/m^2 nm)'...
-                'NDVI'...
-                '[Smartflux] Incoming RED light (W/m^2 nm)' '[Smartflux] Reflected RED light (W/m^2 nm)'...
-                '[Smartflux] Incoming NIR light (W/m^2 nm)' '[Smartflux] Reflected NIR light (W/m^2 nm)'...
-                '[Smartflux] NDVI'};
-            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f\n';
+                'NDVI'};
+            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f, %12.6f\n';
             fileName = [siteID 'NDVI.csv'];
             data = load_data(varStruct,pth,Years);
-            
-            % Time Shift Correction (fixed at 2021-Nov-11 09:30 am)            
-            tsc=find(tv<=datenum(2021,11,11,09,30,0));            
-            data(tsc(1:end-1),6:10) = data(tsc(2:end),6:10);
-            
             data = data(1:inde,:);
 
-            % Blocking off values before installation 
-            UNINS = find(tv>=datenum(2022,4,26,0,0,0)&tv<=datenum(2022,5,30,09,0,0)); % uninstalled
-            data(UNINS,:)=NaN;
-            
-            
-            % remove wrong data ( NDVI>1 or NDVI<-1) Added: 2021-Dec-21
-            wp=find(abs(data(:,5))>1 | abs(data(:,10))>1); % wrong points
-            data(wp,:)=NaN;
-                        
             if plot_fig == 1
                 plot(tv, data)
             end
@@ -2509,49 +1827,23 @@ for siteNum = 1:length(siteNames)
             var2_name = 'MET_REDout_Avg';
             var3_name = 'MET_NIRin_Avg';
             var4_name = 'MET_NIRout_Avg';
-            var5_name = 'MET_NDVI_Avg';
+            var5_name = 'NDVI_1_1_1';
             
-            var6_name = 'REDin_1_1_1';
-            var7_name = 'REDout_1_1_1';
-            var8_name = 'NIRin_1_1_1';
-            var9_name = 'NIRout_1_1_1';
-            var10_name = 'NDVI_1_1_1';
-            
-            clear varStruct
-            
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'MET';
-            varStruct(3).name = var3_name;varStruct(3).type = 'MET';
-            varStruct(4).name = var4_name;varStruct(4).type = 'MET';
-            varStruct(5).name = var5_name;varStruct(5).type = 'MET';
-            
-            varStruct(6).name = var6_name;varStruct(6).type = 'Flux';
-            varStruct(7).name = var7_name;varStruct(7).type = 'Flux';
-            varStruct(8).name = var8_name;varStruct(8).type = 'Flux';
-            varStruct(9).name = var9_name;varStruct(9).type = 'Flux';
-            varStruct(10).name = var10_name;varStruct(10).type = 'Flux';
-            
+            clear varStruct            
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Met';
+            varStruct(3).name = var3_name;varStruct(3).type = 'Met';
+            varStruct(4).name = var4_name;varStruct(4).type = 'Met';
+            varStruct(5).name = var5_name;varStruct(5).type = 'Clean/SecondStage';            
             cHeader = {'Time (PST)'...
                 'Incoming RED light (W/m^2 nm)' 'Reflected RED light (W/m^2 nm)'...
                 'Incoming NIR light (W/m^2 nm)' 'Reflected NIR light (W/m^2 nm)'...
-                'NDVI'...
-                '[Smartflux] Incoming RED light (W/m^2 nm)' '[Smartflux] Reflected RED light (W/m^2 nm)'...
-                '[Smartflux] Incoming NIR light (W/m^2 nm)' '[Smartflux] Reflected NIR light (W/m^2 nm)'...
-                '[Smartflux] NDVI'};
-            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f\n';
+                'NDVI'};
+            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f, %12.6f\n';
             fileName = [siteID 'NDVI.csv'];
             data = load_data(varStruct,pth,Years);
-            
-            % Blocking off values before installation (2022-Jun-11 13:30)
-            UNINS = find(tv<=datenum(2022,6,11,14,0,0)); % uninstalled
-            data(UNINS,:)=NaN;
-            
             data = data(1:inde,:);
-            
-            % remove wrong data ( NDVI>1 or NDVI<-1) Added: 2021-Dec-21
-            wp=find(abs(data(:,5))>1 | abs(data(:,10))>1); % wrong points
-            data(wp,:)=NaN;
-                        
+
             if plot_fig == 1
                 plot(tv, data)
             end
@@ -2559,62 +1851,32 @@ for siteNum = 1:length(siteNames)
             % Export as csv file
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
     end
+
     %% PRI (*PRI) New device at DSM/RBM       
-    switch siteID
-        
+    switch siteID        
+
         case 'DSM'
             var1_name = 'MET_532in_Avg';
             var2_name = 'MET_532out_Avg';
             var3_name = 'MET_570in_Avg';
             var4_name = 'MET_570out_Avg';
-            var5_name = 'MET_PRI_Avg';
+            var5_name = 'PRI_1_1_1';
             
-            var6_name = 'nm532in_1_1_1';
-            var7_name = 'nm532out_1_1_1';
-            var8_name = 'nm570in_1_1_1';
-            var9_name = 'nm570out_1_1_1';
-            var10_name = 'PRI_1_1_1';
-            
-            clear varStruct
-            
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'MET';
-            varStruct(3).name = var3_name;varStruct(3).type = 'MET';
-            varStruct(4).name = var4_name;varStruct(4).type = 'MET';
-            varStruct(5).name = var5_name;varStruct(5).type = 'MET';
-            
-            varStruct(6).name = var6_name;varStruct(6).type = 'Flux';
-            varStruct(7).name = var7_name;varStruct(7).type = 'Flux';
-            varStruct(8).name = var8_name;varStruct(8).type = 'Flux';
-            varStruct(9).name = var9_name;varStruct(9).type = 'Flux';
-            varStruct(10).name = var10_name;varStruct(10).type = 'Flux';
-            
-
+            clear varStruct            
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Met';
+            varStruct(3).name = var3_name;varStruct(3).type = 'Met';
+            varStruct(4).name = var4_name;varStruct(4).type = 'Met';
+            varStruct(5).name = var5_name;varStruct(5).type = 'Clean/SecondStage';
             cHeader = {'Time (PST)'...
                 'Incoming nm532 (W/m^2 nm)' 'Reflected nm532 (W/m^2 nm)'...
                 'Incoming nm570 (W/m^2 nm)' 'Reflected nm570 (W/m^2 nm)'...
-                'PRI'...
-                '[Smartflux] Incoming nm532 (W/m^2 nm)' '[Smartflux] Reflected nm532 (W/m^2 nm)'...
-                '[Smartflux] Incoming nm570 (W/m^2 nm)' '[Smartflux] Reflected nm570 (W/m^2 nm)'...
-                '[Smartflux] PRI'};
-            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f\n';
+                'PRI'};
+            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f, %12.6f\n';
             fileName = [siteID 'PRI.csv'];
             data = load_data(varStruct,pth,Years);
-            
-            % Time Shift Correction (fixed at 2021-Nov-11 09:30 am)            
-            tsc=find(tv<=datenum(2021,11,11,09,30,0));            
-            data(tsc(1:end-1),6:10) = data(tsc(2:end),6:10);
-            
             data = data(1:inde,:);
-            
-            % Blocking off values before installation 
-            UNINS = find(tv>=datenum(2022,4,26,0,0,0)&tv<=datenum(2022,5,30,09,0,0)); % uninstalled
-            data(UNINS,:)=NaN;
-            
-            % remove wrong data ( PRI>1 or PRI<-1) Added: 2021-Dec-21
-            wp=find(abs(data(:,5))>1 | abs(data(:,10))>1); % wrong points
-            data(wp,:)=NaN;
-                        
+
             if plot_fig == 1
                 plot(tv, data)
             end
@@ -2627,55 +1889,29 @@ for siteNum = 1:length(siteNames)
             var2_name = 'MET_532out_Avg';
             var3_name = 'MET_570in_Avg';
             var4_name = 'MET_570out_Avg';
-            var5_name = 'MET_PRI_Avg';
+            var5_name = 'PRI_1_1_1';
             
-            var6_name = 'nm532in_1_1_1';
-            var7_name = 'nm532out_1_1_1';
-            var8_name = 'nm570in_1_1_1';
-            var9_name = 'nm570out_1_1_1';
-            var10_name = 'PRI_1_1_1';
-            
-            clear varStruct
-            
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'MET';
-            varStruct(3).name = var3_name;varStruct(3).type = 'MET';
-            varStruct(4).name = var4_name;varStruct(4).type = 'MET';
-            varStruct(5).name = var5_name;varStruct(5).type = 'MET';
-            
-            varStruct(6).name = var6_name;varStruct(6).type = 'Flux';
-            varStruct(7).name = var7_name;varStruct(7).type = 'Flux';
-            varStruct(8).name = var8_name;varStruct(8).type = 'Flux';
-            varStruct(9).name = var9_name;varStruct(9).type = 'Flux';
-            varStruct(10).name = var10_name;varStruct(10).type = 'Flux';
-            
-
+            clear varStruct            
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Met';
+            varStruct(3).name = var3_name;varStruct(3).type = 'Met';
+            varStruct(4).name = var4_name;varStruct(4).type = 'Met';
+            varStruct(5).name = var5_name;varStruct(5).type = 'Clean/SecondStage';
             cHeader = {'Time (PST)'...
                 'Incoming nm532 (W/m^2 nm)' 'Reflected nm532 (W/m^2 nm)'...
                 'Incoming nm570 (W/m^2 nm)' 'Reflected nm570 (W/m^2 nm)'...
-                'PRI'...
-                '[Smartflux] Incoming nm532 (W/m^2 nm)' '[Smartflux] Reflected nm532 (W/m^2 nm)'...
-                '[Smartflux] Incoming nm570 (W/m^2 nm)' '[Smartflux] Reflected nm570 (W/m^2 nm)'...
-                '[Smartflux] PRI'};
-            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f\n';
+                'PRI'};
+            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f, %12.6f\n';
             fileName = [siteID 'PRI.csv'];
             data = load_data(varStruct,pth,Years);
-            
-            % Blocking off values before installation (2022-Jun-7 19:00)
-            UNINS = find(tv<=datenum(2022,6,7,19,30,0)); % uninstalled
-            data(UNINS,:)=NaN;
             data = data(1:inde,:);
-            
-            % remove wrong data ( PRI>1 or PRI<-1) Added: 2021-Dec-21
-            wp=find(abs(data(:,5))>1 | abs(data(:,10))>1); % wrong points
-            data(wp,:)=NaN;
-                        
+
             if plot_fig == 1
                 plot(tv, data)
             end
             
             % Export as csv file
-            csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
+            csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data) 
     end
     
     %% Sensible heat flux (BBQHB) - ADD CR1000 data
@@ -2734,13 +1970,12 @@ for siteNum = 1:length(siteNames)
         case 'DSM'
             var1_name = 'H';
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Flux';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
             cHeader = {'Time (PST)' 'Sensible Heat Flux [Smartflux] (1.8m)'};
             cFormat = '%12.6f\n';
             fileName = [siteID 'QHB.csv'];
             data = load_data(varStruct,pth,Years);
             data = data(1:inde,:);
-            data(abs(data)>=9999)=NaN;
             
             if plot_fig == 1
                 plot(tv, data)
@@ -2752,13 +1987,12 @@ for siteNum = 1:length(siteNames)
         case 'RBM'
             var1_name = 'H';
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Flux';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
             cHeader = {'Time (PST)' 'Sensible Heat Flux [Smartflux] (4m)'};
             cFormat = '%12.6f\n';
             fileName = [siteID 'QHB.csv'];
             data = load_data(varStruct,pth,Years);
             data = data(1:inde,:);
-            data(abs(data)>=9999)=NaN;
             
             if plot_fig == 1
                 plot(tv, data)
@@ -2824,13 +2058,12 @@ for siteNum = 1:length(siteNames)
         case 'DSM'
             var1_name = 'LE';
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Flux';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
             cHeader = {'Time (PST)' 'Latent Heat Flux [Smartflux] (1.8m)'};
             cFormat = '%12.6f\n';
             fileName = [siteID 'QEB.csv'];
             data = load_data(varStruct,pth,Years);
             data = data(1:inde,:);
-            data(abs(data)>=9999)=NaN;
             
             if plot_fig == 1
                 plot(tv, data)
@@ -2838,17 +2071,16 @@ for siteNum = 1:length(siteNames)
             
             % Export as csv file
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
-            
+
         case 'RBM'
             var1_name = 'LE';
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Flux';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
             cHeader = {'Time (PST)' 'Latent Heat Flux [Smartflux] (4m)'};
             cFormat = '%12.6f\n';
             fileName = [siteID 'QEB.csv'];
             data = load_data(varStruct,pth,Years);
             data = data(1:inde,:);
-            data(abs(data)>=9999)=NaN;
             
             if plot_fig == 1
                 plot(tv, data)
@@ -2913,13 +2145,12 @@ for siteNum = 1:length(siteNames)
         case 'DSM'
             var1_name = 'ET';
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Flux';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Flux/clean';
             cHeader = {'Time (PST)' 'Evapotranspiration [Smartflux] (1.8m)'};
             cFormat = '%12.6f\n';
             fileName = [siteID 'ETB.csv'];
             data = load_data(varStruct,pth,Years);
             data = data(1:inde,:);
-            data(abs(data)>=9999)=NaN;
             
             if plot_fig == 1
                 plot(tv, data)
@@ -2931,13 +2162,12 @@ for siteNum = 1:length(siteNames)
         case 'RBM'
             var1_name = 'ET';
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Flux';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Flux/clean';
             cHeader = {'Time (PST)' 'Evapotranspiration [Smartflux] (4m)'};
             cFormat = '%12.6f\n';
             fileName = [siteID 'ETB.csv'];
             data = load_data(varStruct,pth,Years);
             data = data(1:inde,:);
-            data(abs(data)>=9999)=NaN;
             
             if plot_fig == 1
                 plot(tv, data)
@@ -3006,17 +2236,14 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(inds:inde,:)),cFormat,data)
             
         case 'DSM'
-            var1_name = 'co2_mixing_ratio'; %- ADD CR1000 data
+            var1_name = 'CO2_MIXING_RATIO'; 
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Flux';
-            cHeader = {'Time (PST)' 'CO2 Mixing Ratio [Smartflux] (1.8m)'};
+            varStruct(1).name = var1_name;varStruct(1).type = 'Flux/clean';
+            cHeader = {'Time (PST)' 'CO2 Mixing Ratio (1.8m)'};
             cFormat = '%12.6f\n';
             fileName = [siteID 'C2A.csv'];
             data = load_data(varStruct,pth,Years);  
-            data = data(1:inde,:);          
-            
-            % Some basic filtering
-            data(abs(data)>=9999)=NaN;
+            data = data(1:inde,:);     
             
             if plot_fig == 1
                 plot(tv, data)
@@ -3026,17 +2253,14 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
         
         case 'RBM'
-            var1_name = 'co2_mixing_ratio'; %- ADD CR1000 data
+            var1_name = 'CO2_MIXING_RATIO'; 
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Flux';
-            cHeader = {'Time (PST)' 'CO2 Mixing Ratio [Smartflux] (4m)'};
+            varStruct(1).name = var1_name;varStruct(1).type = 'Flux/clean';
+            cHeader = {'Time (PST)' 'CO2 Mixing Ratio (4m)'};
             cFormat = '%12.6f\n';
             fileName = [siteID 'C2A.csv'];
             data = load_data(varStruct,pth,Years);  
-            data = data(1:inde,:);          
-            
-            % Some basic filtering
-            data(abs(data)>=9999)=NaN;
+            data = data(1:inde,:);    
             
             if plot_fig == 1
                 plot(tv, data)
@@ -3099,15 +2323,14 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(inds:inde,:)),cFormat,data)
             
         case 'DSM'
-            var1_name = 'co2_flux'; %- ADD CR1000 data
+            var1_name = 'FC'; % Corrected CO2 flux
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Flux';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
             cHeader = {'Time (PST)' 'CO2 Flux [Smartflux] (1.8m)'};
             cFormat = '%12.6f\n';
             fileName = [siteID 'FCA.csv'];
             data = load_data(varStruct,pth,Years);
             data = data(1:inde,:);
-            data(abs(data)>=9999)=NaN;
             
             if plot_fig == 1
                 plot(tv, data)
@@ -3117,15 +2340,14 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
             
         case 'RBM'
-            var1_name = 'co2_flux'; %- ADD CR1000 data
+            var1_name = 'FC'; % Corrected CO2 flux
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Flux';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
             cHeader = {'Time (PST)' 'CO2 Flux [Smartflux] (4m)'};
             cFormat = '%12.6f\n';
             fileName = [siteID 'FCA.csv'];
             data = load_data(varStruct,pth,Years);
             data = data(1:inde,:);
-            data(abs(data)>=9999)=NaN;
             
             if plot_fig == 1
                 plot(tv, data)
@@ -3191,15 +2413,14 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(inds:inde,:)),cFormat,data)
             
         case 'DSM'
-            var1_name = 'ch4_mixing_ratio';
+            var1_name = 'CH4_MIXING_RATIO';
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Flux';
-            cHeader = {'Time (PST)' 'CH4 Mixing Ratio [Smartflux] (1.8m)'}; %#ok<*NASGU>
+            varStruct(1).name = var1_name;varStruct(1).type = 'Flux/clean';
+            cHeader = {'Time (PST)' 'CH4 Mixing Ratio (1.8m)'}; 
             cFormat = '%12.6f\n';
             fileName = [siteID 'C4A.csv'];
             data = load_data(varStruct,pth,Years);
             data = data(1:inde,:);
-            data(abs(data)>=9999)=NaN;
 
             if plot_fig == 1
                 plot(tv, data)
@@ -3209,15 +2430,14 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
        
          case 'RBM'
-            var1_name = 'ch4_mixing_ratio';
+            var1_name = 'CH4_MIXING_RATIO';
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Flux';
-            cHeader = {'Time (PST)' 'CH4 Mixing Ratio [Smartflux] (4m)'}; %#ok<*NASGU>
+            varStruct(1).name = var1_name;varStruct(1).type = 'Flux/clean';
+            cHeader = {'Time (PST)' 'CH4 Mixing Ratio (4m)'}; 
             cFormat = '%12.6f\n';
             fileName = [siteID 'C4A.csv'];
             data = load_data(varStruct,pth,Years);
             data = data(1:inde,:);
-            data(abs(data)>=9999)=NaN;
 
             if plot_fig == 1
                 plot(tv, data)
@@ -3225,8 +2445,6 @@ for siteNum = 1:length(siteNames)
             
             % Export as csv file
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
-            
-            
     end
     
     %% Methane flux (BBFMA)
@@ -3289,15 +2507,14 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(inds:inde,:)),cFormat,data)
             
         case 'DSM'
-            var1_name = 'ch4_flux';
+            var1_name = 'FCH4';
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Flux';
-            cHeader = {'Time (PST)' 'CH4 Flux [Smartflux] (1.8m)'}; %#ok<*NASGU>
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            cHeader = {'Time (PST)' 'CH4 Flux (1.8m)'}; 
             cFormat = '%18.6f\n';
             fileName = [siteID 'FMA.csv'];
             data = load_data(varStruct,pth,Years);
             data = data(1:inde,:);
-            data(abs(data)>=9999)=NaN;
  
             data = data.*1000; % convert from umol m-2 s-1 to nmol m-2 s-1
             
@@ -3309,15 +2526,14 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
  
         case 'RBM'
-            var1_name = 'ch4_flux';
+            var1_name = 'FCH4';
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Flux';
-            cHeader = {'Time (PST)' 'CH4 Flux [Smartflux] (4m)'}; %#ok<*NASGU>
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            cHeader = {'Time (PST)' 'CH4 Flux (4m)'}; 
             cFormat = '%18.6f\n';
             fileName = [siteID 'FMA.csv'];
             data = load_data(varStruct,pth,Years);
             data = data(1:inde,:);
-            data(abs(data)>=9999)=NaN;
  
             data = data.*1000; % convert from umol m-2 s-1 to nmol m-2 s-1
             
@@ -3327,7 +2543,6 @@ for siteNum = 1:length(siteNames)
             
             % Export as csv file
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)            
-            
     end
 
     
@@ -3389,8 +2604,7 @@ for siteNum = 1:length(siteNames)
             var3_name = 'SysCR1000BV_1_1_1';
             var4_name = 'SysPBoxBattVolt_1_1_1';
             
-            clear varStruct
-            
+            clear varStruct            
             varStruct(1).name = var1_name;varStruct(1).type = 'MET';
             varStruct(2).name = var2_name;varStruct(2).type = 'MET';
             varStruct(3).name = var3_name;varStruct(3).type = 'Flux';
@@ -3424,8 +2638,7 @@ for siteNum = 1:length(siteNames)
             var3_name = 'SysCR1000BV_1_1_1';
             var4_name = 'SysPBoxBattVolt_1_1_1';
             
-            clear varStruct
-            
+            clear varStruct            
             varStruct(1).name = var1_name;varStruct(1).type = 'MET';
             varStruct(2).name = var2_name;varStruct(2).type = 'MET';
             varStruct(3).name = var3_name;varStruct(3).type = 'Flux';
@@ -3500,6 +2713,7 @@ for siteNum = 1:length(siteNames)
         case 'DSM'
             var1_name = 'SYS_Batt_DCCurrent_Avg';
             var2_name = 'SysBattDCC_1_1_1';
+
             clear varStruct
             varStruct(1).name = var1_name;varStruct(1).type = 'MET';
             varStruct(2).name = var2_name;varStruct(2).type = 'Flux';
@@ -3523,6 +2737,7 @@ for siteNum = 1:length(siteNames)
         case 'RBM'
             var1_name = 'SYS_Batt_DCCurrent_Avg';
             var2_name = 'SysBattDCC_1_1_1';
+
             clear varStruct
             varStruct(1).name = var1_name;varStruct(1).type = 'MET';
             varStruct(2).name = var2_name;varStruct(2).type = 'Flux';
@@ -3602,13 +2817,6 @@ for siteNum = 1:length(siteNames)
             var5_name = 'MET_HMP_T_350cm_Avg';
             var6_name = 'MET_CNR4_TC_Avg';
             
-            var7_name = 'SysPTCR1000_1_1_1';
-            var8_name = 'SysPTAM25T_1_1_1';
-            var9_name = 'SysChargerTC_1_1_1';
-            var10_name = 'SysBatteryBoxTC_1_1_1';           
-            var11_name = 'TA_1_2_1';
-            var12_name = 'Tc_1_1_1';
-            
             clear varStruct
             varStruct(1).name = var1_name;varStruct(1).type = 'MET';
             varStruct(2).name = var2_name;varStruct(2).type = 'MET';
@@ -3616,35 +2824,14 @@ for siteNum = 1:length(siteNames)
             varStruct(4).name = var4_name;varStruct(4).type = 'MET';
             varStruct(5).name = var5_name;varStruct(5).type = 'MET';
             varStruct(6).name = var6_name;varStruct(6).type = 'MET';
-            
-            varStruct(7).name = var7_name;varStruct(7).type = 'Flux';
-            varStruct(8).name = var8_name;varStruct(8).type = 'Flux';
-            varStruct(9).name = var9_name;varStruct(9).type = 'Flux';
-            varStruct(10).name = var10_name;varStruct(10).type = 'Flux';
-            varStruct(11).name = var11_name;varStruct(11).type = 'Flux';
-            varStruct(12).name = var12_name;varStruct(12).type = 'Flux';
-
             cHeader = {'Time (PST)' 'CR1000 Panel Temperature' 'AM25T Panel Temperature' ...
                 'Charger Box Temperature' 'Battery Temperature' ...
-                'Case Temperature 1 (HMP@3.5m)' 'Case Temperature 2 (CNR4@3.5m)'...
-                '[Smartflux] CR1000 Panel Temperature' '[Smartflux] AM25T Panel Temperature' ...
-                '[Smartflux] Charger Box Temperature' '[Smartflux] Battery Temperature' ...
-                '[Smartflux] Case Temperature 1 (HMP@3.5m)' '[Smartflux] Case Temperature 2 (CNR4@3.5m)'};
-            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f\n';
+                'Case Temperature 1 (HMP@3.5m)' 'Case Temperature 2 (CNR4@3.5m)'};
+            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f\n';
             fileName = [siteID 'XTA.csv'];
             data = load_data(varStruct,pth,Years);
-            
-            % Time Shift Correction (fixed at 2021-Nov-11 09:30 am)            
-            tsc=find(tv<=datenum(2021,11,11,09,30,0));            
-            data(tsc(1:end-1),7:12) = data(tsc(2:end),7:12);
-            
-            data(:,11:12) = data(:,11:12)-273.15; % unit conversion: K -> degC
-            
             data = data(1:inde,:);
-            [data(:,5:6),RJdata]=RunStdDev(data(:,5:6),wlen,thres,RJdata,tv_export,varStruct);
-            
-            data(abs(data)>100)=NaN; % Weird data @ 2021-Sep-03
-            
+            data(abs(data)>100)=NaN; % Weird data @ 2021-Sep-03            
             if plot_fig == 1, plot(tv, data);end
             
             % Export as csv file
@@ -3657,14 +2844,7 @@ for siteNum = 1:length(siteNames)
             var4_name = 'SYS_BatteryBoxTC_Avg';           
             var5_name = 'MET_HMP_T_6m_Avg';
             var6_name = 'MET_CNR4_TC_Avg';
-            
-            var7_name = 'SysPTCR1000_1_1_1';
-            var8_name = 'SysPTAM25T_1_1_1';
-            var9_name = 'SysChargerTC_1_1_1';
-            var10_name = 'SysBatteryBoxTC_1_1_1';           
-            var11_name = 'TA_1_2_1';
-            var12_name = 'Tc_1_1_1';
-            
+           
             clear varStruct
             varStruct(1).name = var1_name;varStruct(1).type = 'MET';
             varStruct(2).name = var2_name;varStruct(2).type = 'MET';
@@ -3672,30 +2852,14 @@ for siteNum = 1:length(siteNames)
             varStruct(4).name = var4_name;varStruct(4).type = 'MET';
             varStruct(5).name = var5_name;varStruct(5).type = 'MET';
             varStruct(6).name = var6_name;varStruct(6).type = 'MET';
-            
-            varStruct(7).name = var7_name;varStruct(7).type = 'Flux';
-            varStruct(8).name = var8_name;varStruct(8).type = 'Flux';
-            varStruct(9).name = var9_name;varStruct(9).type = 'Flux';
-            varStruct(10).name = var10_name;varStruct(10).type = 'Flux';
-            varStruct(11).name = var11_name;varStruct(11).type = 'Flux';
-            varStruct(12).name = var12_name;varStruct(12).type = 'Flux';
-
             cHeader = {'Time (PST)' 'CR1000 Panel Temperature' 'AM25T Panel Temperature' ...
                 'Charger Box Temperature' 'Battery Temperature' ...
-                'Case Temperature 1 (HMP@6m)' 'Case Temperature 2 (CNR4@6m)'...
-                '[Smartflux] CR1000 Panel Temperature' '[Smartflux] AM25T Panel Temperature' ...
-                '[Smartflux] Charger Box Temperature' '[Smartflux] Battery Temperature' ...
-                '[Smartflux] Case Temperature 1 (HMP@6m)' '[Smartflux] Case Temperature 2 (CNR4@6m)'};
-            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f\n';
+                'Case Temperature 1 (HMP@6m)' 'Case Temperature 2 (CNR4@6m)'};
+            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f\n';
             fileName = [siteID 'XTA.csv'];
             data = load_data(varStruct,pth,Years);
-            data(:,11:12) = data(:,11:12)-273.15; % unit conversion: K -> degC
-            
             data = data(1:inde,:);
-            [data(:,5:6),RJdata]=RunStdDev(data(:,5:6),wlen,thres,RJdata,tv_export,varStruct);
-            
-            data(abs(data)>100)=NaN; % Weird data @ 2021-Sep-03
-            
+            data(abs(data)>100)=NaN; % Weird data @ 2021-Sep-03            
             if plot_fig == 1, plot(tv, data);end
             
             % Export as csv file
@@ -3765,13 +2929,11 @@ for siteNum = 1:length(siteNames)
             var3_name = 'co2_signal_strength_7200_mean';
             var4_name = 'h2o_signal_strength_7200_mean';
             
-            
             clear varStruct
             varStruct(1).name = var1_name;varStruct(1).type = 'Flux';
             varStruct(2).name = var2_name;varStruct(2).type = 'Flux';
             varStruct(3).name = var3_name;varStruct(3).type = 'Flux';
-            varStruct(4).name = var4_name;varStruct(4).type = 'Flux';
-            
+            varStruct(4).name = var4_name;varStruct(4).type = 'Flux';            
             cHeader = {'Time (PST)' 'Average Signal Strength of LI-7200 (1.8m)'...
                 'Average Signal Strength LI-7700 (1.8m)'...
                 'CO2 Signal Strength of LI-7200 (1.8m)'...
@@ -3792,14 +2954,12 @@ for siteNum = 1:length(siteNames)
             var2_name = 'rssi_77_mean';
             var3_name = 'co2_signal_strength_7200_mean';
             var4_name = 'h2o_signal_strength_7200_mean';
-            
-            
+                        
             clear varStruct
             varStruct(1).name = var1_name;varStruct(1).type = 'Flux';
             varStruct(2).name = var2_name;varStruct(2).type = 'Flux';
             varStruct(3).name = var3_name;varStruct(3).type = 'Flux';
-            varStruct(4).name = var4_name;varStruct(4).type = 'Flux';
-            
+            varStruct(4).name = var4_name;varStruct(4).type = 'Flux';            
             cHeader = {'Time (PST)' 'Average Signal Strength of LI-7200 (4m)'...
                 'Average Signal Strength LI-7700 (4m)'...
                 'CO2 Signal Strength of LI-7200 (4m)'...
@@ -3813,8 +2973,7 @@ for siteNum = 1:length(siteNames)
             if plot_fig == 1, plot(tv, data);end
             
             % Export as csv file
-            csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
-            
+            csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)            
             
     end
     
@@ -3828,6 +2987,7 @@ for siteNum = 1:length(siteNames)
             var4_name =  sprintf('%s1.flowDrive.avg',siteID);
             var5_name =  sprintf('%s1.flowDrive.max',siteID);
             var6_name =  sprintf('%s1.flowDrive.min',siteID);
+
             clear varStruct
             varStruct(1).name = var1_name;varStruct(1).type = 'monitorSites';
             varStruct(2).name = var2_name;varStruct(2).type = 'monitorSites';
@@ -3835,7 +2995,6 @@ for siteNum = 1:length(siteNames)
             varStruct(4).name = var4_name;varStruct(4).type = 'monitorSites';
             varStruct(5).name = var5_name;varStruct(5).type = 'monitorSites';
             varStruct(6).name = var6_name;varStruct(6).type = 'monitorSites';
-            
             cHeader = {'Time (PST)'...
                 'FlowRate Avg (slpm)' 'FlowRate Max (slpm)' 'FlowRate Min (slpm)'...
                 'FlowDrive Avg (%)' 'FlowDrive Max (%)' 'FlowDrive Min (%)'};
@@ -3859,14 +3018,14 @@ for siteNum = 1:length(siteNames)
             var4_name =  sprintf('%s.flowDrive.avg',siteID);
             var5_name =  sprintf('%s.flowDrive.max',siteID);
             var6_name =  sprintf('%s.flowDrive.min',siteID);
+
             clear varStruct
             varStruct(1).name = var1_name;varStruct(1).type = 'monitorSites';
             varStruct(2).name = var2_name;varStruct(2).type = 'monitorSites';
             varStruct(3).name = var3_name;varStruct(3).type = 'monitorSites';
             varStruct(4).name = var4_name;varStruct(4).type = 'monitorSites';
             varStruct(5).name = var5_name;varStruct(5).type = 'monitorSites';
-            varStruct(6).name = var6_name;varStruct(6).type = 'monitorSites';
-            
+            varStruct(6).name = var6_name;varStruct(6).type = 'monitorSites';            
             cHeader = {'Time (PST)'...
                 'FlowRate Avg (slpm)' 'FlowRate Max (slpm)' 'FlowRate Min (slpm)'...
                 'FlowDrive Avg (%)' 'FlowDrive Max (%)' 'FlowDrive Min (%)'};
@@ -3888,10 +3047,10 @@ for siteNum = 1:length(siteNames)
         case {'BB','BB2','DSM','RBM'}
             var1_name = 'file_records';
             var2_name = 'used_records';
+
             clear varStruct
             varStruct(1).name = var1_name;varStruct(1).type = 'Flux';
             varStruct(2).name = var2_name;varStruct(2).type = 'Flux';
-
             cHeader = {'Time (PST)' 'File records in the GHG file' 'Used records in the GHG file'};
             cFormat = '%12.6f, %12.6f\n';
             fileName = [siteID 'DSB.csv']; % second diagnostic signal file
@@ -3915,16 +3074,14 @@ for siteNum = 1:length(siteNames)
             var4_name = sprintf('%s1.tempOut.avg',siteID);
             var5_name = sprintf('%s1.tempOut.avg',siteID);
             var6_name = sprintf('%s1.tempOut.min',siteID);
-            clear varStruct
-            
+
+            clear varStruct            
             varStruct(1).name = var1_name;varStruct(1).type = 'monitorSites';
             varStruct(2).name = var2_name;varStruct(2).type = 'monitorSites';
             varStruct(3).name = var3_name;varStruct(3).type = 'monitorSites';
             varStruct(4).name = var4_name;varStruct(4).type = 'monitorSites';
             varStruct(5).name = var5_name;varStruct(5).type = 'monitorSites';
             varStruct(6).name = var6_name;varStruct(6).type = 'monitorSites';
-            
-
             cHeader = {'Time (PST)'...
                 'Intake Temp Avg' 'Intake Temp Max' 'Intake Temp Min'...
                 'Outlet Temp Avg' 'Outlet Temp Max' 'Outlet Temp Min'};
@@ -3946,7 +3103,6 @@ for siteNum = 1:length(siteNames)
             var4_name = sprintf('%s.tempOut.avg',siteID);
             var5_name = sprintf('%s.tempOut.avg',siteID);
             var6_name = sprintf('%s.tempOut.min',siteID);
-
             
             clear varStruct
             varStruct(1).name = var1_name;varStruct(1).type = 'monitorSites';
@@ -3955,8 +3111,6 @@ for siteNum = 1:length(siteNames)
             varStruct(4).name = var4_name;varStruct(4).type = 'monitorSites';
             varStruct(5).name = var5_name;varStruct(5).type = 'monitorSites';
             varStruct(6).name = var6_name;varStruct(6).type = 'monitorSites';
-            
-
             cHeader = {'Time (PST)'...
                 'Intake Temp Avg' 'Intake Temp Max' 'Intake Temp Min'...
                 'Outlet Temp Avg' 'Outlet Temp Max' 'Outlet Temp Min'};
@@ -3977,13 +3131,12 @@ for siteNum = 1:length(siteNames)
         case 'BB'
             var1_name = sprintf('%s1.Phead.avg',siteID);
             var2_name = sprintf('%s1.Phead.max',siteID);
-            var3_name = sprintf('%s1.Phead.min',siteID);       
+            var3_name = sprintf('%s1.Phead.min',siteID);  
+
             clear varStruct
             varStruct(1).name = var1_name;varStruct(1).type = 'monitorSites';
             varStruct(2).name = var2_name;varStruct(2).type = 'monitorSites';
             varStruct(3).name = var3_name;varStruct(3).type = 'monitorSites';
-            
-
             cHeader = {'Time (PST)' 'Head Pressure Avg'...
                 'Head Pressure Max' 'Head Pressure Min'};
             cFormat = '%12.6f, %12.6f, %12.6f\n';
@@ -4002,15 +3155,10 @@ for siteNum = 1:length(siteNames)
             var2_name = sprintf('%s.Phead.max',siteID);
             var3_name = sprintf('%s.Phead.min',siteID);
             
-    
-
-            
             clear varStruct
             varStruct(1).name = var1_name;varStruct(1).type = 'monitorSites';
             varStruct(2).name = var2_name;varStruct(2).type = 'monitorSites';
             varStruct(3).name = var3_name;varStruct(3).type = 'monitorSites';
-            
-
             cHeader = {'Time (PST)' 'Head Pressure Avg'...
                 'Head Pressure Max' 'Head Pressure Min'};
             cFormat = '%12.6f, %12.6f, %12.6f\n';
@@ -4024,12 +3172,7 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
             
     end
-    %% Output results of RunningDeviation
-    
-    if strcmp(siteID,'DSM')
-        RJfn=sprintf('%sRejectedData_%s_%d_%d.csv',outputPath,siteID,wlen,thres);
-        writetable(RJdata,RJfn);
-    end
+
 end % for siteNum
 
 end % function
