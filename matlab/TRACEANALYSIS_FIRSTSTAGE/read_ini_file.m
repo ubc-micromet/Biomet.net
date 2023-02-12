@@ -30,8 +30,12 @@ function trace_str_out = read_ini_file(fid,Year)
 %  - added testing of the trace_str_out to weed out all the traces that do
 %    not belong to the current year (do not belong to the range:
 %    inputFileName_dates)
+%  - added detecting the ini name and printing it
+%
 
-disp('Reading ini file ... ');
+iniFileName = char(arrayfun(@fopen, fid, 'UniformOutput', 0));
+
+fprintf('Reading ini file: \n   %s \n',iniFileName);
 
 trace_str = [];
 
