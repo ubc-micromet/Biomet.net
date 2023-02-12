@@ -22,12 +22,14 @@ function tableOut = saveDatabaseToAmeriFluxCSV(siteID,yearIn,outputPath)
 %
 %
 % Zoran Nesic               File created:       Oct 20, 2022
-%                           Last modification:  Nov  4, 2022
+%                           Last modification:  Feb 12, 2023
 %
 
 %
 % Revisions:
 %
+% Feb 23, 2023 (Zoran)
+%   - function will create outputPath if it doesn't exist.
 % Nov 25, 2022 (Zoran)
 %   - For the current year program now exports only data up to yesterday.
 %     Ameriflux doesn't like data files that contain only -9999.
@@ -98,6 +100,11 @@ tableOut = tableOut(indThisYear,:); %#ok<FNDSB>
 
 % if outputPath is given then save the table
 if ~isempty(outputPath)
+    outputPath = fullfile(outputPath);  % sorting out MacOS vs Windows issues
+    % outputPath does not exist, create it
+    if ~exist(outputPath,'dir')
+        mkdir(outputPath)
+    end
     % load the AF site names from a file.
     % ** this is just for testing***
     switch siteID
