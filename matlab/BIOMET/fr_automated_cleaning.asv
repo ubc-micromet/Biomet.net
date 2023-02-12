@@ -35,12 +35,10 @@ function fr_automated_cleaning(Years,Sites,stages,db_out,db_ini)
 %    to use a local copy of the database.
 
 
-% kai* Feb 12, 2003                     Last modified: Feb 12, 2023
+% kai* Feb 12, 2003                     Last modified: Nov 7, 2022
 %
 % Revisions:
 % 
-% Feb 12, 2023 (Zoran)
-%   - changed output path for AmeriFlux data to Clean/Ameriflux in stage 8.
 % Nov 7, 2022 (Zoran)
 %   - Hard coded that the stage 7 now does 'fast' EP processing and uses only
 %     (up to) 2 years of data for gap filling. Sara will decide later if those are
