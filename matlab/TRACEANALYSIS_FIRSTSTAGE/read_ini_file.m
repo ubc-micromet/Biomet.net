@@ -421,5 +421,5 @@ for cntTrace = 1:length(trace_str)
         end        
     end
 end
-fprintf('%d traces read from the ini file. \n',length(trace_str));
-fprintf('%d traces that belong to year %d are kept for processing.\n',cntGoodTrace,Year);
+fprintf('   %d traces read from the ini file. \n',length(trace_str));
+fprintf('   %d traces that exist in year %d are kept for processing.\n',cntGoodTrace,Year);

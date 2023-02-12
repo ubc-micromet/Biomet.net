@@ -15,7 +15,7 @@ function trace_out = load_trace_from_database(trace_in)
 % Feb 11, 2023 (Zoran)
 %   - Removed old comments that are not relevant anymore.
 %   - Removed a big chunk of code that didn't do anything useful anymore.
-%   -
+%   - Added proper handling of 'inputFileName_dates'
 % Nov 25, 2022 (Zoran)
 %   - Warnings for missing data traces in the ini files were turned off.
 %     Turned them back on (warn_flag = 1)
