@@ -370,10 +370,10 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(inds:inde,:)),cFormat,data)
             
         case 'DSM'
-            var1_name = 'SWIN_1_1_1';
-            var2_name = 'SWOUT_1_1_1';
-            var3_name = 'LWIN_1_1_1';
-            var4_name = 'LWOUT_1_1_1';
+            var1_name = 'SW_IN_1_1_1';
+            var2_name = 'SW_OUT_1_1_1';
+            var3_name = 'LW_IN_1_1_1';
+            var4_name = 'LW_OUT_1_1_1';
             
             clear varStruct
             varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
@@ -397,10 +397,10 @@ for siteNum = 1:length(siteNames)
 
         
         case 'RBM'
-            var1_name = 'SWIN_1_1_1';
-            var2_name = 'SWOUT_1_1_1';
-            var3_name = 'LWIN_1_1_1';
-            var4_name = 'LWOUT_1_1_1';
+            var1_name = 'SW_IN_1_1_1';
+            var2_name = 'SW_OUT_1_1_1';
+            var3_name = 'LW_IN_1_1_1';
+            var4_name = 'LW_OUT_1_1_1';
             
             clear varStruct
             varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
@@ -1227,9 +1227,9 @@ for siteNum = 1:length(siteNames)
             varStruct(1).name = var1_name;varStruct(1).type = 'Met/clean';
             varStruct(2).name = var2_name;varStruct(2).type = 'Met/clean';
             varStruct(3).name = var3_name;varStruct(3).type = 'Met/clean';         
-            cHeader = {'Time (PST)' 'Soil Heat Flux Density (5cm, east) 1' ...
-                'Soil Heat Flux Density (5cm, west) 2'...
-                'Soil Heat Flux Density(5cm, south) 3'};
+            cHeader = {'Time (PST)' 'Soil Heat Flux Density (5cm east) 1' ...
+                'Soil Heat Flux Density (5cm west) 2'...
+                'Soil Heat Flux Density(5cm south) 3'};
             cFormat = '%12.6f, %12.6f, %12.6f\n';
             fileName = [siteID 'SHA.csv'];
             data = load_data(varStruct,pth,Years);
@@ -1251,9 +1251,9 @@ for siteNum = 1:length(siteNames)
             varStruct(1).name = var1_name;varStruct(1).type = 'Met/clean';
             varStruct(2).name = var2_name;varStruct(2).type = 'Met/clean';
             varStruct(3).name = var3_name;varStruct(3).type = 'Met/clean';          
-            cHeader = {'Time (PST)' 'Soil Heat Flux Density (5cm, east) 1' ...
-                'Soil Heat Flux Density (5cm, west) 2'...
-                'Soil Heat Flux Density(5cm, south) 3'};
+            cHeader = {'Time (PST)' 'Soil Heat Flux Density (5cm east) 1' ...
+                'Soil Heat Flux Density (5cm west) 2'...
+                'Soil Heat Flux Density(5cm south) 3'};
             cFormat = '%12.6f, %12.6f, %12.6f\n';
             fileName = [siteID 'SHA.csv'];
             data = load_data(varStruct,pth,Years);
