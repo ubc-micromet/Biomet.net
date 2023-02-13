@@ -489,10 +489,10 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(inds:inde,:)),cFormat,data)
             
         case 'DSM'
-            var1_name = 'PPFD_2_1_1';   % total PAR (BF5)
-            var2_name = 'PPFDD_1_1_1';  % Diffuse PAR (BF5)
-            var3_name = 'PPFD_1_1_1';   % PAR in (PQSL-1)
-            var4_name = 'PPFDR_1_1_1';  % PAR out (LI-190)
+            var1_name = 'PPFD_IN_2_1_1';   % total PAR (BF5)
+            var2_name = 'PPFD_DIF_1_1_1';  % Diffuse PAR (BF5)
+            var3_name = 'PPFD_IN_1_1_1';   % PAR in (PQSL-1)
+            var4_name = 'PPFD_OUT_1_1_1';  % PAR out (LI-190)
             
             clear varStruct
             varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
@@ -517,10 +517,10 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)
             
         case 'RBM'
-            var1_name = 'PPFD_2_1_1';   % total PAR (BF5)
-            var2_name = 'PPFDD_1_1_1';  % Diffuse PAR (BF5)
-            var3_name = 'PPFD_1_1_1';   % PAR in (PQSL-1)
-            var4_name = 'PPFDR_1_1_1';  % PAR out (LI-190)
+            var1_name = 'PPFD_IN_2_1_1';   % total PAR (BF5)
+            var2_name = 'PPFD_DIF_1_1_1';  % Diffuse PAR (BF5)
+            var3_name = 'PPFD_IN_1_1_1';   % PAR in (PQSL-1)
+            var4_name = 'PPFD_OUT_1_1_1';  % PAR out (LI-190)
             
             clear varStruct
             varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
