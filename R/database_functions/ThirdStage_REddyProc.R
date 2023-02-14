@@ -114,7 +114,7 @@ ThirdStage_REddyProc <- function(pathSetIni) {
     }
     
     # Create NEE variable if FC exists
-    if (length(grep("FC", names.data)) > 0){
+    if (length(grep("FC", colnames(data))) > 0){
       data$NEE <- data$FC
     }
     
