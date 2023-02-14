@@ -77,6 +77,47 @@ ThirdStage_REddyProc <- function(pathSetIni) {
       data <- dplyr::bind_rows(data,data.now)
     }
     
+    # Now load in storage terms if they exist
+    if (exists("vars_storage") == TRUE) {
+      
+      data.storage <- data.frame()
+      # Loop through each year and merge all years together
+      for (j in 1:length(years_REddyProc)) {
+        
+        # Load ini file
+        cat("\n\nIn ThirdStage_REddyProc:\n")      
+        cat("   Do we need to reload the ini file here again?\n\n")      
+        source(pthIniFile)
+        
+        level_in <- "Clean/SecondStage" # Specify that this is data from the second stage we are using as inputs
+        
+        # Create data frame for years & variables of interest 
+        data.now.storage <- read_database(db_ini,years_REddyProc[j],site,level_in,vars_storage,tv_input,export)
+        data.storage <- dplyr::bind_rows(data.storage,data.now.storage)
+      }
+      
+      # Add storage terms
+      # First rename storage terms to match flux terms
+      # Start with FC and FCH4
+      names.data.storage <- gsub("SC", "FC", colnames(data.storage))
+      names.data.storage <- gsub("S", "", names.data.storage)
+      
+      # Find which columns that corresponds to in data
+      names.data <- colnames(data)
+      
+      for (i in 2:length(names.data.storage)) {
+        ind <- grep(paste("^",names.data.storage[i],"$",sep = ''), names.data)
+        
+        # Add on storage term
+        data[,ind] <- data[,ind]+data.storage[,i]
+      }
+    }
+    
+    # Create NEE variable if FC exists
+    if (length(grep("FC", names.data)) > 0){
+      data$NEE <- data$FC
+    }
+    
     # Create time variables
     data <- data %>%
       mutate(year = year(datetime),
@@ -102,7 +143,7 @@ ThirdStage_REddyProc <- function(pathSetIni) {
     # Run REddyProc
     # Following "https://cran.r-project.org/web/packages/REddyProc/vignettes/useCase.html" This is more up to date than the Wutzler et al. paper
     
-    # NOTE: skipped loeading in txt file since alread have data in data frame
+    # NOTE: skipped loading in txt file since alread have data in data frame
     #+++ Add time stamp in POSIX time format
     EddyDataWithPosix <- fConvertTimeToPosix(
       data_REddyProc, 'YDH',Year = 'Year',Day = 'DoY', Hour = 'Hour') 
@@ -261,7 +302,7 @@ ThirdStage_REddyProc <- function(pathSetIni) {
       # First save all RF output under REddyProc_RF
       
       if (Ustar_scenario == 'full') { 
-
+        
         out_path <- paste(db_out,"/",as.character(yrs[j]),"/",site,"/",level_REddyProc_Full, sep = "")
         
         if (file.exists(out_path)){
@@ -277,7 +318,7 @@ ThirdStage_REddyProc <- function(pathSetIni) {
         }
         
       } else if (Ustar_scenario == 'fast') { 
-
+        
         out_path <- paste(db_out,"/",as.character(yrs[j]),"/",site,"/",level_REddyProc_Fast, sep = "")
         
         if (file.exists(out_path)){
