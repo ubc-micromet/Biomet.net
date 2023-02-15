@@ -1,4 +1,4 @@
-function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStartTime,strEndTime)
+function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStartTime,strEndTime,templateName)
 %% Micromet function to run EddyPro recalc on a date range datesIn
 %
 % This function uses an EddyPro template ini file, edits it and 
@@ -43,6 +43,7 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
     arg_default('strStartTime',"00:00");
     arg_default('strEndTime',"23:59");
     arg_default('run_mode',0);          % 1 - Express, 0 - Advanced
+    arg_default('templateName',sprintf('%s_template.eddypro',siteID));
     
     % remove trailing '\' or '/' from hfRootPath
     if strcmp(hfRootPath(end),'/') || strcmp(hfRootPath(end),'\')
@@ -61,8 +62,10 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
     pathEddyProExe = fullfile(hfPath,'bin');
     
     % eddypro project template for this site
-    strTemplateFileName = fullfile(hfRootPath,siteID,'EP_templates',sprintf('%s_template.eddypro',siteID));
+%     strTemplateFileName = fullfile(hfRootPath,siteID,'EP_templates',sprintf('%s_template.eddypro',siteID));
+    strTemplateFileName = fullfile(hfRootPath,siteID,'EP_templates',templateName);
 
+    
     % file name of eddypro ini file (../ini/processing.eddypro)
     strEddyProFileName = fullfile(hfRootPath,siteID,'ini','processing.eddypro');
     % eddypro outputs
