@@ -12,11 +12,19 @@ function [EngUnits,Header,tv,dataOut] = fr_read_GHG_file(pathToGHGfile)
 %
 %
 % (c) Zoran Nesic                   File created:       Jan 20, 2022
-%                                   Last modification:  Jan 20, 2022
+%                                   Last modification:  Feb 14, 2023
 %
 
 % Revisions (last one first):
 %
+% Feb 14, 2023 (Zoran)
+%   - added option for the program to find '7z.exe' (if it's available 
+%     anywhere on Matlab's path. We keep it under Biomet.net\Matlab\Micromet     
+%   - Added a check of OS. This works on PC only!
+
+if ismac
+    error('This function supports Windows OS only!')
+end
 
 pathToHF = fullfile(tempdir,'MatlabTemp');
 if ~exist(pathToHF,'dir')
@@ -37,7 +45,11 @@ filePath = fullfile(pathToHF,fileName);
 
 % Extract GHG data from the compressed files
 % Note 7z.exe has to be visible to Matlab (Biomet.net?)
-sCMD = ['7z x ' pathToGHGfile ' -o' pathToHF  ' -r -y'];
+exeFile = which('7z.exe');
+if isempty(exeFile)
+    error('Cannot find 7z.exe');
+end
+sCMD = [exeFile ' x ' pathToGHGfile ' -o' pathToHF  ' -r -y'];
 [sStatus,sRet] = dos(sCMD);
 
 
