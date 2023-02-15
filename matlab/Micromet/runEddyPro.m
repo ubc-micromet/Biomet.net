@@ -114,23 +114,23 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
         % Replace all relevant dates and times 
         ss1 = regexprep(ss1,'pr_start_date=....-..-..',['pr_start_date=' datestr(currentDateIn,'yyyy-mm-dd')]);
         ss1 = regexprep(ss1,'pr_end_date=....-..-..',['pr_end_date=' datestr(currentDateIn,'yyyy-mm-dd')]);
-        ss1 = regexprep(ss1,'pr_start_time=..:..',['pr_start_time=' strStartTime]);
-        ss1 = regexprep(ss1,'pr_end_time=..:..',['pr_end_time=' strEndTime]);
+        ss1 = regexprep(ss1,'pr_start_time=..:..',['pr_start_time=' datestr(strStartTime,'HH-MM-SS')]);
+        ss1 = regexprep(ss1,'pr_end_time=..:..',['pr_end_time=' datestr(strEndTime,'HH-MM-SS')]);
 
         ss1 = regexprep(ss1,'sa_start_date=....-..-..',['sa_start_date=' datestr(currentDateIn,'yyyy-mm-dd')]);
         ss1 = regexprep(ss1,'sa_end_date=....-..-..',['sa_end_date=' datestr(currentDateIn,'yyyy-mm-dd')]);
-        ss1 = regexprep(ss1,'sa_start_time=..:..',['sa_start_time=' strStartTime]);
-        ss1 = regexprep(ss1,'sa_end_time=..:..',['sa_end_time=' strEndTime]);
+        ss1 = regexprep(ss1,'sa_start_time=..:..',['sa_start_time=' datestr(strStartTime,'HH-MM-SS')]);
+        ss1 = regexprep(ss1,'sa_end_time=..:..',['sa_end_time=' datestr(strEndTime,'HH-MM-SS')]);
 
         ss1 = regexprep(ss1,'pf_start_date=....-..-..',['pf_start_date=' datestr(currentDateIn,'yyyy-mm-dd')]);
         ss1 = regexprep(ss1,'pf_end_date=....-..-..',['pf_end_date=' datestr(currentDateIn,'yyyy-mm-dd')]);
-        ss1 = regexprep(ss1,'pf_start_time=..:..',['pf_start_time=' strStartTime]);
-        ss1 = regexprep(ss1,'pf_end_time=..:..',['pf_end_time=' strEndTime]);
+        ss1 = regexprep(ss1,'pf_start_time=..:..',['pf_start_time=' datestr(strStartTime,'HH-MM-SS')]);
+        ss1 = regexprep(ss1,'pf_end_time=..:..',['pf_end_time=' datestr(strEndTime,'HH-MM-SS')]);
 
         ss1 = regexprep(ss1,'to_start_date=....-..-..',['to_start_date=' datestr(currentDateIn,'yyyy-mm-dd')]);
         ss1 = regexprep(ss1,'to_end_date=....-..-..',['to_end_date=' datestr(currentDateIn,'yyyy-mm-dd')]);
-        ss1 = regexprep(ss1,'to_start_time=..:..',['to_start_time=' strStartTime]);
-        ss1 = regexprep(ss1,'to_end_time=..:..',['to_end_time=' strEndTime]);
+        ss1 = regexprep(ss1,'to_start_time=..:..',['to_start_time=' datestr(strStartTime,'HH-MM-SS')]);
+        ss1 = regexprep(ss1,'to_end_time=..:..',['to_end_time=' datestr(strEndTime,'HH-MM-SS')]);
 
 
         %%  Replace all the paths 
