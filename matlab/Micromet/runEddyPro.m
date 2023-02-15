@@ -59,7 +59,7 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
     % path to the exe file for EddyPro 
     % NOTE: EddyPro bin folder has to be copied here.
     pathEddyProExe = fullfile(hfPath,'bin');
-
+    
     % eddypro project template for this site
     strTemplateFileName = fullfile(hfRootPath,siteID,'EP_templates',sprintf('%s_template.eddypro',siteID));
 

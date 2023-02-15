@@ -3,9 +3,9 @@
 ## @knitr LoadData
 
 # Load data
-opts_knit$set(root.dir = "/Users/sara/Code/Biomet.net/R/data_visualization") # Specify directory
+opts_knit$set(root.dir = "C:/Biomet.net/R/data_visualization") # Specify directory
 
-basepath <- "/Users/sara/Library/CloudStorage/OneDrive-UBC/UBC/database"
+basepath <- "C:/Users/User/PostDoc_Work/database"
 yrs <- c(2022:2022) # Make sure to include the most recent year
 site <- "DSM"
 level <- c("Clean/SecondStage","Met/clean")
@@ -22,11 +22,11 @@ tv_input <- "clean_tv"
 export <- 0 # 1 to save a csv file of the data, 0 otherwise
 
 # load all necessary functions
-fx_path <- "/Users/sara/Code/Biomet.net/R/data_visualization"
+fx_path <- "C:/Biomet.net/R/data_visualization"
 p <- sapply(list.files(pattern="*.R$", path=fx_path, full.names=TRUE), source)
 
 # Load functions from 'database_functions' folder
-source("/Users/sara/Code/Biomet.net/R/database_functions/read_database.R")
+source("C:/Biomet.net/R/database_functions/read_database.R")
 
 # Create dataframe for years & variables of interest
 # Path to function to load data
