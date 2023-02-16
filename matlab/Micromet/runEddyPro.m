@@ -175,26 +175,28 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
         ss1 = regexprep(ss1,'sa_bin_spectra=.*?\r',sprintf('sa_bin_spectra=%s\r',modStrBinSpectraPath));
         ss1 = regexprep(ss1,'sa_full_spectra=.*?\r',sprintf('sa_full_spectra=%s\r',modStrBinFullSpectraPath));
 
+%         The Generic channels are causing issues for me - we could read these from batch metadata files instead
+
         % Replace the fixed channel numbers with generic ones (-1)
-        ss1 = regexprep(ss1,'col_co2=.*?\r',sprintf('col_co2=-1\r'));
-        ss1 = regexprep(ss1,'col_h2o=.*?\r',sprintf('col_h2o=-1\r'));
-        ss1 = regexprep(ss1,'col_ch4=.*?\r',sprintf('col_ch4=-1\r'));
-        ss1 = regexprep(ss1,'col_n2o=.*?\r',sprintf('col_n2o=-1\r'));
-        ss1 = regexprep(ss1,'col_int_t_1=.*?\r',sprintf('col_int_t_1=-1\r'));
-        ss1 = regexprep(ss1,'col_int_t_2=.*?\r',sprintf('col_int_t_2=-1\r'));
-        ss1 = regexprep(ss1,'col_int_p=.*?\r',sprintf('col_int_p=-1\r'));
-        ss1 = regexprep(ss1,'col_air_t=.*?\r',sprintf('col_air_t=-1\r'));
-        ss1 = regexprep(ss1,'col_air_p=.*?\r',sprintf('col_air_p=-1\r'));
-        ss1 = regexprep(ss1,'col_cell_t=.*?\r',sprintf('col_cell_t=-1\r'));
-        ss1 = regexprep(ss1,'col_diag_75=.*?\r',sprintf('col_diag_75=-1\r'));
-        ss1 = regexprep(ss1,'col_diag_72=.*?\r',sprintf('col_diag_72=-1\r'));
-        ss1 = regexprep(ss1,'col_diag_77=.*?\r',sprintf('col_diag_77=-1\r'));
-        ss1 = regexprep(ss1,'col_diag_anem=.*?\r',sprintf('col_diag_anem=-1\r'));
-        ss1 = regexprep(ss1,'col_ts=.*?\r',sprintf('col_ts=-1\r'));
-        ss1 = regexprep(ss1,'biom_ta=.*?\r',sprintf('biom_ta=-1\r'));
-        ss1 = regexprep(ss1,'biom_pa=.*?\r',sprintf('biom_pa=-1\r'));
-        ss1 = regexprep(ss1,'biom_lwin=.*?\r',sprintf('biom_lwin=-1\r'));
-        ss1 = regexprep(ss1,'biom_ppfd=.*?\r',sprintf('biom_ppfd=-1\r'));
+%         ss1 = regexprep(ss1,'col_co2=.*?\r',sprintf('col_co2=-1\r'));
+%         ss1 = regexprep(ss1,'col_h2o=.*?\r',sprintf('col_h2o=-1\r'));
+%         ss1 = regexprep(ss1,'col_ch4=.*?\r',sprintf('col_ch4=-1\r'));
+%         ss1 = regexprep(ss1,'col_n2o=.*?\r',sprintf('col_n2o=-1\r'));
+%         ss1 = regexprep(ss1,'col_int_t_1=.*?\r',sprintf('col_int_t_1=-1\r'));
+%         ss1 = regexprep(ss1,'col_int_t_2=.*?\r',sprintf('col_int_t_2=-1\r'));
+%         ss1 = regexprep(ss1,'col_int_p=.*?\r',sprintf('col_int_p=-1\r'));
+%         ss1 = regexprep(ss1,'col_air_t=.*?\r',sprintf('col_air_t=-1\r'));
+%         ss1 = regexprep(ss1,'col_air_p=.*?\r',sprintf('col_air_p=-1\r'));
+%         ss1 = regexprep(ss1,'col_cell_t=.*?\r',sprintf('col_cell_t=-1\r'));
+%         ss1 = regexprep(ss1,'col_diag_75=.*?\r',sprintf('col_diag_75=-1\r'));
+%         ss1 = regexprep(ss1,'col_diag_72=.*?\r',sprintf('col_diag_72=-1\r'));
+%         ss1 = regexprep(ss1,'col_diag_77=.*?\r',sprintf('col_diag_77=-1\r'));
+%         ss1 = regexprep(ss1,'col_diag_anem=.*?\r',sprintf('col_diag_anem=-1\r'));
+%         ss1 = regexprep(ss1,'col_ts=.*?\r',sprintf('col_ts=-1\r'));
+%         ss1 = regexprep(ss1,'biom_ta=.*?\r',sprintf('biom_ta=-1\r'));
+%         ss1 = regexprep(ss1,'biom_pa=.*?\r',sprintf('biom_pa=-1\r'));
+%         ss1 = regexprep(ss1,'biom_lwin=.*?\r',sprintf('biom_lwin=-1\r'));
+%         ss1 = regexprep(ss1,'biom_ppfd=.*?\r',sprintf('biom_ppfd=-1\r'));
         
         
         % Save the new template and close the file handle
