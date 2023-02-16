@@ -16,7 +16,9 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
 %    run_mode           -   EddyPro mode:  1 - Express, 0 - Advanced (default)
 %    strStartTime       -   Start time for calculations. Usually we do entire days, default is "00:00")
 %    strEndTime         -   End time  for calculations. Usually we do entire days, default is "23:59")
-%
+%    templateName       -   Custom templates, must be located in siteID\EP_templates
+%                           Must give full name of template (e.g.BB_template_Ibrom.eddypro)
+% 
 % Examples:
 %  Simplest call:
 %     runEddyPro(datetime("Jul 1,2022"):datetime("Jul 31, 2022"),'DSM','y:/','P:/Sites')
@@ -27,7 +29,7 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
 %      runEddyPro(datetime(2022,7,1):datetime(2022,7,31),'DSM','y:','P:/Sites',0,'23:00','23:59')
 %
 % Zoran Nesic               File created:           Oct 14, 2022
-%                           Last modification:      Oct 18, 2022
+% June Skeeter              Last modification:      Feb 15, 2023
 
 %
 % Revisions:
@@ -37,13 +39,21 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
 %     EddyPro find the channels on its own.
 %   - Saved the output of EddyPro run into a log file
 %
+% Feb 15, 2023 (June)
+%   - Fixed Start/End Time formatting
+%   - Custom Templates
+%
 
 
 
-    arg_default('strStartTime',"00:00");
-    arg_default('strEndTime',"23:59");
+
+    arg_default('strStartTime','00:00');
+    arg_default('strEndTime','23:59');
     arg_default('run_mode',0);          % 1 - Express, 0 - Advanced
     arg_default('templateName',sprintf('%s_template.eddypro',siteID));
+    strStartTime = datestr(strStartTime,'HH:MM');
+    strEndTime = datestr(strEndTime,'HH:MM');
+
     
     % remove trailing '\' or '/' from hfRootPath
     if strcmp(hfRootPath(end),'/') || strcmp(hfRootPath(end),'\')
@@ -62,8 +72,8 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
     pathEddyProExe = fullfile(hfPath,'bin');
     
     % eddypro project template for this site
-%     strTemplateFileName = fullfile(hfRootPath,siteID,'EP_templates',sprintf('%s_template.eddypro',siteID));
-    strTemplateFileName = fullfile(hfRootPath,siteID,'EP_templates',templateName);
+    strTemplateFileName = fullfile(hfRootPath,siteID,'EP_templates',sprintf('%s_template.eddypro',siteID));
+%     strTemplateFileName = fullfile(hfRootPath,siteID,'EP_templates',templateName);
 
     
     % file name of eddypro ini file (../ini/processing.eddypro)
@@ -117,23 +127,23 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
         % Replace all relevant dates and times 
         ss1 = regexprep(ss1,'pr_start_date=....-..-..',['pr_start_date=' datestr(currentDateIn,'yyyy-mm-dd')]);
         ss1 = regexprep(ss1,'pr_end_date=....-..-..',['pr_end_date=' datestr(currentDateIn,'yyyy-mm-dd')]);
-        ss1 = regexprep(ss1,'pr_start_time=..:..',['pr_start_time=' datestr(strStartTime,'HH-MM-SS')]);
-        ss1 = regexprep(ss1,'pr_end_time=..:..',['pr_end_time=' datestr(strEndTime,'HH-MM-SS')]);
+        ss1 = regexprep(ss1,'pr_start_time=..:..',['pr_start_time=' strStartTime]);
+        ss1 = regexprep(ss1,'pr_end_time=..:..',['pr_end_time=' strEndTime]);
 
         ss1 = regexprep(ss1,'sa_start_date=....-..-..',['sa_start_date=' datestr(currentDateIn,'yyyy-mm-dd')]);
         ss1 = regexprep(ss1,'sa_end_date=....-..-..',['sa_end_date=' datestr(currentDateIn,'yyyy-mm-dd')]);
-        ss1 = regexprep(ss1,'sa_start_time=..:..',['sa_start_time=' datestr(strStartTime,'HH-MM-SS')]);
-        ss1 = regexprep(ss1,'sa_end_time=..:..',['sa_end_time=' datestr(strEndTime,'HH-MM-SS')]);
+        ss1 = regexprep(ss1,'sa_start_time=..:..',['sa_start_time=' strStartTime]);
+        ss1 = regexprep(ss1,'sa_end_time=..:..',['sa_end_time=' strEndTime]);
 
         ss1 = regexprep(ss1,'pf_start_date=....-..-..',['pf_start_date=' datestr(currentDateIn,'yyyy-mm-dd')]);
         ss1 = regexprep(ss1,'pf_end_date=....-..-..',['pf_end_date=' datestr(currentDateIn,'yyyy-mm-dd')]);
-        ss1 = regexprep(ss1,'pf_start_time=..:..',['pf_start_time=' datestr(strStartTime,'HH-MM-SS')]);
-        ss1 = regexprep(ss1,'pf_end_time=..:..',['pf_end_time=' datestr(strEndTime,'HH-MM-SS')]);
+        ss1 = regexprep(ss1,'pf_start_time=..:..',['pf_start_time=' strStartTime]);
+        ss1 = regexprep(ss1,'pf_end_time=..:..',['pf_end_time=' strEndTime]);
 
         ss1 = regexprep(ss1,'to_start_date=....-..-..',['to_start_date=' datestr(currentDateIn,'yyyy-mm-dd')]);
         ss1 = regexprep(ss1,'to_end_date=....-..-..',['to_end_date=' datestr(currentDateIn,'yyyy-mm-dd')]);
-        ss1 = regexprep(ss1,'to_start_time=..:..',['to_start_time=' datestr(strStartTime,'HH-MM-SS')]);
-        ss1 = regexprep(ss1,'to_end_time=..:..',['to_end_time=' datestr(strEndTime,'HH-MM-SS')]);
+        ss1 = regexprep(ss1,'to_start_time=..:..',['to_start_time=' strStartTime]);
+        ss1 = regexprep(ss1,'to_end_time=..:..',['to_end_time=' strEndTime]);
 
 
         %%  Replace all the paths 
