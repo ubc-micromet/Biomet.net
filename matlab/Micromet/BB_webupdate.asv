@@ -161,8 +161,8 @@ for siteNum = 1:length(siteNames)
             var1_name = 'TA_1_1_1';
 			var2_name = 'TA_1_2_1';
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
-			varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met/clean';
+			varStruct(2).name = var2_name;varStruct(2).type = 'Met/clean';
             
             cHeader = {'Time (PST)' 'Air Temperature (2m)' 'Air Temperature (3.5m)'};
             cFormat = '%12.6f, %12.6f\n';
@@ -182,8 +182,8 @@ for siteNum = 1:length(siteNames)
             var2_name = 'TA_1_2_1';
             clear varStruct  
 
-            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met/clean';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Met/clean';
             cHeader = {'Time (PST)' 'Air Temperature (4m)' 'Air Temperature (6m)'};
             cFormat = '%12.6f, %12.6f\n';
 
@@ -258,8 +258,8 @@ for siteNum = 1:length(siteNames)
 			var2_name = 'RH_1_2_1';
             clear varStruct
 
-            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
-			varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met/clean';
+			varStruct(2).name = var2_name;varStruct(2).type = 'Met/clean';
             cHeader = {'Time (PST)' 'Relative Humidity (2m)' 'Relative Humidity (3.5m)'};
             cFormat = '%12.6f, %12.6f\n';
             fileName = [siteID 'RHA.csv'];
@@ -279,8 +279,8 @@ for siteNum = 1:length(siteNames)
           var2_name = 'RH_1_2_1';
           clear varStruct 
 
-          varStruct(1).name = var1_name;varStruct(1).type= 'Clean/SecondStage';
-          varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
+          varStruct(1).name = var1_name;varStruct(1).type= 'Met/clean';
+          varStruct(2).name = var2_name;varStruct(2).type = 'Met/clean';
           cHeader = {'Time (PST)' 'Relative Humidity (4m)' 'Relative Humidity (6m)'};
           cFormat = '%12.6f, %12.6f\n';
           fileName = [siteID 'RHA.csv'];
@@ -375,14 +375,13 @@ for siteNum = 1:length(siteNames)
             var3_name = 'LW_IN_1_1_1';
             var4_name = 'LW_OUT_1_1_1';
             var5_name = 'NETRAD_1_1_1';
-
-            /Volumes/Database/2023/DSM/Flux/Clean/NETRAD_1_1_1
+            
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
-            varStruct(3).name = var3_name;varStruct(3).type = 'Clean/SecondStage';
-            varStruct(4).name = var4_name;varStruct(4).type = 'Clean/SecondStage';
-            varStruct(5).name = var5_name;varStruct(5).type = 'Flux/clean';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met/clean';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Met/clean';
+            varStruct(3).name = var3_name;varStruct(3).type = 'Met/clean';
+            varStruct(4).name = var4_name;varStruct(4).type = 'Met/clean';
+            varStruct(5).name = var5_name;varStruct(5).type = 'Met/clean';
 
             cHeader = {'Time (PST)' 'Shortwave Irradiance (3.5m)' 'Shortwave Reflectance (3.5m)'...
                 'Longwave Downward Radiation (3.5m)' 'Longwave Upward Radiation (3.5m)' 'Net radiation'};
@@ -400,21 +399,21 @@ for siteNum = 1:length(siteNames)
 
         
         case 'RBM'
-
             var1_name = 'SW_IN_1_1_1';
             var2_name = 'SW_OUT_1_1_1';
             var3_name = 'LW_IN_1_1_1';
             var4_name = 'LW_OUT_1_1_1';
-
+            var5_name = 'NETRAD_1_1_1';
             
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
-            varStruct(3).name = var3_name;varStruct(3).type = 'Clean/SecondStage';
-            varStruct(4).name = var4_name;varStruct(4).type = 'Clean/SecondStage';
-            cHeader = {'Time (PST)' 'Shortwave Irradiance (3.5m)' 'Shortwave Reflectance (3.5m)'...
-                'Longwave Downward Radiation (3.5m)' 'Longwave Upward Radiation (3.5m)'};
-            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f\n';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met/clean';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Met/clean';
+            varStruct(3).name = var3_name;varStruct(3).type = 'Met/clean';
+            varStruct(4).name = var4_name;varStruct(4).type = 'Met/clean';
+            varStruct(5).name = var5_name;varStruct(5).type = 'Met/clean';
+            cHeader = {'Time (PST)' 'Shortwave Irradiance (6m)' 'Shortwave Reflectance (6m)'...
+                'Longwave Downward Radiation (6m)' 'Longwave Upward Radiation (6m)' 'Net radiation'};
+            cFormat = '%12.6f, %12.6f, %12.6f, %12.6f, %12.6f\n';
             fileName = [siteID 'RAD.csv'];
             data = load_data(varStruct,pth,Years);
             data = data(1:inde,:);
@@ -502,10 +501,10 @@ for siteNum = 1:length(siteNames)
 
             
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
-            varStruct(3).name = var3_name;varStruct(3).type = 'Clean/SecondStage';
-            varStruct(4).name = var4_name;varStruct(4).type = 'Clean/SecondStage';        
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met/clean';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Met/clean';
+            varStruct(3).name = var3_name;varStruct(3).type = 'Met/clean';
+            varStruct(4).name = var4_name;varStruct(4).type = 'Met/clean';        
             cHeader = {'Time (PST)' ...
                 'BF5 Incoming Total Photosynthetic Active Radiation (3.5m)'...
                 'BF5 Incoming Diffuse Photosynthetic Active Radiation (3.5m)'...
@@ -532,10 +531,10 @@ for siteNum = 1:length(siteNames)
 
             
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
-            varStruct(3).name = var3_name;varStruct(3).type = 'Clean/SecondStage';
-            varStruct(4).name = var4_name;varStruct(4).type = 'Clean/SecondStage';        
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met/clean';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Met/clean';
+            varStruct(3).name = var3_name;varStruct(3).type = 'Met/clean';
+            varStruct(4).name = var4_name;varStruct(4).type = 'Met/clean';        
             cHeader = {'Time (PST)' ...
                 'BF5 Incoming Total Photosynthetic Active Radiation (3.5m)'...
                 'BF5 Incoming Diffuse Photosynthetic Active Radiation (3.5m)'...
@@ -618,8 +617,8 @@ for siteNum = 1:length(siteNames)
             var2_name = 'wind_speed';        % EC
 
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Flux/clean';
             cHeader = {'Time (PST)' 'Wind Velocity Cup Anemometer (3.5m)' 'Wind Velocity EC System [Smartflux] (1.8m)'};
             cFormat = '%12.6f, %12.6f\n';
             fileName = [siteID 'WVA.csv'];
@@ -638,8 +637,8 @@ for siteNum = 1:length(siteNames)
             var2_name = 'wind_speed';        % EC
 
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Flux/clean';
             cHeader = {'Time (PST)' 'Wind Velocity Cup Anemometer (6m)' 'Wind Velocity EC System [Smartflux] (4m)'};
             cFormat = '%12.6f, %12.6f\n';
             fileName = [siteID 'WVA.csv'];
@@ -719,8 +718,8 @@ for siteNum = 1:length(siteNames)
             var2_name = 'wind_dir';
 
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Flux/clean';
             cHeader = {'Time (PST)' 'Wind Direction Cup Anemometer (3.5m)'...
                 'Wind Direction EC System [Smartflux] (1.8m)'};
             cFormat = '%12.6f, %12.6f\n';
@@ -740,8 +739,8 @@ for siteNum = 1:length(siteNames)
             var2_name = 'wind_dir';
 
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'MET';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Flux/clean';
             cHeader = {'Time (PST)' 'Wind Direction Cup Anemometer (6m)'...
                 'Wind Direction EC System [Smartflux] (4m)'};
             cFormat = '%12.6f, %12.6f\n';
@@ -812,7 +811,7 @@ for siteNum = 1:length(siteNames)
         case {'DSM','RBM'}
             var1_name = 'TKE';
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Flux';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Flux/clean';
             cHeader = {'Time (PST)' 'TKE EC System [Smartflux] (1.80m)'};
             cFormat = '%12.6f\n';
             fileName = [siteID 'TKE.csv'];
@@ -898,12 +897,12 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(inds:inde,:)),cFormat,data)
             
         case 'DSM'
-            var1_name = 'air_pressure'; % EC
+            var1_name = 'air_p_mean'; % EC
             var2_name = 'PA_1_1_1';
             
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Flux';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Flux/clean';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Met/clean';
             cHeader = {'Time (PST)' 'Barometric Pressure EC System [Air](1.8m)' ...
                 'Barometric Pressure Barometer (CS106) (1.2m)'};
             cFormat = '%12.6f, %12.6f\n';
@@ -922,12 +921,12 @@ for siteNum = 1:length(siteNames)
             csv_save(cHeader,outputPath,fileName,cellstr(tv_export(1:inde,:)),cFormat,data)            
                     
         case 'RBM'
-            var1_name = 'air_pressure'; % EC
+            var1_name = 'air_p_mean'; % EC
             var2_name = 'PA_1_1_1';
             
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Flux';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Flux/clean';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Met/clean';
             cHeader = {'Time (PST)' 'Barometric Pressure EC System [Air](4m)' ...
                 'Barometric Pressure Barometer (CS106) (2.5m)'};
             cFormat = '%12.6f, %12.6f\n';
@@ -1010,7 +1009,7 @@ for siteNum = 1:length(siteNames)
             var1_name = 'P_1_1_1';
             
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met/clean';
             cHeader = {'Time (PST)' 'Precipitation (1.05m)'};
             cFormat = '%12.6f\n';
             fileName = [siteID 'PCT.csv'];
@@ -1028,7 +1027,7 @@ for siteNum = 1:length(siteNames)
             var1_name = 'P_1_1_1';
             
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met/clean';
             cHeader = {'Time (PST)' 'Precipitation (1.60m)'};
             cFormat = '%12.6f\n';
             fileName = [siteID 'PCT.csv'];
@@ -1491,7 +1490,7 @@ for siteNum = 1:length(siteNames)
             var1_name = 'TW_1_1_1';
 
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met/clean';
             cHeader = {'Time (PST)' 'Water Temperature'};
             cFormat = '%12.6f\n';
             fileName = [siteID 'WTA.csv'];
@@ -1509,7 +1508,7 @@ for siteNum = 1:length(siteNames)
             var1_name = 'TW_1_1_1';
 
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met/clean';
             cHeader = {'Time (PST)' 'Water Temperature'};
             cFormat = '%12.6f\n';
             fileName = [siteID 'WTA.csv'];
@@ -1545,7 +1544,7 @@ for siteNum = 1:length(siteNames)
             var1_name = 'ORP_1_1_1';
 
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met/clean';
             cHeader = {'Time (PST)' 'Oxidation Reduction Potential (-2m)'};
             cFormat = '%12.6f\n';
             fileName = [siteID 'ORP.csv'];
@@ -1563,7 +1562,7 @@ for siteNum = 1:length(siteNames)
             var1_name = 'ORP_1_1_1';
 
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met/clean';
             cHeader = {'Time (PST)' 'Oxidation Reduction Potential (-2m)'};
             cFormat = '%12.6f\n';
             fileName = [siteID 'ORP.csv'];
@@ -1633,7 +1632,7 @@ for siteNum = 1:length(siteNames)
             var1_name = 'WTD_1_1_1';    
 
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met/clean';
             cFormat = '%12.6f\n';
             cHeader = {'Time (PST)' 'WTH (-2m)'};    
             fileName = [siteID 'WPT.csv'];
@@ -1651,7 +1650,7 @@ for siteNum = 1:length(siteNames)
             var1_name = 'WTD_1_1_1';    
             
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met/clean';
             cFormat = '%12.6f\n';
             cHeader = {'Time (PST)' 'WTH (-2m)'};    
             fileName = [siteID 'WPT.csv'];
@@ -1673,7 +1672,7 @@ for siteNum = 1:length(siteNames)
             var1_name = 'pH_1_1_1';
 
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met/clean';
             cHeader = {'Time (PST)' 'Water pH (-2m)'};
             cFormat = '%12.6f\n';
             fileName = [siteID 'WpH.csv'];
@@ -1691,7 +1690,7 @@ for siteNum = 1:length(siteNames)
             var1_name = 'pH_1_1_1';
 
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met/clean';
             cHeader = {'Time (PST)' 'Water pH (-2m)'};
             cFormat = '%12.6f\n';
             fileName = [siteID 'WpH.csv'];
@@ -1713,8 +1712,8 @@ for siteNum = 1:length(siteNames)
             var2_name = 'COND_WATER_1_1_1';
 
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met/clean';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Met/clean';
             cHeader = {'Time (PST)' 'Water conductivity (mS/cm) (-2m)' 'Salinity (ppt) (-2m)'};
             cFormat = '%12.6f, %12.6f\n';
             fileName = [siteID 'WCd.csv'];
@@ -1738,8 +1737,8 @@ for siteNum = 1:length(siteNames)
             var2_name = 'COND_WATER_1_1_1';
 
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met/clean';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Met/clean';
             cHeader = {'Time (PST)' 'Water conductivity (mS/cm) (-2m)' 'Salinity (ppt) (-2m)'};
             cFormat = '%12.6f, %12.6f\n';
             fileName = [siteID 'WCd.csv'];
@@ -1766,8 +1765,8 @@ for siteNum = 1:length(siteNames)
             var2_name = 'DOperc_1_1_1';
 
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met/clean';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Met/clean';
             cHeader = {'Time (PST)' 'Water dissolve oxygen (-2m)' 'Water dissolve oxygen percentage (-2m)'};
             cFormat = '%12.6f, %12.6f\n';
             fileName = [siteID 'WDO.csv'];
@@ -1786,8 +1785,8 @@ for siteNum = 1:length(siteNames)
             var2_name = 'DOperc_1_1_1';
 
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
-            varStruct(2).name = var2_name;varStruct(2).type = 'Clean/SecondStage';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Met/clean';
+            varStruct(2).name = var2_name;varStruct(2).type = 'Met/clean';
             cHeader = {'Time (PST)' 'Water dissolve oxygen (-2m)' 'Water dissolve oxygen percentage (-2m)'};
             cFormat = '%12.6f, %12.6f\n';
             fileName = [siteID 'WDO.csv'];
@@ -1818,7 +1817,7 @@ for siteNum = 1:length(siteNames)
             varStruct(2).name = var2_name;varStruct(2).type = 'Met';
             varStruct(3).name = var3_name;varStruct(3).type = 'Met';
             varStruct(4).name = var4_name;varStruct(4).type = 'Met';
-            varStruct(5).name = var5_name;varStruct(5).type = 'Clean/SecondStage';            
+            varStruct(5).name = var5_name;varStruct(5).type = 'Met/clean';            
             cHeader = {'Time (PST)'...
                 'Incoming RED light (W/m^2 nm)' 'Reflected RED light (W/m^2 nm)'...
                 'Incoming NIR light (W/m^2 nm)' 'Reflected NIR light (W/m^2 nm)'...
@@ -1847,7 +1846,7 @@ for siteNum = 1:length(siteNames)
             varStruct(2).name = var2_name;varStruct(2).type = 'Met';
             varStruct(3).name = var3_name;varStruct(3).type = 'Met';
             varStruct(4).name = var4_name;varStruct(4).type = 'Met';
-            varStruct(5).name = var5_name;varStruct(5).type = 'Clean/SecondStage';            
+            varStruct(5).name = var5_name;varStruct(5).type = 'Met/clean';            
             cHeader = {'Time (PST)'...
                 'Incoming RED light (W/m^2 nm)' 'Reflected RED light (W/m^2 nm)'...
                 'Incoming NIR light (W/m^2 nm)' 'Reflected NIR light (W/m^2 nm)'...
@@ -1880,7 +1879,7 @@ for siteNum = 1:length(siteNames)
             varStruct(2).name = var2_name;varStruct(2).type = 'Met';
             varStruct(3).name = var3_name;varStruct(3).type = 'Met';
             varStruct(4).name = var4_name;varStruct(4).type = 'Met';
-            varStruct(5).name = var5_name;varStruct(5).type = 'Clean/SecondStage';
+            varStruct(5).name = var5_name;varStruct(5).type = 'Met/clean';
             cHeader = {'Time (PST)'...
                 'Incoming nm532 (W/m^2 nm)' 'Reflected nm532 (W/m^2 nm)'...
                 'Incoming nm570 (W/m^2 nm)' 'Reflected nm570 (W/m^2 nm)'...
@@ -1909,7 +1908,7 @@ for siteNum = 1:length(siteNames)
             varStruct(2).name = var2_name;varStruct(2).type = 'Met';
             varStruct(3).name = var3_name;varStruct(3).type = 'Met';
             varStruct(4).name = var4_name;varStruct(4).type = 'Met';
-            varStruct(5).name = var5_name;varStruct(5).type = 'Clean/SecondStage';
+            varStruct(5).name = var5_name;varStruct(5).type = 'Met/clean';
             cHeader = {'Time (PST)'...
                 'Incoming nm532 (W/m^2 nm)' 'Reflected nm532 (W/m^2 nm)'...
                 'Incoming nm570 (W/m^2 nm)' 'Reflected nm570 (W/m^2 nm)'...
@@ -1983,7 +1982,7 @@ for siteNum = 1:length(siteNames)
         case 'DSM'
             var1_name = 'H';
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Flux/clean';
             cHeader = {'Time (PST)' 'Sensible Heat Flux [Smartflux] (1.8m)'};
             cFormat = '%12.6f\n';
             fileName = [siteID 'QHB.csv'];
@@ -2000,7 +1999,7 @@ for siteNum = 1:length(siteNames)
         case 'RBM'
             var1_name = 'H';
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Flux/clean';
             cHeader = {'Time (PST)' 'Sensible Heat Flux [Smartflux] (4m)'};
             cFormat = '%12.6f\n';
             fileName = [siteID 'QHB.csv'];
@@ -2071,7 +2070,7 @@ for siteNum = 1:length(siteNames)
         case 'DSM'
             var1_name = 'LE';
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Flux/clean';
             cHeader = {'Time (PST)' 'Latent Heat Flux [Smartflux] (1.8m)'};
             cFormat = '%12.6f\n';
             fileName = [siteID 'QEB.csv'];
@@ -2088,7 +2087,7 @@ for siteNum = 1:length(siteNames)
         case 'RBM'
             var1_name = 'LE';
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Flux/clean';
             cHeader = {'Time (PST)' 'Latent Heat Flux [Smartflux] (4m)'};
             cFormat = '%12.6f\n';
             fileName = [siteID 'QEB.csv'];
