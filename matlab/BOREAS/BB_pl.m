@@ -6,12 +6,14 @@ function [t,x] = BB_pl(ind, year, siteID, select, fig_num_inc,flgPause)
 %   the UBC data-base formated files.
 %
 % (c) c) Nesic Zoran         File created:       May 11, 2021      
-%                            Last modification:  Jul 18, 2022
+%                            Last modification:  Feb 26, 2023
 %           
 %
 
 % Revisions:
 %
+% Feb 26, 2023 (Zoran)
+%   - added time-lag plot
 % July 18, 2022 (Zoran)
 %   - changed the variable for plotting RH at RBM from MET_HMP_RH_2m to MET_HMP_RH_4m 
 % Apr 2, 2022 (Zoran)
@@ -546,6 +548,20 @@ fig_num = fig_num + fig_num_inc;
 x = plt_msig( trace_path, ind, trace_name, trace_legend, year, trace_units, y_axis, t, fig_num );
 indAxes = indAxes+1; allAxes(indAxes) = gca;
 
+%----------------------------------------------------------
+% Delay times
+%----------------------------------------------------------
+trace_name  = sprintf('%s: %s',siteID,' Delay Times');
+trace_path  = char(fullfile(pthSite,'Flux','h2o_time_lag'),...
+                   fullfile(pthSite,'Flux','co2_time_lag'),...
+                   fullfile(pthSite,'Flux','ch4_time_lag')...
+                   );
+trace_legend = char('h_2o','co_2','ch_4');
+trace_units = 'Delay Times (Seconds)';
+y_axis      = [];
+fig_num = fig_num + fig_num_inc;
+x = plt_msig( trace_path, ind, trace_name, trace_legend, year, trace_units, y_axis, t, fig_num,[],[],char('o') );
+indAxes = indAxes+1; allAxes(indAxes) = gca;
 
 linkaxes(allAxes,'x');
 
