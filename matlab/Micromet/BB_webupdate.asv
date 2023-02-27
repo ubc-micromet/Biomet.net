@@ -2337,7 +2337,7 @@ for siteNum = 1:length(siteNames)
         case 'DSM'
             var1_name = 'FC'; % Corrected CO2 flux
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Flux/clean';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
             cHeader = {'Time (PST)' 'CO2 Flux [Smartflux] (1.8m)'};
             cFormat = '%12.6f\n';
             fileName = [siteID 'FCA.csv'];
@@ -2354,7 +2354,7 @@ for siteNum = 1:length(siteNames)
         case 'RBM'
             var1_name = 'FC'; % Corrected CO2 flux
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Flux/clean';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
             cHeader = {'Time (PST)' 'CO2 Flux [Smartflux] (4m)'};
             cFormat = '%12.6f\n';
             fileName = [siteID 'FCA.csv'];
@@ -2521,7 +2521,7 @@ for siteNum = 1:length(siteNames)
         case 'DSM'
             var1_name = 'FCH4';
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Flux/clean';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
             cHeader = {'Time (PST)' 'CH4 Flux (1.8m)'}; 
             cFormat = '%18.6f\n';
             fileName = [siteID 'FMA.csv'];
@@ -2538,7 +2538,7 @@ for siteNum = 1:length(siteNames)
         case 'RBM'
             var1_name = 'FCH4';
             clear varStruct
-            varStruct(1).name = var1_name;varStruct(1).type = 'Flux/clean';
+            varStruct(1).name = var1_name;varStruct(1).type = 'Clean/SecondStage';
             cHeader = {'Time (PST)' 'CH4 Flux (4m)'}; 
             cFormat = '%18.6f\n';
             fileName = [siteID 'FMA.csv'];

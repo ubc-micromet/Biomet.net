@@ -5,14 +5,26 @@ if ~exist(pathToHF,'dir')
     mkdir(pathToHF);
 end
 %datein = datetime('2021-11-19T143000','inputformat','yyyy-MM-dd''T''HHmmss');
-dateStart = datetime(2021,11,27,0,30,0);
+dateStart = datetime(2022,3,21,13,30,0);
+dataSource = 2;
+if dataSource==1
+    basePath = 'V:\Sites\BB2\HighFrequencyData\2021_Flux\20211220';
+else
+    basePath = 'd:\junk\BB2';
+end
+
 instrumentSN = 'AIU-1696';
 for dateIn = dateStart:1/48:dateshift(dateStart,'end','day')
-    pathToGHGfile = fullfile('P:\Sites\BB2\HighFrequencyData\2021_Flux\20211220','raw',...
+    if dataSource == 1
+        pathToGHGfile = fullfile(basePath,'raw',...
                          datestr(dateIn,'yyyy'),datestr(dateIn,'mm'),...
                          datestr(dateIn,''),...
                          [datestr(dateIn,'yyyy-mm-dd') 'T' datestr(dateIn,'hhMM') '00_' instrumentSN '.ghg']);
-    [EngUnits,Header,tv,outputMat] = fr_read_GHG_gile(pathToGHGfile);
+    else
+        pathToGHGfile = fullfile(basePath,...                      
+                         [datestr(dateIn,'yyyy-mm-dd') 'T' datestr(dateIn,'hhMM') '00_' instrumentSN '.ghg']);
+    end
+    [EngUnits,Header,tv,outputMat] = fr_read_GHG_file(pathToGHGfile);
     
 nPlt = 6;
 fig = 1;
