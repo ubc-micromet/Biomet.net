@@ -31,7 +31,7 @@ for all_ax=1:4
       for i=answer
          trace_old = top.list_of_traces(i);
          if ~isfield(trace_old,'data')              
-            trace_new = ta_load_traceData(trace_old,top.file_opts,top.DOY);                      
+            trace_new = TA_load_traceData(trace_old,top.file_opts,top.DOY);                      
             %break from the inner most for loop if any traces on this axis are not present:
             if isempty(trace_new)
                break

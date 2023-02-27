@@ -132,6 +132,11 @@ function fr_compare_database_traces(siteID,yearX,path_old,path_new,dataType)
                             'Text','<<',...
                             'Position',[20, 184,50, 40],...
                             'ButtonPushedFcn', @(hPreviousButton,event) previousButtonPushed(hPreviousButton,fig)); %#ok<NASGU>
+%                         axPos = get(gca,'position');
+%                         hYmax = uieditfield(fig,'numeric',...
+%                             'Position',[axPos(1)+axPos(3), axPos(2)+axPos(4),50, 40],...
+%                             'ValueChangedFcn', @(hYmax,event) hMaxChanged(hYmax,fig)); 
+                        
 %                         hDebugText = uitextarea(fig,...
 %                                         'Value','',...
 %                                         'Position',[20, 250,150, 220]);
@@ -272,6 +277,12 @@ function fr_compare_database_traces(siteID,yearX,path_old,path_new,dataType)
     if ~isempty(fig)
         close(fig);
     end
+end
+
+% Ymax limit changed
+function hMaxChanged(hYmax,fig)
+    oldLim = ylim;
+    ylim([oldLim(1) hYmax.value])
 end
 
 

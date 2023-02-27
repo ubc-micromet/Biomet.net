@@ -51,6 +51,8 @@ function finished = TraceAnalysis_tool(trace_var,list_of_traces,local_use,file_o
 
 % Revisions:
 %
+% Feb 27, 2023 (Zoran)
+%   - had to change back some of TA_ from upper to lower case.
 % May 12, 2020 (Zoran)
 %   - Converted all ta_ names to TA_ to avoid issues with newer Matlabs
 %      that are case sensitive (including this function's own name)
@@ -322,7 +324,7 @@ top.redo = top.undo;
 top.DOY = trace_var.DOY;				%used for reference while creating other traces
 %plot the initial traces.
 top.cb_plot = '';									%The handle of the current plot (working trace).
-top.cb_plot = TA_plot_all_traces(top);		%Initial plot of the traces.
+top.cb_plot = ta_plot_all_traces(top);		%Initial plot of the traces.
 title(trace_var.ini.title);					
 ylabel(trace_var.ini.units);
 if strcmp(local_use,'yes')
@@ -334,10 +336,10 @@ end
   
 %The following function initializes any traces that should be plotted with the
 %input trace.  These traces are indicated in the initialization file:
-top_out = TA_setup_addplots(top);
+top_out = ta_setup_addplots(top);
 if ~isempty(top_out)
    top = top_out;
-   temp = TA_plot_all_traces(top);
+   temp = ta_plot_all_traces(top);
    if ~isempty(temp)
       top.cb_plot = temp;
       set(gca,'UserData',top);

@@ -18,10 +18,12 @@ function trace_str = read_data(yearIn, SiteID, ini_file, sourceDB, options)
 %                      See the function 'read_ini_file' for more information
 
 
-% last modification: Jan 26, 2023 
+% last modification: Feb 15, 2023 
 
 % revisions:
 %
+% Feb 15, 2023 (Zoran)
+%   - made SearchPath option 'auto' work for the ThirdStage.ini files too.  
 % Jan 23, 2023 (Zoran)
 %   - added an option for the SecondStage ini file to have searchPath defined
 %     as 'Met,Flux' instead of 'low_level'. This makes ini files very flexible
@@ -262,6 +264,13 @@ while ~isempty( searchPath )
          for cntFolders = 1:length(foldersToInitialize)
              folderName = fullfile(db_pth_root,char(foldersToInitialize{cntFolders}));
              initializeWorkSpaceTraces( folderName );
+         end
+         % Check if this is third stage cleaning and, if it is, load up the
+         % traces from Clean/SecondStage
+         %iniFileName = char(arrayfun(@fopen, fid, 'UniformOutput', 0));
+         if contains(ini_file,'_ThirdStage.ini')
+             pth_full = biomet_path(yearIn,SiteID);
+             initializeWorkSpaceTraces( fullfile(pth_full,'Clean/SecondStage') );
          end
        otherwise
          % Also a future-proof option. In can be used in addition to 'auto' 
