@@ -1,4 +1,4 @@
-function [outputMatrix,outputDateTime] = plt_msig(pth, indTimeGMT, trace_name, trace_legend, year, trace_units, y_axis, t, fig_num,coeff,offset )
+function [outputMatrix,outputDateTime] = plt_msig(pth, indTimeGMT, trace_name, trace_legend, year, trace_units, y_axis, t, fig_num,coeff,offset,lineTypeIn )
 %[outputMatrix,outputDateTime] = plt_msig(pth, indTimeGMT, trace_name, trace_legend, year, trace_units, y_axis, t, fig_num,coeff,offset )
 %
 % [outputTraces] = plt_msig1( pth, startDate,endDate, trace_name, trace_legend, trace_units, y_axis, fig_num,coeff,offset )
@@ -24,11 +24,13 @@ function [outputMatrix,outputDateTime] = plt_msig(pth, indTimeGMT, trace_name, t
 %
 %
 % (c) Zoran Nesic               File created:       Jan  2, 2022
-%                               Last modification:  Jan 29, 2022
+%                               Last modification:  Feb 26, 2023
 %
 
 % Revisions:
 % 
+%  Feb 26, 2023 (Zoran)
+%   - added input parameter lineTypeIn
 %  Jan 19, 2022 (Zoran)
 %   - added option to skip plotting if pth = [].
 %  Jan 7, 2022 (Zoran)
@@ -54,7 +56,8 @@ set(fig_num,'menubar','none',...
 pos = get(0,'screensize');
 set(fig_num,'position',[8 pos(4)/2-20 pos(3)-20 pos(4)/2-35]);      % universal
 clf
-LineTypes = char('-','-','-','-','-','-','-','--','--','--','--','--','--',':',':',':',':',':',':',':');
+arg_default('lineTypeIn',char('-','-','-','-','-','-','-','--','--','--','--','--','--',':',':',':',':',':',':',':'));
+LineTypes = lineTypeIn ;
 
 % do some createive fixes to extract startDateIn and endDateIn as datetime
 % vars.

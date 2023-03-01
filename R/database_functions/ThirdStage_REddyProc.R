@@ -186,7 +186,7 @@ ThirdStage_REddyProc <- function(pathSetIni) {
     EProc$sSetLocationInfo(LatDeg = lat, LongDeg = long, TimeZoneHour = TimeZoneHour)
     EProc$sMDSGapFill('Tair', FillAll = FALSE,  minNWarnRunLength = NA)
     EProc$sMDSGapFill('VPD', FillAll = FALSE,  minNWarnRunLength = NA)
-    EProc$sFillVPDFromDew() # fill longer gaps still present in VPD_f
+    #EProc$sFillVPDFromDew() # fill longer gaps still present in VPD_f
     EProc$sMDSGapFill('Rg', FillAll = FALSE,  minNWarnRunLength = NA)
     
     # Nighttime
