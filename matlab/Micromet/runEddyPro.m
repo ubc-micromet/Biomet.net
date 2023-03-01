@@ -1,4 +1,4 @@
-function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStartTime,strEndTime,templateName)
+function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStartTime,strEndTime,templateName,altMetaData)
 %% Micromet function to run EddyPro recalc on a date range datesIn
 %
 % This function uses an EddyPro template ini file, edits it and 
@@ -18,6 +18,9 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
 %    strEndTime         -   End time  for calculations. Usually we do entire days, default is "23:59")
 %    templateName       -   Custom templates, must be located in siteID\EP_templates
 %                           Must give full name of template (e.g.BB_template_Ibrom.eddypro)
+%    altMetaData        -   Custom metadata - 0 for embedded (EP default),
+%                           1 for .metadat file in /metadata/yyyy/mm - by day
+%                           2 for dynamic metadat file
 % 
 % Examples:
 %  Simplest call:
@@ -42,17 +45,20 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
 % Feb 15, 2023 (June)
 %   - Fixed Start/End Time formatting
 %   - Custom Templates
+%   - Removed generic channels (-1), need to find better long-term
+%   solution, could read values from batch metadata files instead
 %
-
-
-
+% Mar 1, 2023 (June)
+%   - Added option for custom or dynamic metadata files
+%   - Dynamic metadata files still requires testing
 
     arg_default('strStartTime','00:00');
     arg_default('strEndTime','23:59');
-    arg_default('run_mode',0);          % 1 - Express, 0 - Advanced
-    arg_default('templateName',sprintf('%s_template.eddypro',siteID));
     strStartTime = datestr(strStartTime,'HH:MM');
     strEndTime = datestr(strEndTime,'HH:MM');
+    arg_default('run_mode',0);          % 1 - Express, 0 - Advanced
+    arg_default('templateName',sprintf('%s_template.eddypro',siteID));
+    arg_default('altMetaData',0);          % 1 - Use dynamic metadata, 0 - Use embedded metadata
 
     
     % remove trailing '\' or '/' from hfRootPath
@@ -145,7 +151,6 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
         ss1 = regexprep(ss1,'to_start_time=..:..',['to_start_time=' strStartTime]);
         ss1 = regexprep(ss1,'to_end_time=..:..',['to_end_time=' strEndTime]);
 
-
         %%  Replace all the paths 
 
         % For regular expression replacements below to work, the control
@@ -175,29 +180,19 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
         ss1 = regexprep(ss1,'sa_bin_spectra=.*?\r',sprintf('sa_bin_spectra=%s\r',modStrBinSpectraPath));
         ss1 = regexprep(ss1,'sa_full_spectra=.*?\r',sprintf('sa_full_spectra=%s\r',modStrBinFullSpectraPath));
 
-%         The Generic channels are causing issues for me - we could read these from batch metadata files instead
-
-        % Replace the fixed channel numbers with generic ones (-1)
-%         ss1 = regexprep(ss1,'col_co2=.*?\r',sprintf('col_co2=-1\r'));
-%         ss1 = regexprep(ss1,'col_h2o=.*?\r',sprintf('col_h2o=-1\r'));
-%         ss1 = regexprep(ss1,'col_ch4=.*?\r',sprintf('col_ch4=-1\r'));
-%         ss1 = regexprep(ss1,'col_n2o=.*?\r',sprintf('col_n2o=-1\r'));
-%         ss1 = regexprep(ss1,'col_int_t_1=.*?\r',sprintf('col_int_t_1=-1\r'));
-%         ss1 = regexprep(ss1,'col_int_t_2=.*?\r',sprintf('col_int_t_2=-1\r'));
-%         ss1 = regexprep(ss1,'col_int_p=.*?\r',sprintf('col_int_p=-1\r'));
-%         ss1 = regexprep(ss1,'col_air_t=.*?\r',sprintf('col_air_t=-1\r'));
-%         ss1 = regexprep(ss1,'col_air_p=.*?\r',sprintf('col_air_p=-1\r'));
-%         ss1 = regexprep(ss1,'col_cell_t=.*?\r',sprintf('col_cell_t=-1\r'));
-%         ss1 = regexprep(ss1,'col_diag_75=.*?\r',sprintf('col_diag_75=-1\r'));
-%         ss1 = regexprep(ss1,'col_diag_72=.*?\r',sprintf('col_diag_72=-1\r'));
-%         ss1 = regexprep(ss1,'col_diag_77=.*?\r',sprintf('col_diag_77=-1\r'));
-%         ss1 = regexprep(ss1,'col_diag_anem=.*?\r',sprintf('col_diag_anem=-1\r'));
-%         ss1 = regexprep(ss1,'col_ts=.*?\r',sprintf('col_ts=-1\r'));
-%         ss1 = regexprep(ss1,'biom_ta=.*?\r',sprintf('biom_ta=-1\r'));
-%         ss1 = regexprep(ss1,'biom_pa=.*?\r',sprintf('biom_pa=-1\r'));
-%         ss1 = regexprep(ss1,'biom_lwin=.*?\r',sprintf('biom_lwin=-1\r'));
-%         ss1 = regexprep(ss1,'biom_ppfd=.*?\r',sprintf('biom_ppfd=-1\r'));
-        
+        %% Support custom/dynamic metadata if needed
+        % For now, will only allow one metadata file per day/batch.  Could
+        % adjust data if needed to allow for sub-daily metadata.
+        if altMetaData == 1
+            modStrEddyProMDinput = [strrep(modStrEddyProHFinput,'/raw/','/metadata/') '/' datestr(currentDateIn,'yyyy-mm-dd') 'T000000_LI-7200.metadata'];
+            if isfile(modStrEddyProMDinput)
+                disp('Using custom metadata');
+                ss1 = regexprep(ss1,'use_pfile=\w*',['use_pfile=' '1']);
+                ss1 = regexprep(ss1,'proj_file=\w*',['proj_file=' modStrEddyProMDinput]);
+            else
+                disp('No Metadata File Found.  Using embedded data.');
+            end
+        end
         
         % Save the new template and close the file handle
         fprintf(fidOut,'%s',ss1);
@@ -244,6 +239,10 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
         %    under .\old 
 
         % Find older recalcs and move them to the old folder
+        % Not implemented yet, but we should probably move contents of
+        % other subfolders too (spectra, ogives, etc. ) to old as well?
+        % Alternatively - could move entire Eddypro outputs folder to
+        % separate "Old/Archive" directory to start fresh?
         fprintf('   Moving older recalcs under %s/old folders.\n',strEddyProOutput);
         wildCard = sprintf('*_%s_full_output*.*',strProjectID);
         filesMoved = findAndMoveOldFiles(strEddyProOutput,fullfile(strEddyProOutput,'old'),wildCard); %#ok<*NASGU>
