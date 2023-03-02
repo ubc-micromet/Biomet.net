@@ -18,9 +18,13 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
 %    strEndTime         -   End time  for calculations. Usually we do entire days, default is "23:59")
 %    templateName       -   Custom templates, must be located in siteID\EP_templates
 %                           Must give full name of template (e.g.BB_template_Ibrom.eddypro)
-%    altMetaData        -   Custom metadata - 0 for embedded (EP default),
-%                           1 for .metadat file in /metadata/yyyy/mm - by day
-%                           2 for dynamic metadat file
+%    altMetaData        -   0 for using metadata embedded in .ghg file (EP default),
+%                           1 for an alternative .metadata file in /metadata/yyyy/mm/
+%                               Could do by month? or by day?
+%                           3 for dynamic metadata file in /metadata/ 
+%                               Dynamic metadata will overwrite anything in a custom metadatafile
+%                               or the default metadata file
+%                           2 for both custom and dynamic metadata files
 % 
 % Examples:
 %  Simplest call:
@@ -49,8 +53,11 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
 %   solution, could read values from batch metadata files instead
 %
 % Mar 1, 2023 (June)
-%   - Added option for custom or dynamic metadata files
-%   - Dynamic metadata files still requires testing
+%   - Added options for Alternative and Dynamic metadata files
+%   - Should probably add a line to the traceback file about custom metadata
+%   - Still need to update procedures to create clean output directory and
+%   archive old runs
+
 
     arg_default('strStartTime','00:00');
     arg_default('strEndTime','23:59');
@@ -78,8 +85,8 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
     pathEddyProExe = fullfile(hfPath,'bin');
     
     % eddypro project template for this site
-    strTemplateFileName = fullfile(hfRootPath,siteID,'EP_templates',sprintf('%s_template.eddypro',siteID));
-%     strTemplateFileName = fullfile(hfRootPath,siteID,'EP_templates',templateName);
+%     strTemplateFileName = fullfile(hfRootPath,siteID,'EP_templates',sprintf('%s_template.eddypro',siteID));
+    strTemplateFileName = fullfile(hfRootPath,siteID,'EP_templates',templateName);
 
     
     % file name of eddypro ini file (../ini/processing.eddypro)
@@ -97,7 +104,6 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
 
         % Location of the high-frequency data
         strEddyProHFinput = fullfile(hfRootPath,siteID,'raw',datestr(currentDateIn,'yyyy'),datestr(currentDateIn,'mm'));
-
 
         % Create an appropriate eddypro ini file starting from the template.
         % Copy the lines that do not have keywords in them. (leave them as they are, 
@@ -180,17 +186,28 @@ function runEddyPro(datesIn,siteID,hfRootPath,pthRootFullOutput,run_mode,strStar
         ss1 = regexprep(ss1,'sa_bin_spectra=.*?\r',sprintf('sa_bin_spectra=%s\r',modStrBinSpectraPath));
         ss1 = regexprep(ss1,'sa_full_spectra=.*?\r',sprintf('sa_full_spectra=%s\r',modStrBinFullSpectraPath));
 
-        %% Support custom/dynamic metadata if needed
-        % For now, will only allow one metadata file per day/batch.  Could
-        % adjust data if needed to allow for sub-daily metadata.
-        if altMetaData == 1
-            modStrEddyProMDinput = [strrep(modStrEddyProHFinput,'/raw/','/metadata/') '/' datestr(currentDateIn,'yyyy-mm-dd') 'T000000_LI-7200.metadata'];
-            if isfile(modStrEddyProMDinput)
-                disp('Using custom metadata');
+        %% Support alternative/dynamic metadata if needed
+        % Alternative metadata may be useful for values that don't change -
+        % e.g.,  site name, Lat/Long, etc. EP docs suggest using alternative metatdata
+        % for constants can speed up processing but it may not not be worth the improved performance
+        % would need to run some benchmarks to be certain
+        % Dynamic metadata lets us have a .csv "ini" file for things that do change, 
+        % e.g, canopy height, sensor channels, etc.
+        % It is unclear whether this gives much of a performance boost
+        if altMetaData >= 1
+            custMetaData = [strrep(modStrEddyProHFinput,'/raw/','/metadata/') '/' datestr(currentDateIn,'yyyy-mm-dd') '.metadata'];
+            dynMetaData = fullfile(hfRootPath,siteID,'metadata','dynamicMetaData.csv');
+            
+            if isfile(custMetaData) && altMetaData <=2
+                disp('Using custom metadata file');
                 ss1 = regexprep(ss1,'use_pfile=\w*',['use_pfile=' '1']);
-                ss1 = regexprep(ss1,'proj_file=\w*',['proj_file=' modStrEddyProMDinput]);
-            else
-                disp('No Metadata File Found.  Using embedded data.');
+                ss1 = regexprep(ss1,'proj_file=\w*',['proj_file=' custMetaData]);
+            end
+
+            if isfile(dynMetaData) && altMetaData >=2
+                disp('Using dynamic metadata file');
+                ss1 = regexprep(ss1,'use_dyn_md_file=\w*',['use_dyn_md_file=' '1']);
+                ss1 = regexprep(ss1,'dyn_metadata_file=\w*',['dyn_metadata_file=' dynMetaData]);
             end
         end
         
