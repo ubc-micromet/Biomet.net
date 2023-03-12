@@ -5,8 +5,10 @@
 # INPUTS
 # filepath = path to raw Ameriflux csv file, including filename (character)
 # co2_var = NEE variable (default "CO2")
+# fc_var = FC variable (default "FC")
 # le_var = latent heat flux variable (default "LE")
 # h_var = sensible heat flux variable (default "H")
+# ch4_var = methane flux variable (default "FCH4", if no CH4 then "none")
 # rg_var = incoming shortwave variable (default "SW_IN")
 # tair_var = air temp variable (default "TA")
 # tsoil_var = soil temp variable (default "TS")
@@ -18,7 +20,7 @@
 # Delete rows above column header in Ameriflux file before running
 # Change TIMESTAMP_START to TIMESTAMP, depending on the file
 
-Load_Ameriflux <- function(filepath, co2_var, le_var, h_var, rg_var, tair_var, tsoil_var, rh_var, vpd_var, ustar_var) {
+Load_Ameriflux <- function(filepath, co2_var, fc_var, le_var, h_var, ch4_var, rg_var, tair_var, tsoil_var, rh_var, vpd_var, ustar_var) {
   
   # Load libraries
   library("REddyProc")
@@ -51,6 +53,7 @@ Load_Ameriflux <- function(filepath, co2_var, le_var, h_var, rg_var, tair_var, t
   
   # Check variable names and supply default if not specified
   co2_var <- varnames("CO2", co2_var)
+  fc_var <- varnames("FC", fc_var)
   le_var <- varnames("LE", le_var)
   h_var <- varnames("H", h_var)
   rg_var <- varnames("SW_IN", rg_var)
@@ -60,45 +63,56 @@ Load_Ameriflux <- function(filepath, co2_var, le_var, h_var, rg_var, tair_var, t
   vpd_var <- varnames("VPD", vpd_var)
   ustar_var <- varnames("USTAR", ustar_var)
   
+  # Rename variables
+  data <- data %>%
+    rename(NEE = co2_var,
+           FC = fc_var,
+           LE = le_var,
+           H = h_var,
+           Rg = rg_var,
+           Tair = tair_var,
+           Tsoil = tsoil_var,
+           rH = rh_var,
+           Ustar = ustar_var)
+  
   # Check if VPD is in the raw Ameriflux file
   if (vpd_var %in% colnames(data)) {
-    # Rename and select variables for post-processing
-    data <- data %>%
-      rename(NEE = co2_var,
-            LE = le_var,
-            H = h_var,
-            Rg = rg_var,
-            Tair = tair_var,
-            Tsoil = tsoil_var,
-            rH = rh_var,
-            VPD = vpd_var,
-            Ustar = ustar_var) %>%
-      select(Year, DoY, Hour, NEE, LE, H, Rg, Tair, Tsoil, rH, VPD, Ustar)
-  } else {
-    # Rename variables
-    data <- data %>%
-      rename(NEE = co2_var,
-             LE = le_var,
-             H = h_var,
-             Rg = rg_var,
-             Tair = tair_var,
-             Tsoil = tsoil_var,
-             rH = rh_var,
-             Ustar = ustar_var)
     
+    # Rename variables for post-processing
+    data <- data %>%
+      rename(VPD = vpd_var)
+    
+  } else {
     # Calculate VPD
     data$VPD <- fCalcVPDfromRHandTair(data$rH, data$Tair)
     
     # Remove calculated VPD if either RH or Tair are missing
     data$VPD[which(data$rH == -9999 | data$Tair == -9999)] <- NA
     
-    #Select variables for post-processing
-    data <- data %>%
-      select(Year, DoY, Hour, NEE, LE, H, Rg, Tair, Tsoil, rH, VPD, Ustar)
   }
   
-  # Transform missing values into NA:
-  data <- as.data.frame(sapply(data, function(x) replace(x, x==-9999, NA)))
+  if (ch4_var=="none") { 
+    
+    #Select variables for post-processing, not including CH4
+    data <- data %>%
+      select(Year, DoY, Hour, NEE, FC, LE, H, Rg, Tair, Tsoil, rH, VPD, Ustar)
+    
+  } else {
+    
+    # Check CH4 variable name and supply default if not specified
+    ch4_var <- varnames("FCH4", ch4_var)
+    
+    #Select variables for post-processing, including CH4
+    data <- data %>%
+      rename(FCH4 = ch4_var) %>%
+      select(Year, DoY, Hour, NEE, FC, LE, H, FCH4, Rg, Tair, Tsoil, rH, VPD, Ustar)
+    
+  }
+  
+  # Transform missing values into NA
+  data <- as.data.frame(sapply(data, function(x) replace(x, x==-9999, NA))) %>%
+    #mutate all variables to numeric
+    mutate_all(as.numeric)
   
   return(data)
   
