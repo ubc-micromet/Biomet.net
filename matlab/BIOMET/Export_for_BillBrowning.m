@@ -1,7 +1,7 @@
 function Export_for_BillBrowning
 
 % one time export for student Billy Browning Geog.
-yearsIn = 2022;
+yearsIn = 2022:2023;
 try
     fprintf('Started: %s\n',mfilename);
 
