@@ -45,9 +45,9 @@ read_data_generalized <-
               level[1],
               sep = "")
       
-      setwd(inpath)
+      #setwd()
       #Convert Matlab timevector to POSIXct
-      tv <- readBin(tv_input, double(), n = 18000)
+      tv <- readBin(paste0(inpath,"/",tv_input,sep=""), double(), n = 18000)
       datetime <-
         as.POSIXct((tv - 719529) * 86400, origin = "1970-01-01", tz = "UTC")
       # Round to nearest 30 min
@@ -67,7 +67,6 @@ read_data_generalized <-
                 "/",
                 level[j],
                 sep = "")
-        setwd(inpath)
         
         #Extract data of interest
         ##Use a loop function to read selected binary files and bind to the empty dataframe
@@ -80,7 +79,7 @@ read_data_generalized <-
             if (grepl("clean_tv", vars[k])) next 
             
             data <-
-              data.frame(readBin(vars[k], numeric(), n = 18000, size = 4))
+              data.frame(readBin(paste0(inpath,"/",vars[k],sep=""), numeric(), n = 18000, size = 4))
             colnames(data) <- vars[k]
             frame <- cbind(frame, data)
           }
