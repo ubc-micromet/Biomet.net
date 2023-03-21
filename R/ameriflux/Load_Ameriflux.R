@@ -15,12 +15,13 @@
 # rh_var = relative humidity variable (default "RH")
 # vpd_var = vapor pressure deficit variable (default "VPD")
 # ustar_var = Ustar variable (default "USTAR")
+# pa_var = air pressure variable (default "PA", only needed for CH4 gap-filling)
 
 # NOTES
 # Delete rows above column header in Ameriflux file before running
 # Change TIMESTAMP_START to TIMESTAMP, depending on the file
 
-Load_Ameriflux <- function(filepath, co2_var, fc_var, le_var, h_var, ch4_var, rg_var, tair_var, tsoil_var, rh_var, vpd_var, ustar_var) {
+Load_Ameriflux <- function(filepath, co2_var, fc_var, le_var, h_var, ch4_var, rg_var, tair_var, tsoil_var, rh_var, vpd_var, ustar_var, pa_var) {
   
   # Load libraries
   library("REddyProc")
@@ -99,13 +100,15 @@ Load_Ameriflux <- function(filepath, co2_var, fc_var, le_var, h_var, ch4_var, rg
     
   } else {
     
-    # Check CH4 variable name and supply default if not specified
+    # Check CH4 and PA variable names and supply default if not specified
     ch4_var <- varnames("FCH4", ch4_var)
+    pa_var <- varnames("PA", pa_var)
     
-    #Select variables for post-processing, including CH4
+    #Select variables for post-processing, including CH4 and PA
     data <- data %>%
-      rename(FCH4 = ch4_var) %>%
-      select(Year, DoY, Hour, NEE, FC, LE, H, FCH4, Rg, Tair, Tsoil, rH, VPD, Ustar)
+      rename(FCH4 = ch4_var,
+             PA = pa_var) %>%
+      select(Year, DoY, Hour, NEE, FC, LE, H, FCH4, Rg, Tair, Tsoil, rH, VPD, Ustar, PA)
     
   }
   
