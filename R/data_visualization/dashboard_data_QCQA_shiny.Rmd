@@ -38,7 +38,7 @@ library(knitr)
 
 <!-- specify init file to read -->
 ```{r echo=FALSE, include=FALSE}
-read_chunk(arg)
+read_chunk(args[1])
 ```
 
 ```{r, echo=FALSE, include=FALSE}
