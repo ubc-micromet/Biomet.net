@@ -79,10 +79,12 @@ The biomet_database_default.m and localDataCleaning_ini.mat files will be stored
 
 1) Create an ini file for your site (under 'R/data_visualization/ini_files')
 
-2) In your console, enter the following (note that you can also create an R script with the code below and run the R script):
+2) In your console, edit and enter the following (note that you can also create an R script with the code below and run the R script):
 
 file <- "ini_files/YOUNG_data_QCQA.R" # Specify the ini file of interest
-args <-c("/Users/sara/Code/Biomet.net/R/", # Local path to Biomet.net
-         "/Users/sara/Library/CloudStorage/OneDrive-UBC/UBC/Database") # Local path to your database
+
+args <-c("/Users/sara/Code/Biomet.net/R/", # Your local path to Biomet.net \
+         "/Users/sara/Library/CloudStorage/OneDrive-UBC/UBC/Database") # Your local path to your database
+
 rmarkdown::run("/Users/sara/Code/Biomet.net/R/data_visualization/dashboard_data_QCQA_shiny.Rmd") # Run 'dashboard_data_QCQA_shiny.Rmd' and include your local path to the file.
 
