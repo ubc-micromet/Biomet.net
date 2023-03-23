@@ -74,3 +74,15 @@ The biomet_database_default.m and localDataCleaning_ini.mat files will be stored
 * Edit and save ini files
 
 * Now when running fr_automated_cleaning(), run `fr_automated_cleaning(years,site,[],'path to your edited ini file') (e.g., `fr_automated_cleaning(2021:2022,'DSM',1:2,[],'./user_name/Matlab/local_data_cleaning/site_name')`).
+
+# 4) Plotting your data using R
+
+1) Create an ini file for your site (under 'R/data_visualization/ini_files')
+
+2) In your console, enter the following (note that you can also create an R script with the code below and run the R script):
+
+file <- "ini_files/YOUNG_data_QCQA.R" # Specify the ini file of interest
+args <-c("/Users/sara/Code/Biomet.net/R/", # Local path to Biomet.net
+         "/Users/sara/Library/CloudStorage/OneDrive-UBC/UBC/Database") # Local path to your database
+rmarkdown::run("/Users/sara/Code/Biomet.net/R/data_visualization/dashboard_data_QCQA_shiny.Rmd") # Run 'dashboard_data_QCQA_shiny.Rmd' and include your local path to the file.
+
