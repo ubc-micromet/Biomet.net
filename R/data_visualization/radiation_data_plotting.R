@@ -12,7 +12,7 @@
 
 radiation_data_plotting <- function(data,var_radiometer,var_NETRAD,var_PPFD, var_potential_radiation){
   
-  yaxlabel <- c("Radiation (W/m2)","Net radiation (W/m2)","SW_IN & PPFD_IN","SW_OUT & PPFD_OUT")
+  yaxlabel <- c("Radiation (W/m2)","Net radiation (W/m2)","Incoming","Outgoing")
   
   # Radiation components
   p_components <- plotly_loop(data,c(var_potential_radiation,var_radiometer),yaxlabel[1])

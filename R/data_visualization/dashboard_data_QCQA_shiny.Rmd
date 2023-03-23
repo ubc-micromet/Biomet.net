@@ -4,9 +4,6 @@ output:
   flexdashboard::flex_dashboard:
     orientation: columns
 runtime: shiny
-resource_files:
-- diurnal_composite_moving_window_rad.R
-- read_database.R
 ---
 
 ```{r global, include=FALSE}
@@ -78,13 +75,13 @@ Column {data-width=400}
 
 ### Temperature scatterplot
 ```{r}
-scatter_plot_QCQA(data,vars_temp[1],vars_temp[2],"HMP Air temperature (°C)","Sonic Temperature (°C)",0)
+scatter_plot_QCQA(data,vars_temp[1],vars_temp[2],vars_temp[1],vars_temp[2],0)
 ```
 
 ### RH HMP vs. RH 7200
 
 ```{r}
-scatter_plot_QCQA(data,vars_RH[1],vars_RH[2], "HMP RH (%)","LI-7500 RH (%)",0)
+scatter_plot_QCQA(data,vars_RH[1],vars_RH[2], vars_RH[1],vars_RH[2],0)
 ```
 
 Rad Time Series 
@@ -103,7 +100,7 @@ Column {data-width=400}
 
 ### SW_IN vs PPDF_IN
 ```{r}
-scatter_plot_QCQA(data,vars_radiometer[1],vars_PPFD[1], "SW_IN (W/m2)","PPFD_IN (µmolPhoton/m2/s1)",0)
+scatter_plot_QCQA(data,vars_radiometer[1],vars_PPFD[1], vars_radiometer[1],vars_PPFD[1],0)
 ```
 
 ### SW_IN vs PPDF_IN R2 and Slope
@@ -164,7 +161,7 @@ Column {data-width=400}
 
 ### Pressure comparison (Met PA vs EC PA)
 ```{r}
-scatter_plot_QCQA(data,vars_pressure[1],vars_pressure[2], "Biomet PA (kPa)","EC PA (kPa)",0)
+scatter_plot_QCQA(data,vars_pressure[1],vars_pressure[2], vars_pressure[1],vars_pressure[2],0)
 ```
 
 Met time series

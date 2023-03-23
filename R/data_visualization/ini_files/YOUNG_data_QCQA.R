@@ -11,7 +11,7 @@
 p <- sapply(list.files(pattern="*.R$", full.names=TRUE), source)
 
 # Load functions from 'database_functions' folder - UPDATE AS TO NOT DUPLICATE
-source(paste0(args[1],"data_visualization/read_database.R",sep = ""))
+source(paste0(args[1],"database_functions/read_database.R",sep = ""))
 
 # Load data
 opts_knit$set(root.dir = paste0(args[1],"data_visualization",sep = "")) # Specify directory
