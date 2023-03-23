@@ -1,6 +1,6 @@
 ---
-title: "Data QCQA" 
-output: 
+title: "Data QCQA"
+output:
   flexdashboard::flex_dashboard:
     orientation: columns
 runtime: shiny
@@ -26,23 +26,9 @@ library(ggpmisc)
 library(knitr)
 ```
 
-```{r echo=FALSE}
-# Comments/Notes
-# 1) See if want to update sonic, temperature, and rad plots using multiple_plotlys
-
-# 2) NEED TO ADD 7200, 7700 temp and 7200 RH & CHECK WHICH TEMP IS USED TO SONIC (cross wind corrected or no) ADD HERE after MEETING ON THURSDAY!
-# 3) Try to track down WD_CUP at all sites
-# 4) Remove duplicate variables (e.g., see google sheets for tracking)
-# 6) Add EBC
-```
-
-<!-- specify init file to read -->
+<!-- Load ini file -->
 ```{r echo=FALSE, include=FALSE}
-read_chunk(arg)
-```
-
-```{r, echo=FALSE, include=FALSE}
-<<LoadData>>
+source(file)
 ```
 
 Sonic data 
@@ -81,7 +67,7 @@ Column {data-width=600}
 
 ### Air and RH temperature comparison 
 ```{r}
-temp_RH_plots(data,vars_temp,vars_RH)
+temp_RH_data_plotting(data,vars_temp,vars_RH)
 ```
 
 Column {data-width=400}
@@ -89,13 +75,13 @@ Column {data-width=400}
 
 ### Temperature scatterplot
 ```{r}
-scatter_plot_QCQA(data,vars_temp[1],vars_temp[2],"HMP Air temperature (°C)","Other Air Temperature (°C)",0)
+scatter_plot_QCQA(data,vars_temp[1],vars_temp[2],vars_temp[1],vars_temp[2],0)
 ```
 
 ### RH HMP vs. RH 7200
 
 ```{r}
-scatter_plot_QCQA(data,vars_RH[1],vars_RH[2], "HMP RH (%)","LI-7200 RH (%)",0)
+scatter_plot_QCQA(data,vars_RH[1],vars_RH[2], vars_RH[1],vars_RH[2],0)
 ```
 
 Rad Time Series 
@@ -106,7 +92,7 @@ Column {data-width=600}
 
 ### Radiation timeseries  
 ```{r}
-radiation_plots(data,vars_radiometer,vars_NETRAD,vars_PPFD,var_potential_rad)
+radiation_data_plotting(data,vars_radiometer,vars_NETRAD,vars_PPFD,var_potential_rad)
 ```
 
 Column {data-width=400}
@@ -114,7 +100,7 @@ Column {data-width=400}
 
 ### SW_IN vs PPDF_IN
 ```{r}
-scatter_plot_QCQA(data,vars_radiometer[1],vars_PPFD[1], "SW_IN (W/m2)","PPFD_IN (µmolPhoton/m2/s1)",0)
+scatter_plot_QCQA(data,vars_radiometer[1],vars_PPFD[1], vars_radiometer[1],vars_PPFD[1],0)
 ```
 
 ### SW_IN vs PPDF_IN R2 and Slope
@@ -167,7 +153,7 @@ Column {data-width=600}
 ### Pressure 
 ```{r}
 # Barometric pressure 
-#plotly_loop(data,vars_pressure,"Barometric pressure (kPa)")
+plotly_loop(data,vars_pressure,"Barometric pressure (kPa)")
 ```
 
 Column {data-width=400}
@@ -175,7 +161,7 @@ Column {data-width=400}
 
 ### Pressure comparison (Met PA vs EC PA)
 ```{r}
-
+scatter_plot_QCQA(data,vars_pressure[1],vars_pressure[2], vars_pressure[1],vars_pressure[2],0)
 ```
 
 Met time series

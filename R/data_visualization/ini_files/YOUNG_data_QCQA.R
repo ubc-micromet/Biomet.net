@@ -11,7 +11,7 @@
 p <- sapply(list.files(pattern="*.R$", full.names=TRUE), source)
 
 # Load functions from 'database_functions' folder - UPDATE AS TO NOT DUPLICATE
-source(paste0(args[1],"data_visualization/read_database.R",sep = ""))
+source(paste0(args[1],"database_functions/read_database.R",sep = ""))
 
 # Load data
 opts_knit$set(root.dir = paste0(args[1],"data_visualization",sep = "")) # Specify directory
@@ -19,7 +19,7 @@ opts_knit$set(root.dir = paste0(args[1],"data_visualization",sep = "")) # Specif
 basepath <- args[2]
 #basepath <- paste0(args[1],"data_visualization/Database",sep = "")
 yrs <- c(2021:2022) # Make sure to include the most recent year
-site <- "HOGG"
+site <- "YOUNG"
 
 # Specify variables of interest in Clean/SecondStage and Flux/clean
 level <- c("Clean/SecondStage","Flux/clean")
