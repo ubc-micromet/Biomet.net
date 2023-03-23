@@ -14,15 +14,18 @@ opts_knit$set(root.dir = paste0(args[1],"data_visualization",sep = "")) # Specif
 
 basepath <- args[2]
 #basepath <- paste0(args[1],"data_visualization/Database",sep = "")
-yrs <- c(2021:2022) # Make sure to include the most recent year
-site <- "HOGG"
+yrs <- c(2022:2022) # Make sure to include the most recent year
+site <- "RBM"
 
-# Specify variables of interest in Clean/SecondStage and Flux/clean
-level <- c("Clean/SecondStage","Flux/clean")
+level <- c("Clean/SecondStage","Met/clean")
 vars <- c("WD_1_1_1","wind_dir","WS_1_1_1","wind_speed","USTAR","W_SIGMA",
-          "ts","TA_1_1_1","RH_1_1_1","e","es",
-          "SW_IN_1_1_1","SW_OUT_1_1_1","LW_IN_1_1_1","LW_OUT_1_1_1","NETRAD_1_1_1","PPFD_IN_1_1_1","PA_1_1_1",
-          "P_RAIN_1_1_1","TS_1_1_1","TS_2_1_1","TS_3_1_1","NEE","FC","H","LE","FCH4")
+          "ts","TA_1_1_1","air_temperature","air_t_mean","RH_1_1_1","RH","e","es",
+          "SW_IN_1_1_1","SW_OUT_1_1_1","LW_IN_1_1_1","LW_OUT_1_1_1","NETRAD_1_1_1","PPFD_IN_1_1_1","PPFD_OUT_1_1_1",
+          "air_pressure","PA_1_1_1",
+          "P_1_1_1","G_1_1_1","G_2_1_1","G_3_1_1",
+          "TW_1_1_1","TS_1_1_1","TS_1_2_1","TS_1_3_1","TS_1_4_1",
+          "TS_2_1_1","TS_2_2_1","TS_2_3_1","TS_2_4_1","WTD_1_1_1", 
+          "NEE","FC","H","LE","FCH4")
 tv_input <- "clean_tv"
 
 export <- 0 # 1 to save a csv file of the data, 0 otherwise
@@ -31,17 +34,17 @@ export <- 0 # 1 to save a csv file of the data, 0 otherwise
 # Path to function to load data
 data1 <- read_database(basepath,yrs,site,level,vars,tv_input,export)
 
-# Load traces just for plotting that aren't in Clean
+# Load traces just for plotting that aren't in clean
 level <- c("Flux")
 vars_other <- c("air_temperature","air_t_mean","RH","air_pressure","air_p_mean","pitch",
-                "mean_value_RSSI_LI_7200","rssi_77_mean","file_records","used_records","sonic_temperature")  
+                "avg_signal_strength_7200_mean","rssi_77_mean","flowrate_mean","file_records","used_records")  
 tv_input <- "Clean_tv"
 data2 <- read_database(basepath,yrs,site,level,vars_other,tv_input,export)
 
-# Merge dataframes loaded above
+# Merge dataframes
 data <- merge(data1,data2, by=c("datetime"))
 
-if (sum(which(vars %in% colnames(data) == FALSE)) > 0) {
+if (sum(which(vars %in% colnames(df) == FALSE)) > 0) {
   cat("variables: ", vars[which(vars %in% colnames(data) == FALSE)],"are not included in the dataframe", sep="\n")
 }
 
@@ -69,10 +72,10 @@ if (!identical(inde, integer(0))) {
 data$year <- year(data$datetime)
 data$DOY <- yday(data$datetime)
 
-# Load third stage fluxes (this needs to be loaded separately so that we can distinguish between the Second and Third stage data)
+# Load third stage fluxes
 level <- c("Clean/ThirdStage")
 vars_other <- c("NEE","FC","H","LE","FCH4","NEE_PI_F_MDS",
-                "FC_PI_F_MDS","H_PI_F_MDS","LE_PI_F_MDS","FCH4_PI_F_MDS","NETRAD_1_1_1")
+                "FC_PI_F_MDS","H_PI_F_MDS","LE_PI_F_MDS","FCH4_PI_F_MDS","FCH4_PI_F_RF","G_1","NETRAD_1_1_1")
 tv_input <- "clean_tv"
 data_thirdstage <- read_database(basepath,yrs,site,level,vars_other,tv_input,export)
 
@@ -92,11 +95,9 @@ if (!identical(inde, integer(0))) {
 data_thirdstage$year <- year(data_thirdstage$datetime)
 data_thirdstage$DOY <- yday(data_thirdstage$datetime)
 
-# Now specify variables for standard plots
-
 # Specify variables for sonic_plots.R
-vars_WS <- c("WS_1_1_1") # Include sonic wind speed first
-vars_WD <- c("WD_1_1_1")
+vars_WS <- c("wind_speed","WS_1_1_1") # Include sonic wind speed first
+vars_WD <- c("wind_dir","WD_1_1_1")
 vars_other_sonic <- c("USTAR","pitch") # include u* first
 units_other_sonic <- c("m/s","degrees")
 pitch_ind <- 2
@@ -107,30 +108,32 @@ wind_std <- "W_SIGMA"
 
 # Temperature variables
 # Make sure that all temperature variables are in the same units (e.g., Celsius)
-data$sonic_temperature_C <- data$sonic_temperature-273.15
+#data$sonic_temperature_C <- data$sonic_temperature-273.15
 data$air_t_mean_C <- data$air_t_mean-273.15
 # Filter air_t_mean_C
 data$air_t_mean_C[(data$air_t_mean_C>60 | data$air_t_mean_C< -60) & !is.na(data$air_t_mean_C)] <- NA
 data$air_temperature_C <- data$air_temperature-273.15
 
 # Now specify variables
-vars_temp <- c("TA_1_1_1","sonic_temperature_C","air_t_mean_C","air_temperature_C") # Order should be HMP, sonic temperature, 7700 temperature, 7550 temperature
+vars_temp <- c("TA_1_1_1","air_t_mean_C") # Order should be HMP, sonic temperature, 7700 temperature (NOTE - make sure to include sonic temperature!!) - c("AIR_TEMP_2M","sonic_temperature_C","air_t_mean_C")
 
 # RH variables
+
+# Now specify variables
 vars_RH <- c("RH_1_1_1","RH") # Order should be HMP then 7200 (CONFIRM SENSORS!)
 
 # Radiation variables
 vars_radiometer <- c("SW_IN_1_1_1","SW_OUT_1_1_1","LW_IN_1_1_1","LW_OUT_1_1_1") # note that SW_IN and SW_OUT should always be listed as variables 1 and 2, respectively
 vars_NETRAD <- "NETRAD_1_1_1"
-vars_PPFD <- c("PPFD_IN_1_1_1") #Note incoming PAR should always be listed first if outgoing PAR is also measured
+vars_PPFD <- c("PPFD_IN_1_1_1","PPFD_OUT_1_1_1") #Note incoming PAR should always be listed first.
 
 # Calculate potential radiation
 # define the standard meridian for DSM
-Standard_meridian <- -90
+Standard_meridian <- -120
 
 # Define long/lat
-long <- -100.534947
-Lat <- 50.370433
+long <- -122.8942
+Lat <- 49.0886
 
 # Calculate potential radiation
 data$potential_radiation <- potential_rad_generalized(Standard_meridian,long,Lat,data$datetime,data$DOY)
@@ -146,10 +149,12 @@ data$PA_1_1_1_kPa <- data$air_p_mean/1000
 vars_pressure <- c("PA_1_1_1_kPa","air_pressure_kPa","air_p_mean_kPa") # Biomet PA should always go first, followed by EC PA  
 
 flux_vars <- c("NEE","FC","H","LE","FCH4") # List flux variables to plot (to compare Second and Third stages)
-flux_vars_gf <- c("NEE_PI_F_MDS","FC_PI_F_MDS","H_PI_F_MDS","LE_PI_F_MDS","FCH4_PI_F_MDS") # List flux variables to plot (to compare Second and Third stages)
+flux_vars_gf <- c("NEE_PI_F_MDS","FC_PI_F_MDS","H_PI_F_MDS","LE_PI_F_MDS","FCH4_PI_F_MDS","FCH4_PI_F_RF") # List flux variables to plot (to compare Second and Third stages)
 
-vars_flux_diag_signal_strength <- c("mean_value_RSSI_LI_7200","rssi_77_mean")
+# Convert flowrate_mean to L/min
+data$flowrate_mean <- data$flowrate_mean*60000
+vars_flux_diag_signal_strength <- c("avg_signal_strength_7200_mean","rssi_77_mean")
 vars_flux_diag_records <- c("file_records","used_records") 
-vars_flux_diag_flowrate <- ""
+vars_flux_diag_flowrate <- "flowrate_mean"
 
-vars_EBC_AE <- "NETRAD_1_1_1" # Include all terms for available energy. it should always include net radiation. Other terms to include if available are G, and other key storage terms.
+vars_EBC_AE <- c("NETRAD_1_1_1","G_1") # Include all terms for available energy. it should always include net radiation. Other terms to include if available are G, and other key storage terms.

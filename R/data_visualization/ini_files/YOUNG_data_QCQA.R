@@ -2,10 +2,6 @@
 
 ## @knitr LoadData
 
-# Load path info
-#args <-c("/Users/sara/Code/Biomet.net/R/",
-#         "/Users/sara/Library/CloudStorage/OneDrive-UBC/UBC/Database")
-
 # load all necessary functions
 #fx_path <- paste0(args[1],'data_visualization',sep ="")
 p <- sapply(list.files(pattern="*.R$", full.names=TRUE), source)
@@ -152,6 +148,8 @@ vars_pressure <- c("PA_1_1_1_kPa","air_pressure_kPa","air_p_mean_kPa") # Biomet 
 flux_vars <- c("NEE","FC","H","LE","FCH4") # List flux variables to plot (to compare Second and Third stages)
 flux_vars_gf <- c("NEE_PI_F_MDS","FC_PI_F_MDS","H_PI_F_MDS","LE_PI_F_MDS","FCH4_PI_F_MDS") # List flux variables to plot (to compare Second and Third stages)
 
-vars_flux_diag <- c("mean_value_RSSI_LI_7200","rssi_77_mean","file_records","used_records") # This list should be consistent across all sites and the order should be the same
+vars_flux_diag_signal_strength <- c("mean_value_RSSI_LI_7200","rssi_77_mean")
+vars_flux_diag_records <- c("file_records","used_records") 
+vars_flux_diag_flowrate <- ""
 
 vars_EBC_AE <- "NETRAD_1_1_1" # Include all terms for available energy. it should always include net radiation. Other terms to include if available are G, and other key storage terms.
