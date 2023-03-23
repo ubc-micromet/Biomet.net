@@ -448,7 +448,7 @@ Column {data-width=600}
 
 ### Flux diagnostics
 ```{r}
-flux_diagnostic_plots(data,vars_flux_diag)
+flux_diagnostic_plots(data,vars_flux_diag_signal_strength,vars_flux_diag_records,vars_flux_diag_flowrate)
 ```
 
 Column {data-width=400}

@@ -2,15 +2,24 @@
 
 ## @knitr LoadData
 
-# Load data
-opts_knit$set(root.dir = "/Users/sara/Code/Biomet.net/R/data_visualization") # Specify directory
+# load all necessary functions
+#fx_path <- paste0(args[1],'data_visualization',sep ="")
+p <- sapply(list.files(pattern="*.R$", full.names=TRUE), source)
 
-basepath <- "/Users/sara/Library/CloudStorage/OneDrive-UBC/UBC/database"
-yrs <- c(2022:2022) # Make sure to include the most recent year
+# Load functions from 'database_functions' folder - UPDATE AS TO NOT DUPLICATE
+source(paste0(args[1],"database_functions/read_database.R",sep = ""))
+
+# Load data
+opts_knit$set(root.dir = paste0(args[1],"data_visualization",sep = "")) # Specify directory
+
+basepath <- args[2]
+#basepath <- paste0(args[1],"data_visualization/Database",sep = "")
+yrs <- c(2021:2022) # Make sure to include the most recent year
 site <- "DSM"
+
 level <- c("Clean/SecondStage","Met/clean")
 vars <- c("WD_1_1_1","wind_dir","WS_1_1_1","wind_speed","USTAR","W_SIGMA",
-          "ts","TA_1_1_1","air_temperature","air_t_mean","RH_1_1_1","RH","e","es","es",
+          "ts","TA_1_1_1","air_temperature","air_t_mean","RH_1_1_1","RH","e","es",
           "SW_IN_1_1_1","SW_OUT_1_1_1","LW_IN_1_1_1","LW_OUT_1_1_1","NETRAD_1_1_1","PPFD_IN_1_1_1","PPFD_OUT_1_1_1",
           "air_pressure","PA_1_1_1",
           "P_1_1_1","G_1_1_1","G_2_1_1","G_3_1_1",
@@ -20,13 +29,6 @@ vars <- c("WD_1_1_1","wind_dir","WS_1_1_1","wind_speed","USTAR","W_SIGMA",
 tv_input <- "clean_tv"
 
 export <- 0 # 1 to save a csv file of the data, 0 otherwise
-
-# load all necessary functions
-fx_path <- "/Users/sara/Code/Biomet.net/R/data_visualization"
-p <- sapply(list.files(pattern="*.R$", path=fx_path, full.names=TRUE), source)
-
-# Load functions from 'database_functions' folder
-source("/Users/sara/Code/Biomet.net/R/database_functions/read_database.R")
 
 # Create dataframe for years & variables of interest
 # Path to function to load data
@@ -142,31 +144,17 @@ var_potential_rad <- "potential_radiation"
 # Make sure that all pressure variables are in the same units (e.g., kPa)
 data$air_pressure_kPa <- data$air_pressure/1000
 data$air_p_mean_kPa <- data$air_p_mean/1000
+data$PA_1_1_1_kPa <- data$air_p_mean/1000
 
-#vars_pressure <- c("air_pressure_kPa","air_p_mean_kPa","PA_1_5M","PA_EC_AIR2_5M") # note that 
-
-# Other variables to plot (can also include vegetation indices and water quality data)
-# Note that if needed, you can change the line 'Row {data-width=600}' below the line 
-# 'Other met {data-orientation=rows}' to better view all the data (i.e., increase the data-width)
-
-# Precip variables
-vars_precip <- "P_1_1_1"
-
-# Soil heat flux
-vars_G <- c("G_1_1_1","G_2_1_1","G_3_1_1")
-
-vars_WTD <- "WTD_1_1_1"
-
-# Water and soil temperature variables - note go with decreasing height/depth from highest measurement
-vars_TS <- c("TW_1_1_1","TS_1_1_1","TS_1_2_1","TS_1_3_1","TS_1_4_1",
-             "TS_2_1_1","TS_2_2_1","TS_2_3_1","TS_2_4_1") 
-
-var_other <- list(as.list(vars_G),as.list(vars_precip),as.list(vars_WTD),as.list(vars_TS))
-yaxlabel_other <- c("G (W/m2)","Precipiataion (mm)", "Water table depth (m)","Temperature (°C)")
+vars_pressure <- c("PA_1_1_1_kPa","air_pressure_kPa","air_p_mean_kPa") # Biomet PA should always go first, followed by EC PA  
 
 flux_vars <- c("NEE","FC","H","LE","FCH4") # List flux variables to plot (to compare Second and Third stages)
 flux_vars_gf <- c("NEE_PI_F_MDS","FC_PI_F_MDS","H_PI_F_MDS","LE_PI_F_MDS","FCH4_PI_F_MDS","FCH4_PI_F_RF") # List flux variables to plot (to compare Second and Third stages)
 
-vars_flux_diag <- c("avg_signal_strength_7200_mean","rssi_77_mean","flowrate_mean","file_records","used_records") # This list should be consistent across all sites and the order should be the same
+# Convert flowrate_mean to L/min
+data$flowrate_mean <- data$flowrate_mean*60000
+vars_flux_diag_signal_strength <- c("avg_signal_strength_7200_mean","rssi_77_mean")
+vars_flux_diag_records <- c("file_records","used_records") 
+vars_flux_diag_flowrate <- "flowrate_mean"
 
 vars_EBC_AE <- c("NETRAD_1_1_1","G_1") # Include all terms for available energy. it should always include net radiation. Other terms to include if available are G, and other key storage terms.
