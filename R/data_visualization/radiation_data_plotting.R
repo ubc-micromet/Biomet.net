@@ -10,7 +10,7 @@
 # var_PPFD = incoming and reflected PAR (e.g., c("PPFD_IN","PPFD_OUT")). Note incoming PAR should always be listed first.
 # var_potential_radiation = potential radiation calculated using the function potential_rad
 
-radiation_plots <- function(data,var_radiometer,var_NETRAD,var_PPFD, var_potential_radiation){
+radiation_data_plotting <- function(data,var_radiometer,var_NETRAD,var_PPFD, var_potential_radiation){
   
   yaxlabel <- c("Radiation (W/m2)","Net radiation (W/m2)","SW_IN & PPFD_IN","SW_OUT & PPFD_OUT")
   
