@@ -164,7 +164,7 @@ Column {data-width=400}
 scatter_plot_QCQA(data,vars_pressure[1],vars_pressure[2], vars_pressure[1],vars_pressure[2],0)
 ```
 
-Met time series
+Time series
 =======================================================================
 
 Column {.sidebar}
@@ -177,7 +177,7 @@ selectInput('y', 'Variable', names(data[, !names(data) %in% c("datetime")]))
 Column
 -----------------------------------------------------------------------
 
-### Time series of single met variable
+### Time series of single variable
 
 ```{r}
 dataset <- reactive({
@@ -191,7 +191,7 @@ renderPlotly({
 })
 ```
 
-Met diurnal pattern
+Diurnal pattern
 =======================================================================
 
 Column {.sidebar}
@@ -204,7 +204,7 @@ selectInput('z', 'Variable', names(data[, !names(data) %in% c("datetime")]))
 Column
 -----------------------------------------------------------------------
 
-### Diurnal pattern of single met variable
+### Diurnal pattern of single variable
 
 ```{r}
 
