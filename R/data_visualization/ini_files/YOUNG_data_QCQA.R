@@ -75,10 +75,10 @@ data$DOY <- yday(data$datetime)
 
 # Load third stage fluxes (this needs to be loaded separately so that we can distinguish between the Second and Third stage data)
 level <- c("Clean/ThirdStage")
-vars_other <- c("NEE","FC","H","LE","FCH4","NEE_PI_F_MDS",
-                "FC_PI_F_MDS","H_PI_F_MDS","LE_PI_F_MDS","FCH4_PI_F_MDS","NETRAD_1_1_1")
+vars_ThirdStage <- c("NEE","FC","H","LE","FCH4","NEE_PI_F_MDS",
+                "FC_PI_F_MDS","H_PI_F_MDS","LE_PI_F_MDS","FCH4_PI_F_MDS","FCH4_PI_F_RF","NETRAD_1_1_1")
 tv_input <- "clean_tv"
-data_thirdstage <- read_database(basepath,yrs,site,level,vars_other,tv_input,export)
+data_thirdstage <- read_database(basepath,yrs,site,level,vars_ThirdStage,tv_input,export)
 
 # Remove missing data (should be -9999)
 data_thirdstage <- replace(data_thirdstage, data_thirdstage == -9999, NA)
@@ -150,7 +150,7 @@ data$PA_1_1_1_kPa <- data$air_p_mean/1000
 vars_pressure <- c("PA_1_1_1_kPa","air_pressure_kPa","air_p_mean_kPa") # Biomet PA should always go first, followed by EC PA  
 
 flux_vars <- c("NEE","FC","H","LE","FCH4") # List flux variables to plot (to compare Second and Third stages)
-flux_vars_gf <- c("NEE_PI_F_MDS","FC_PI_F_MDS","H_PI_F_MDS","LE_PI_F_MDS","FCH4_PI_F_MDS") # List flux variables to plot (to compare Second and Third stages)
+flux_vars_gf <- c("NEE_PI_F_MDS","FC_PI_F_MDS","H_PI_F_MDS","LE_PI_F_MDS","FCH4_PI_F_MDS","FCH4_PI_F_RF") # List flux variables to plot (to compare Second and Third stages)
 
 vars_flux_diag_signal_strength <- c("mean_value_RSSI_LI_7200","rssi_77_mean")
 vars_flux_diag_records <- c("file_records","used_records") 

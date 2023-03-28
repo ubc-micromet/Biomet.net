@@ -265,16 +265,16 @@ if (exists("data_thirdstage") == TRUE) {
 
 renderPlotly({
   
-  colors = c("gap-filled" = "black", "Second stage" = rgb(0.2, 0.6, 0.9, 1), "Third stage" = "#69b3a2")
+  colors = c("Second stage" = "grey44", "Third stage" = rgb(0.2, 0.6, 0.9, 1), "Third stage gap-filled" = "#69b3a2")
   
   if (exists("data_thirdstage") == TRUE) {
     
-    df <- cbind(dataset_flux(), dataset_thirdstage(),data_thirdstage[, input$f])
-    colnames(df) <- c("datetime","gap_filled","second_stage","third_stage")
+    df <- cbind(dataset_flux(),data_thirdstage[, input$f],dataset_thirdstage())
+    colnames(df) <- c("datetime","second_stage","third_stage","third_stage_gap_filled")
     
     p <- ggplot(data = df) +
-      geom_line(aes_string(x = "datetime", y = "gap_filled",color = shQuote("Gap-filled")))+
-      geom_line(aes_string(x = "datetime", y = "second_stage", color = shQuote("Second stage")))+
+      geom_line(aes_string(x = "datetime", y = "third_stage_gap_filled", color = shQuote("Third stage gap-filled")))+
+      geom_line(aes_string(x = "datetime", y = "second_stage",color = shQuote("Second stage")))+
       geom_line(aes_string(x = "datetime", y = "third_stage", color = shQuote("Third stage")))+
       xlab("") + ylab(input$f) +
       scale_color_manual(values = colors) + labs(color = "Trace")
@@ -292,7 +292,6 @@ renderPlotly({
     p <- ggplotly(p) %>% toWebGL()}
   
 })
-
 ```
 
 Flux summary

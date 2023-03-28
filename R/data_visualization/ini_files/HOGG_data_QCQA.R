@@ -15,32 +15,36 @@ opts_knit$set(root.dir = paste0(args[1],"data_visualization",sep = "")) # Specif
 basepath <- args[2]
 #basepath <- paste0(args[1],"data_visualization/Database",sep = "")
 yrs <- c(2021:2022) # Make sure to include the most recent year
-site <- "HOGG"
+site <- "YOUNG"
 
 # Specify variables of interest in Clean/SecondStage and Flux/clean
-level <- c("Clean/SecondStage","Flux/clean")
-vars <- c("WD_1_1_1","wind_dir","WS_1_1_1","wind_speed","USTAR","W_SIGMA",
-          "ts","TA_1_1_1","RH_1_1_1","e","es",
-          "SW_IN_1_1_1","SW_OUT_1_1_1","LW_IN_1_1_1","LW_OUT_1_1_1","NETRAD_1_1_1","PPFD_IN_1_1_1","PA_1_1_1",
-          "P_RAIN_1_1_1","TS_1_1_1","TS_2_1_1","TS_3_1_1","NEE","FC","H","LE","FCH4")
-tv_input <- "clean_tv"
-
 export <- 0 # 1 to save a csv file of the data, 0 otherwise
 
-# Create dataframe for years & variables of interest
-# Path to function to load data
-data1 <- read_database(basepath,yrs,site,level,vars,tv_input,export)
+level <- "Clean/SecondStage"
+vars_SecondStage <- c("WD_1_1_1","WS_1_1_1","USTAR","W_SIGMA","TA_1_1_1","RH_1_1_1",
+          "SW_IN_1_1_1","SW_OUT_1_1_1","LW_IN_1_1_1","LW_OUT_1_1_1","NETRAD_1_1_1","PPFD_IN_1_1_1","PA_1_1_1",
+          "P_1_1_1","TS_1","TS_2","TS_3","NEE","FC","H","LE","FCH4")
+tv_input <- "clean_tv"
+
+data_SecondStage <- read_database(basepath,yrs,site,level,vars_SecondStage,tv_input,export)
+
+level <- "Flux/clean"
+vars_FluxClean <- c("wind_dir","wind_speed","ts","e","es")
+
+data_FluxClean <- read_database(basepath,yrs,site,level,vars_FluxClean,tv_input,export)
 
 # Load traces just for plotting that aren't in Clean
 level <- c("Flux")
-vars_other <- c("air_temperature","air_t_mean","RH","air_pressure","air_p_mean","pitch",
+vars_Flux <- c("air_temperature","air_t_mean","RH","air_pressure","air_p_mean","pitch",
                 "mean_value_RSSI_LI_7200","rssi_77_mean","file_records","used_records","sonic_temperature")  
 tv_input <- "Clean_tv"
-data2 <- read_database(basepath,yrs,site,level,vars_other,tv_input,export)
+data_Flux <- read_database(basepath,yrs,site,level,vars_Flux,tv_input,export)
 
-# Merge dataframes loaded above
-data <- merge(data1,data2, by=c("datetime"))
+# Merge data frames loaded above
+data <- merge(data_SecondStage,data_FluxClean, by=c("datetime")) %>%
+  merge(data_Flux, by=c("datetime"))
 
+vars <- c(vars_SecondStage,vars_FluxClean,vars_Flux)
 if (sum(which(vars %in% colnames(data) == FALSE)) > 0) {
   cat("variables: ", vars[which(vars %in% colnames(data) == FALSE)],"are not included in the dataframe", sep="\n")
 }
@@ -71,10 +75,10 @@ data$DOY <- yday(data$datetime)
 
 # Load third stage fluxes (this needs to be loaded separately so that we can distinguish between the Second and Third stage data)
 level <- c("Clean/ThirdStage")
-vars_other <- c("NEE","FC","H","LE","FCH4","NEE_PI_F_MDS",
-                "FC_PI_F_MDS","H_PI_F_MDS","LE_PI_F_MDS","FCH4_PI_F_MDS","NETRAD_1_1_1")
+vars_ThirdStage <- c("NEE","FC","H","LE","FCH4","NEE_PI_F_MDS",
+                "FC_PI_F_MDS","H_PI_F_MDS","LE_PI_F_MDS","FCH4_PI_F_MDS","FCH4_PI_F_RF","NETRAD_1_1_1")
 tv_input <- "clean_tv"
-data_thirdstage <- read_database(basepath,yrs,site,level,vars_other,tv_input,export)
+data_thirdstage <- read_database(basepath,yrs,site,level,vars_ThirdStage,tv_input,export)
 
 # Remove missing data (should be -9999)
 data_thirdstage <- replace(data_thirdstage, data_thirdstage == -9999, NA)
@@ -146,7 +150,7 @@ data$PA_1_1_1_kPa <- data$air_p_mean/1000
 vars_pressure <- c("PA_1_1_1_kPa","air_pressure_kPa","air_p_mean_kPa") # Biomet PA should always go first, followed by EC PA  
 
 flux_vars <- c("NEE","FC","H","LE","FCH4") # List flux variables to plot (to compare Second and Third stages)
-flux_vars_gf <- c("NEE_PI_F_MDS","FC_PI_F_MDS","H_PI_F_MDS","LE_PI_F_MDS","FCH4_PI_F_MDS") # List flux variables to plot (to compare Second and Third stages)
+flux_vars_gf <- c("NEE_PI_F_MDS","FC_PI_F_MDS","H_PI_F_MDS","LE_PI_F_MDS","FCH4_PI_F_MDS","FCH4_PI_F_RF") # List flux variables to plot (to compare Second and Third stages)
 
 vars_flux_diag_signal_strength <- c("mean_value_RSSI_LI_7200","rssi_77_mean")
 vars_flux_diag_records <- c("file_records","used_records") 
