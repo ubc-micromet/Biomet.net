@@ -28,7 +28,7 @@ xcorr_rad <- function(data) {
   p_SW 
   
   p_PPFD <- ggCcf(data$potential_radiation, data$PPFD_IN)+
-    ggtitle(paste0("PPFD vs Pot Rad, max lag = ",round(SW[[2]])," corr = ",round(SW[[1]],2)))+
+    ggtitle(paste0("PPFD vs Pot Rad, max lag = ",round(PPDF[[2]])," corr = ",round(PPDF[[1]],2)))+
     theme(plot.title = element_text(size = 10))
   p_PPFD 
   

@@ -112,10 +112,10 @@ R2_slope_QCQA(data,vars_radiometer[1],vars_PPFD[1])
 Rad Diagnostics
 =======================================================================
 
-Row 
+Column {.tabset .tabset-fade}
 -----------------------------------------------------------------------
 
-### Checking for offsets between SW_IN (blue) and potential radiation (red)  
+### SW_IN vs potential rad
 ```{r}
 # Compute mean diurnal pattern for 15 day moving window
 diurnal.composite <- diurnal.composite.rad(data,var_potential_rad,vars_radiometer[1],vars_PPFD[1],15,48)
@@ -124,21 +124,22 @@ diurnal.composite <- diurnal.composite[is.finite(diurnal.composite$potential_rad
 SWIN_vs_potential_rad(diurnal.composite)
 ```
 
-### Cross between SW_IN and potential radiation
+
+### PPFD_IN vs potential rad
+```{r}
+PPFDIN_vs_potential_rad(diurnal.composite)
+```
+
+Column {.tabset .tabset-fade}
+------------------------------------------------------------------------
+
+### Cross correlation SW_IN
 ```{r}
 p <- xcorr_rad(diurnal.composite)
 toWebGL(p[[1]])
 ```
 
-Row 
-------------------------------------------------------------------------
-
-### Checking for offsets between PPFD_IN (green) and potential radiation (red)  
-```{r}
-PPFDIN_vs_potential_rad(diurnal.composite)
-```
-
-### Cross correlation analysis between PPDF_IN and potential radiation
+### Cross correlation PPFD_IN
 ```{r}
 p <- xcorr_rad(diurnal.composite)
 toWebGL(p[[2]])
