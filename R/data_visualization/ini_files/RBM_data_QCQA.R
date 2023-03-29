@@ -17,34 +17,38 @@ basepath <- args[2]
 yrs <- c(2022:2022) # Make sure to include the most recent year
 site <- "RBM"
 
-level <- c("Clean/SecondStage","Met/clean")
-vars <- c("WD_1_1_1","wind_dir","WS_1_1_1","wind_speed","USTAR","W_SIGMA",
-          "ts","TA_1_1_1","air_temperature","air_t_mean","RH_1_1_1","RH","e","es",
-          "SW_IN_1_1_1","SW_OUT_1_1_1","LW_IN_1_1_1","LW_OUT_1_1_1","NETRAD_1_1_1","PPFD_IN_1_1_1","PPFD_OUT_1_1_1",
-          "air_pressure","PA_1_1_1",
-          "P_1_1_1","G_1_1_1","G_2_1_1","G_3_1_1",
-          "TW_1_1_1","TS_1_1_1","TS_1_2_1","TS_1_3_1","TS_1_4_1",
-          "TS_2_1_1","TS_2_2_1","TS_2_3_1","TS_2_4_1","WTD_1_1_1", 
-          "NEE","FC","H","LE","FCH4")
-tv_input <- "clean_tv"
-
+# Specify variables of interest in Clean/SecondStage and Flux/clean
 export <- 0 # 1 to save a csv file of the data, 0 otherwise
 
-# Create dataframe for years & variables of interest
-# Path to function to load data
-data1 <- read_database(basepath,yrs,site,level,vars,tv_input,export)
+level <- "Clean/SecondStage"
+vars_SecondStage <- c("WD_1_1_1","WS_1_1_1","USTAR","W_SIGMA","TA_1_1_1","RH_1_1_1",
+                      "SW_IN_1_1_1","SW_OUT_1_1_1","LW_IN_1_1_1","LW_OUT_1_1_1","NETRAD_1_1_1","PPFD_IN_1_1_1","PPFD_OUT_1_1_1","PA_1_1_1",
+                      "P_1_1_1","WTD_1_1_1", "GS_1",
+                      "NEE","FC","H","LE","FCH4")
+tv_input <- "clean_tv"
 
-# Load traces just for plotting that aren't in clean
+data_SecondStage <- read_database(basepath,yrs,site,level,vars_SecondStage,tv_input,export)
+
+level <- "Flux/clean"
+vars_FluxClean <- c("wind_dir","wind_speed","ts","e","es","G_1_1_1","G_2_1_1","G_3_1_1",
+                    "TW_1_1_1","TS_1_1_1","TS_1_2_1","TS_1_3_1","TS_1_4_1",
+                    "TS_2_1_1","TS_2_2_1","TS_2_3_1","TS_2_4_1")
+
+data_FluxClean <- read_database(basepath,yrs,site,level,vars_FluxClean,tv_input,export)
+
+# Load traces just for plotting that aren't in Clean
 level <- c("Flux")
-vars_other <- c("air_temperature","air_t_mean","RH","air_pressure","air_p_mean","pitch",
-                "avg_signal_strength_7200_mean","rssi_77_mean","flowrate_mean","file_records","used_records")  
+vars_Flux <- c("air_temperature","air_t_mean","RH","air_pressure","air_p_mean","pitch",
+               "avg_signal_strength_7200_mean","rssi_77_mean","flowrate_mean","file_records","used_records") 
 tv_input <- "Clean_tv"
-data2 <- read_database(basepath,yrs,site,level,vars_other,tv_input,export)
+data_Flux <- read_database(basepath,yrs,site,level,vars_Flux,tv_input,export)
 
-# Merge dataframes
-data <- merge(data1,data2, by=c("datetime"))
+# Merge data frames loaded above
+data <- merge(data_SecondStage,data_FluxClean, by=c("datetime")) %>%
+  merge(data_Flux, by=c("datetime"))
 
-if (sum(which(vars %in% colnames(df) == FALSE)) > 0) {
+vars <- c(vars_SecondStage,vars_FluxClean,vars_Flux)
+if (sum(which(vars %in% colnames(data) == FALSE)) > 0) {
   cat("variables: ", vars[which(vars %in% colnames(data) == FALSE)],"are not included in the dataframe", sep="\n")
 }
 
