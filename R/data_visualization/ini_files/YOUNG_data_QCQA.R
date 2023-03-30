@@ -4,7 +4,8 @@
 
 # load all necessary functions
 #fx_path <- paste0(args[1],'data_visualization',sep ="")
-p <- sapply(list.files(pattern="*.R$", full.names=TRUE), source)
+p <- sapply(list.files(path = paste0(args[1],"data_visualization",sep = ""),pattern="*.R$", full.names=TRUE), source)
+#p <- sapply(list.files(pattern="*.R$", full.names=TRUE), source)
 
 # Load functions from 'database_functions' folder - UPDATE AS TO NOT DUPLICATE
 source(paste0(args[1],"database_functions/read_database.R",sep = ""))
