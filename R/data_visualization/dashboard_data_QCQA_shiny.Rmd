@@ -301,11 +301,17 @@ Flux summary
 ```{r}
 if (exists("data_thirdstage") == TRUE) {
   # Create conversion factors
-  conv_factor <- data.frame(44.01/(10^6)*(60*30),16.04/(10^9)*(60*30),(60*30)/(10^6))
+  conv_factor <- data.frame(12.01/(10^6)*(60*30),12.01/(10^9)*(60*30),(60*30)/(10^6))
   colnames(conv_factor) <- c("CO2","CH4","Energy")
   
   # Create string for conversion factor variable names
   conv_factor_vars <- c("CO2","CH4","Energy")
+  
+  # Create labels for units
+  conv_factor_units_cum <- data.frame("gC m-2","gC m-2","MJ m-2")
+  colnames(conv_factor_units_cum) <- c("CO2","CH4","Energy")
+  conv_factor_units_mean <- data.frame("umol CO2 m-2 s-1","nmol CH4 m-2 s-1","W m-2")
+  colnames(conv_factor_units_mean) <- c("CO2","CH4","Energy")
 }
 ```
 
@@ -333,24 +339,35 @@ if (exists("data_thirdstage") == TRUE) {
   dataset_thirdstage_daily <- reactive({
     data_thirdstage[, c("year","DOY", input$fl3)]
   })
+  
+  convfactor <- reactive({
+    conv_factor[ ,c(input$conv)]
+  })
+  
+  units <- reactive({
+    conv_factor_units_cum[ ,c(input$conv)]
+  })
 }
 
 renderPlotly({
   
   if (exists("data_thirdstage") == TRUE) {
     
+    cf <- convfactor()
+    units_cf <- units()
+    
     df <- dataset_thirdstage_daily()
     colnames(df)[3] <- "var"
     
     daily.data <- df %>%
       group_by(year,DOY) %>%
-      dplyr::summarize(var = median(var, na.rm = TRUE),
+      dplyr::summarize(var = sum(var*cf, na.rm = F),
                        DOY = first(DOY),
                        year = as.factor(first(year)))
     
     p <- ggplot() +
       geom_line(data = daily.data , aes(x = DOY, y = var, color = year))+ 
-      ylab(input$fl3)
+      ylab(paste0(input$fl3," (", units_cf," d-1)",sep = ""))
     p <- ggplotly(p) %>% toWebGL()
   }
 })
@@ -359,8 +376,7 @@ renderPlotly({
 Column {data-width=400}
 -----------------------------------------------------------------------
 
-### Cumulative flux
-
+### Cumulative flux (full yrs only)
 ```{r}
 
 if (exists("data_thirdstage") == TRUE) {
@@ -373,14 +389,30 @@ if (exists("data_thirdstage") == TRUE) {
     conv_factor[ ,c(input$conv)]
   })
   
+  units <- reactive({
+    conv_factor_units_cum[ ,c(input$conv)]
+  })
+  
   renderPlotly({
     
     df <- dataset_thirdstage_cum()
     colnames(df)[3] <- "var"
     
     cf <- convfactor()
+    units_cf <- units()
     
-    daily.cum <- df %>%
+    # Determine which years are a full year of data
+    nyrs <- unique(df$year)
+    
+    count_yr <- df %>% 
+      group_by(year) %>%
+      dplyr::summarize(count = sum(!is.na(var)))
+    
+    yrs <- nyrs[count_yr$count >=17520] # Greater or equal to 365 days (i.e. 17520 observations)
+    
+    df2 <- with(df,df[(year >= yrs[1] & year <= yrs[length(yrs)]),])
+    
+    daily.cum <- df2 %>%
       group_by(year,DOY) %>%
       dplyr::summarize(var = sum(var*cf), 
                        DOY = first(DOY),
@@ -389,32 +421,52 @@ if (exists("data_thirdstage") == TRUE) {
     
     p <- ggplot() +
       geom_line(data = daily.cum, aes(x = DOY, y = var_cum, color = year))+ 
-      ylab(input$fl3)
+      ylab(paste0(input$fl3," (",units_cf,")",sep = ""))
     p <- ggplotly(p) %>% toWebGL()
     
   })
 }
 ```
 
-### Mean diurnal pattern
-
+### Mean diurnal pattern (non gap-filled fluxes)
 ```{r}
 
 if (exists("data_thirdstage") == TRUE) {
   
   dataset_thirdstage_diurnal <- reactive({
-    data_thirdstage[, c("datetime", input$fl3)]
+    data_thirdstage[, c("year","datetime", input$fl3)]
+  })
+  
+  units <- reactive({
+    conv_factor_units_mean[ ,c(input$conv)]
   })
   
   renderPlotly({
     
+    # Determine which years are a full year of data
+    df <- dataset_thirdstage_diurnal()
+    colnames(df)[3] <- "var"
+    
+    nyrs <- unique(df$year)
+    
+    count_yr <- df %>% 
+      group_by(year) %>%
+      dplyr::summarize(count = sum(!is.na(var)))
+    
+    yrs <- nyrs[count_yr$count >=17520] # Greater or equal to 365 days (i.e. 17520 observations)
+    
     colname <- colnames(dataset_thirdstage_diurnal())
-    var_in <-  str_split(colname[2],"_")
+    var_in <-  str_split(colname[3],"_")
     
-    df <- data_thirdstage[, c("datetime", var_in[[1]][1])]
-    colnames(df)[2] <- "var"
+    # Create data frame with non gap-filled third stage fluxes to compute mean diurnal pattern
+    df_ngf <- data_thirdstage[, c("datetime", var_in[[1]][1])] # non gap-filled df
+    colnames(df_ngf)[2] <- "var"
     
-    data.diurnal <- df %>%
+    units_cf <- units()
+    
+    df2 <- with(df_ngf,df_ngf[(df$year >= yrs[1] & df$year <= yrs[length(yrs)]),]) # only for full years of data
+    
+    data.diurnal <- df2 %>%
       mutate(
         year = as.factor(year(datetime)),
         month = month(datetime),
@@ -431,7 +483,7 @@ if (exists("data_thirdstage") == TRUE) {
     
     p <- ggplot() +
       geom_line(data = data.diurnal, aes(x = time, y = var,color = year)) +
-      scale_x_datetime(breaks="6 hours", date_labels = "%R") + ylab(var_in[[1]][1])
+      scale_x_datetime(breaks="6 hours", date_labels = "%R") + ylab(paste0(var_in[[1]][1]," (",units_cf,")",sep = ""))
     
     p <- ggplotly(p) %>% toWebGL()
     p
