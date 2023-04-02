@@ -19,15 +19,15 @@ function [data_out, flag] = calc_avg_trace(tv, data_in, data_fill, avg_period)
 % Apr 1, 2023 (Zoran)
 %   - Fixed a bug that could happen when working with data_fill that had more 
 %     than one trace (multi-trace input in data_fill).
-%     A row of data_fill would not be properly averaged 
-%     when avg_period==-1 and the row contained a NaN. If, at the same
-%     time, the input data had a NaN in the same row, it would not get gap 
+%     The row would not be properly averaged 
+%     when avg_period==-1 and the row contained a NaN; and if, at the same
+%     time, the input data had a NaN in the same row, it would not be gap 
 %     filled even if there were some good alternative measurements in the 
 %     same data_fill row.
 %     Example: 
 %       x = [1 2 NaN 4 5]';
 %       y = [1.1 2.1 3.1 4.1 5.1;0.9 NaN 2.9 3.9 4.9]'; 
-%       calc_avg_trace(0:4, x, y, -1)
+%       calc_avg_trace(0:length(x)-1, x, y, -1)
 %     would return [1 NaN 3 4 5]' instead of [1 2.1 3 4 5] 
 %   
 % April 30, 2009
