@@ -2,6 +2,9 @@ function [Stats_single,miscVariables] = do_eddy_calc(EngUnits,miscVariables,conf
 
 %Revisions: 
 %
+% August 12, 2022 (Pat)
+%  - fixed hard_coded 3 rotation selection in fr_rotatn_hf, changed to what is...
+%    defined in config
 % Apr 2, 2021 (Zoran)
 %  - fixed a problem by adding "isempty(BarometricP) ||" in fr_get_BarometricP
 % Nov 14, 2017 (Zoran)
@@ -67,11 +70,16 @@ if configIn.System(SystemNum).Spectra.ON == 1 || configIn.System(SystemNum).Stat
 end
 
 
-% STEP - Calculate stationarity
-if configIn.System(SystemNum).Stationarity.ON == 1
-    configIn.Stationarity.Fs = configIn.System(SystemNum).Fs; %set spectra calc frequency to that of system
-    Stationarity_single   = fr_calc_stationarity(Eddy_HF_data, Eddy_HF_delay, configIn); 
-    Stats_single = setfield(Stats_single,{1},'Stationarity',Stationarity_single);
+% STEP - Delay and Rotate the high frequency data before calculation of spectra and stationarity
+if configIn.System(SystemNum).Spectra.ON == 1 || configIn.System(SystemNum).Stationarity.ON == 1
+    if strcmpi(configIn.System(SystemNum).Rotation,'two')
+  [Eddy_HF_data] = fr_rotatn_hf(Eddy_HF_data,[Stats_single.Two_Rotations.Angles.Eta ...
+            Stats_single.Two_Rotations.Angles.Theta Stats_single.Two_Rotations.Angles.Beta]);   
+    elseif strcmpi(configIn.System(SystemNum).Rotation,'three')         
+    [Eddy_HF_data] = fr_rotatn_hf(Eddy_HF_data,[Stats_single.Three_Rotations.Angles.Eta ...
+            Stats_single.Three_Rotations.Angles.Theta Stats_single.Three_Rotations.Angles.Beta]);   
+    else
+    end
 end
 
 % STEP - Calculate spectra

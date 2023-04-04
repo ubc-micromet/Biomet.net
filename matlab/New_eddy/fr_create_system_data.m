@@ -3,10 +3,11 @@ function  [EngUnits,miscVariables,Instrument,configIn,Delays,EngUnits_alignment_
 %
 %
 % (c) Zoran Nesic               File created:       Oct   , 2001
-%                               Last modification:  Nov 14, 2017
+%                               Last modification:  Aug 12, 2022
 
 % Revisions
 %
+% August 12, 2022 (Zoran and Pat)
 % Nov 14, 2017 (Zoran)
 %   - added special processing for LGR_CH4N2O instrument (convert H2O to
 %     mixing ratio to match all the other instruments)
@@ -94,7 +95,7 @@ end
 
 % STEP - Overide delays to those just calculated
 EngUnits_delays = configIn.System(systemNum).Delays.Samples;
-if isfield(configIn.System(systemNum).Delays, 'Overide') && configIn.System(systemNum).Delays.Overide == 1;
+if isfield(configIn.System(systemNum).Delays, 'Overide') && configIn.System(systemNum).Delays.Overide == 1
     EngUnits_delays(configIn.System(systemNum).Delays.Channels) = DelTimes;
     Delays.Implemented = DelTimes; % Mar 6, 2004               
 else
@@ -112,65 +113,69 @@ if isfield(configIn.System(systemNum),'ProcessData') ...
     end
 end
 
-% STEP - Run standard conversions (other than standard Ts to Ta, LI 7500 etc.)
-% LI7000 - Convert mole fractions to mixing ratios
-if strcmp(configIn.Instrument(configIn.System(systemNum).Instrument(2)).Type,'7000')
-   chi = EngUnits(:,6);
-   EngUnits(:,5) = EngUnits(:,5)./(1-chi/1000);
-   EngUnits(:,6) = EngUnits(:,6)./(1-chi/1000);
-   configIn.System(systemNum).ChanUnits(5:6) = {'\mumol/mol dry air','mmol/mol dry air'};
-end
+if length(configIn.System(systemNum).Instrument) > 1
+    % STEP - Run standard conversions (other than standard Ts to Ta, LI 7500 etc.)
+    % LI7000 - Convert mole fractions to mixing ratios
+    if strcmp(configIn.Instrument(configIn.System(systemNum).Instrument(2)).Type,'7000')
+       chi = EngUnits(:,6);
+       EngUnits(:,5) = EngUnits(:,5)./(1-chi/1000);
+       EngUnits(:,6) = EngUnits(:,6)./(1-chi/1000);
+       configIn.System(systemNum).ChanUnits(5:6) = {'\mumol/mol dry air','mmol/mol dry air'};
+    end
 
-% LGR (H2O, CH4, N2O) - Convert water mole fractions to mixing ratios (CH4
-% and N2O are already in mixing ratios). H2O will be 5th channel if there
-% is only an LGR instrument (sonic + LGR) or 7th channel if
-% (sonic+LI7000+LGR)
-if strcmp(configIn.Instrument(configIn.System(systemNum).Instrument(2)).Type,'LGR_CH4N2O')
-   chi = EngUnits(:,5);
-   EngUnits(:,5) = EngUnits(:,5)./(1-chi/1000);
-   configIn.System(systemNum).ChanUnits(5) = {'mmol/mol dry air'};
-end
-if length(configIn.System(systemNum).Instrument) > 2 ...
-      &&  strcmp(configIn.Instrument(configIn.System(systemNum).Instrument(3)).Type,'LGR_CH4N2O')
-   chi = EngUnits(:,7);
-   EngUnits(:,7) = EngUnits(:,7)./(1-chi/1000);
-   configIn.System(systemNum).ChanUnits(7) = {'mmol/mol dry air'};
-end
+    % LGR (H2O, CH4, N2O) - Convert water mole fractions to mixing ratios (CH4
+    % and N2O are already in mixing ratios). H2O will be 5th channel if there
+    % is only an LGR instrument (sonic + LGR) or 7th channel if
+    % (sonic+LI7000+LGR)
+    if strcmp(configIn.Instrument(configIn.System(systemNum).Instrument(2)).Type,'LGR_CH4N2O')
+       chi = EngUnits(:,5);
+       EngUnits(:,5) = EngUnits(:,5)./(1-chi/1000);
+       configIn.System(systemNum).ChanUnits(5) = {'mmol/mol dry air'};
+    end
+    if length(configIn.System(systemNum).Instrument) > 2 ...
+          &&  strcmp(configIn.Instrument(configIn.System(systemNum).Instrument(3)).Type,'LGR_CH4N2O')
+       chi = EngUnits(:,7);
+       EngUnits(:,7) = EngUnits(:,7)./(1-chi/1000);
+       configIn.System(systemNum).ChanUnits(7) = {'mmol/mol dry air'};
+    end
 
-% Sonic - Convert sonic to air temperature
-if strcmp(configIn.Instrument(configIn.System(systemNum).Instrument(2)).Type,'7500')
-    Tsonic = EngUnits(:,4);
-    % Calc air temperature and dry air density
-    [EngUnits(:,4),rho_a] = Ts2Ta_using_density(Tsonic,miscVariables.BarometricP,EngUnits(:,6));
-    configIn.System(systemNum).ChanNames(4) = {'Ta'};
-elseif strcmp(configIn.Instrument(configIn.System(systemNum).Instrument(2)).Type,'7000') ...
-     || strcmp(configIn.Instrument(configIn.System(systemNum).Instrument(2)).Type,'6262') ...
-     || strcmp(configIn.Instrument(configIn.System(systemNum).Instrument(2)).Type,'7200') % "closed" open path, July 18, 2011
-    chi = EngUnits(:,6)./(1+EngUnits(:,6)/1000);
-    Tsonic   = EngUnits(:,4);
-    EngUnits(:,4) = (Tsonic+273.16)./ (1 + 0.32 .* chi ./ 1000) - 273.16;
-    configIn.System(systemNum).ChanNames(4) = {'Ta'};
-else
-    % Do nothing
-end
+    % Sonic - Convert sonic to air temperature
+    if strcmp(configIn.Instrument(configIn.System(systemNum).Instrument(2)).Type,'7500')
+        Tsonic = EngUnits(:,4);
+        % Calc air temperature and dry air density
+        [EngUnits(:,4),rho_a] = Ts2Ta_using_density(Tsonic,miscVariables.BarometricP,EngUnits(:,6));
+        configIn.System(systemNum).ChanNames(4) = {'Ta'};
+    elseif strcmp(configIn.Instrument(configIn.System(systemNum).Instrument(2)).Type,'7000') ...
+         || strcmp(configIn.Instrument(configIn.System(systemNum).Instrument(2)).Type,'6262') ...
+         || strcmp(configIn.Instrument(configIn.System(systemNum).Instrument(2)).Type,'7200') % "closed" open path, July 18, 2011
+        chi = EngUnits(:,6)./(1+EngUnits(:,6)/1000);
+        Tsonic   = EngUnits(:,4);
+        EngUnits(:,4) = (Tsonic+273.15)./ (1 + 0.32 .* chi ./ 1000) - 273.15;
+        configIn.System(systemNum).ChanNames(4) = {'Ta'};
+    else
+        % Do nothing
+    end
 
-% LI7500 - Convert molar density to mixing ratio
-ind = find(strcmp(configIn.Instrument(configIn.System(systemNum).Instrument(2)).Type,'7500'));
-for i =1:length(ind)
-   %rho_v = EngUnits(:,6)./1000;
-   EngUnits(:,5) = EngUnits(:,5)./rho_a .* 1000; % mmol/m^3 to mumol / mol dry air
-   EngUnits(:,6) = EngUnits(:,6)./rho_a;         % mmol/m^3 to mmol / mol dry air
-   configIn.System(systemNum).ChanUnits(5:6) = {'\mumol/mol dry air','mmol/mol dry air'};
+
+    % LI7500 - Convert molar density to mixing ratio
+    ind = find(strcmp(configIn.Instrument(configIn.System(systemNum).Instrument(2)).Type,'7500'));
+    for i =1:length(ind)
+       %rho_v = EngUnits(:,6)./1000;
+       EngUnits(:,5) = EngUnits(:,5)./rho_a .* 1000; % mmol/m^3 to mumol / mol dry air
+       EngUnits(:,6) = EngUnits(:,6)./rho_a;         % mmol/m^3 to mmol / mol dry air
+       configIn.System(systemNum).ChanUnits(5:6) = {'\mumol/mol dry air','mmol/mol dry air'};
+    end
+
 end
 
 % Zoran: Nov 7, 2003 -> added try/catch structure
 % Zoran: Feb 10, 2004 -> created a stand alone Instrument() structure (used
 % to go under miscVariables.Instrument()
-for i = 1:length(Instrument_data);
+for i = 1:length(Instrument_data)
     try
         Instrument(i).Alignment = Instrument_data(i).Alignment;
     catch %#ok<*CTCH>
         Instrument(i).Alignment = []; 
     end
-end;
+end
 

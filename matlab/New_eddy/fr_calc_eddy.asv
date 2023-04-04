@@ -28,7 +28,7 @@ function [Eddy_results,Eddy_HF_data_OUT,miscVariables] = fr_calc_eddy(Eddy_HF_da
 %=================================================================================
 %
 % (c) Zoran Nesic               File created:       Jun  4, 2000
-%                               Last modification:  Apr  3, 2023
+%                               Last modification:  Nov 14, 2017
 %
 
 %       -   The Eddy_results structure has the
