@@ -66,9 +66,9 @@ ThirdStage_REddyProc <- function(pathSetIni) {
     for (j in 1:length(years_REddyProc)) {
       
       # Load ini file
-      cat("\n\nIn ThirdStage_REddyProc:\n")      
-      cat("   Do we need to reload the ini file here again?\n\n")      
-      source(pthIniFile)
+#      cat("\n\nIn ThirdStage_REddyProc:\n")      
+#      cat("   Do we need to reload the ini file here again?\n\n")      
+#      source(pthIniFile)
       
       level_in <- "Clean/SecondStage" # Specify that this is data from the second stage we are using as inputs
       
@@ -85,9 +85,9 @@ ThirdStage_REddyProc <- function(pathSetIni) {
       for (j in 1:length(years_REddyProc)) {
         
         # Load ini file
-        cat("\n\nIn ThirdStage_REddyProc:\n")      
-        cat("   Do we need to reload the ini file here again?\n\n")      
-        source(pthIniFile)
+#        cat("\n\nIn ThirdStage_REddyProc:\n")      
+#        cat("   Do we need to reload the ini file here again?\n\n")      
+#        source(pthIniFile)
         
         level_in <- "Clean/SecondStage" # Specify that this is data from the second stage we are using as inputs
         
