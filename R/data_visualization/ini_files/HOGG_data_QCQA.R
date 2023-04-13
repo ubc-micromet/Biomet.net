@@ -3,7 +3,7 @@
 ## @knitr LoadData
 
 # load all necessary functions
-#fx_path <- paste0(args[1],'data_visualization',sep ="")
+fx_path <- paste0(args[1],'data_visualization',sep ="")
 p <- sapply(list.files(pattern="*.R$", full.names=TRUE), source)
 
 # Load functions from 'database_functions' folder - UPDATE AS TO NOT DUPLICATE
@@ -14,7 +14,7 @@ opts_knit$set(root.dir = paste0(args[1],"data_visualization",sep = "")) # Specif
 
 basepath <- args[2]
 #basepath <- paste0(args[1],"data_visualization/Database",sep = "")
-yrs <- c(2021:2022) # Make sure to include the most recent year
+yrs <- c(2021:2023) # Make sure to include the most recent year
 site <- "HOGG"
 
 # Specify variables of interest in Clean/SecondStage and Flux/clean
