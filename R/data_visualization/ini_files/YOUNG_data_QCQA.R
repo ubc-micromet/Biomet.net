@@ -15,7 +15,7 @@ opts_knit$set(root.dir = paste0(args[1],"data_visualization",sep = "")) # Specif
 
 basepath <- args[2]
 #basepath <- paste0(args[1],"data_visualization/Database",sep = "")
-yrs <- c(2023:2023) # Make sure to include the most recent year
+yrs <- c(2021:2023) # Make sure to include the most recent year
 site <- "YOUNG"
 
 # Specify variables of interest in Clean/SecondStage and Flux/clean

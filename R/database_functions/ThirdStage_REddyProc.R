@@ -98,7 +98,6 @@ ThirdStage_REddyProc <- function(pathSetIni) {
       
       # Add storage terms
       # First rename storage terms to match flux terms
-      # Start with FC and FCH4
       names.data.storage <- gsub("SC", "FC", colnames(data.storage))
       names.data.storage <- gsub("S", "", names.data.storage)
       
@@ -136,6 +135,15 @@ ThirdStage_REddyProc <- function(pathSetIni) {
     
     # Rename column names to variable names in REddyProc
     colnames(data_REddyProc)<-var_names  
+    
+    # Only use existing data up until storage terms are calculated
+    #DT <- data.table(data_REddyProc[,-which(names(data_REddyProc) %in% c("Year","DoY","Hour","NEE","FC","H","LE","FCH4","Ustar"))])
+    #last_ind <- max(DT[,lapply(.SD,function(x) which(x == tail(x[!is.na(x)],1)))])
+    
+    DT <- data.table(data.storage[,-which(names(data.storage) %in% c("datetime"))])
+    last_ind <- max(DT[,lapply(.SD,function(x) which(x == tail(x[!is.na(x)],1)))])
+    
+    data_REddyProc <- data_REddyProc[c(1:last_ind),]
     
     #Transforming missing values into NA:
     data_REddyProc[is.na(data_REddyProc)]<-NA
@@ -201,6 +209,14 @@ ThirdStage_REddyProc <- function(pathSetIni) {
     # Create data frame for REddyProc output
     FilledEddyData <- EProc$sExportResults()
     
+    # Fill back in the NA values
+    FilledEddyData_full <- data.frame(matrix(NA, nrow = nrow(data), ncol = ncol(FilledEddyData)))
+    FilledEddyData_full[c(1:last_ind),] <- FilledEddyData 
+    colnames(FilledEddyData_full) <-  colnames(FilledEddyData)
+    
+    # Re-save as FilledEddyData
+    FilledEddyData <- FilledEddyData_full
+    
     # Delete uStar dulplicate columns since they are output for each gap-filled variables
     vars_remove <- c(colnames(FilledEddyData)[grepl('\\Thres.', names(FilledEddyData))],
                      colnames(FilledEddyData)[grepl('\\_fqc.', names(FilledEddyData))])
@@ -211,8 +227,8 @@ ThirdStage_REddyProc <- function(pathSetIni) {
     for (j in 1:length(yrs)) {
       
       # indices corresponding to year of interest
-      ind_s <- which(EddyDataWithPosix$Year == yrs[j] & EddyDataWithPosix$DoY == 1 & EddyDataWithPosix$Hour == 0.5)
-      ind_e <- which(EddyDataWithPosix$Year == yrs[j]+1 & EddyDataWithPosix$DoY == 1 & EddyDataWithPosix$Hour == 0)
+      ind_s <- which(data$year == yrs[j] & data$DOY == 1 & data$HHMM == 0.5)
+      ind_e <- which(data$year == yrs[j]+1 & data$DOY == 1 & data$HHMM == 0)
       
       ind <- seq(ind_s,ind_e)
       
