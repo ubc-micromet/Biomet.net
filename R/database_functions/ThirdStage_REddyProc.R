@@ -14,6 +14,7 @@ ThirdStage_REddyProc <- function(pathSetIni) {
   library("REddyProc")
   require("dplyr")
   require("lubridate")
+  require("data.table")
   
   # load input arguments from pathInputArgs file
   source(pathSetIni)
