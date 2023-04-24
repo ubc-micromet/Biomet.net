@@ -65,13 +65,6 @@ end
 
 % STEP - Delay and Rotate the high frequency data before calculation of spectra and stationarity
 if configIn.System(SystemNum).Spectra.ON == 1 || configIn.System(SystemNum).Stationarity.ON == 1
-    [Eddy_HF_data] = fr_rotatn_hf(Eddy_HF_data,[Stats_single.Three_Rotations.Angles.Eta ...
-            Stats_single.Three_Rotations.Angles.Theta Stats_single.Three_Rotations.Angles.Beta]);      
-end
-
-
-% STEP - Delay and Rotate the high frequency data before calculation of spectra and stationarity
-if configIn.System(SystemNum).Spectra.ON == 1 || configIn.System(SystemNum).Stationarity.ON == 1
     if strcmpi(configIn.System(SystemNum).Rotation,'two')
   [Eddy_HF_data] = fr_rotatn_hf(Eddy_HF_data,[Stats_single.Two_Rotations.Angles.Eta ...
             Stats_single.Two_Rotations.Angles.Theta Stats_single.Two_Rotations.Angles.Beta]);   
