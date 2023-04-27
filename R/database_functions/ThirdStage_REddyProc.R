@@ -22,7 +22,12 @@ ThirdStage_REddyProc <- function(pathSetIni) {
   # initiate path variables
   db_ini <- db_root # base path to find the files
   db_out <- db_root # base path where to save the files
-  ini_path <- paste(db_root,"/Calculation_Procedures/","TraceAnalysis_ini/",site,sep="") # specify base path to where the ini files are
+  
+  if (data_source == "FLUXNET") {
+    ini_path <- paste(db_root,"/Calculation_Procedures/","TraceAnalysis_ini_FLUXNET/",site,sep="") # specify base path to where the ini files are
+  } else {
+    ini_path <- paste(db_root,"/Calculation_Procedures/","TraceAnalysis_ini/",site,sep="") # specify base path to where the ini files are
+  }
   
   # Specify folders
   
@@ -33,28 +38,31 @@ ThirdStage_REddyProc <- function(pathSetIni) {
   # Folder where stage three variables should be save
   level_out <- "Clean/ThirdStage"
   
-  # Run Stage Three for DSM
+  # Run Stage Three for site
   ini_file_name <- paste(site,'_ThirdStage_ini.R',sep = "")
   pthIniFile <- paste(ini_path,"/",ini_file_name,sep="")
   
   # Load ini file
   source(pthIniFile)
   
-  #Copy files from second stage to third stage
-  for (j in 1:length(yrs)) {
-    in_path <- paste(db_ini,"/",as.character(yrs[j]),"/",site,"/clean/SecondStage/", sep = "")
-    copy_vars_full <- paste(in_path,copy_vars, sep="")
-    
-    out_path <- paste(db_ini,"/",as.character(yrs[j]),"/",site,"/",level_out, sep = "")
-    
-    if (file.exists(out_path)){
-      setwd(out_path)
-    } else {
-      dir.create(out_path)
-      setwd(out_path)
+  #Copy files from second stage to third stage (only if not from FLUXNET files)
+  
+  if (data_source != "FLUXNET") {
+    for (j in 1:length(yrs)) {
+      in_path <- paste(db_ini,"/",as.character(yrs[j]),"/",site,"/clean/SecondStage/", sep = "")
+      copy_vars_full <- paste(in_path,copy_vars, sep="")
+      
+      out_path <- paste(db_ini,"/",as.character(yrs[j]),"/",site,"/",level_out, sep = "")
+      
+      if (file.exists(out_path)){
+        setwd(out_path)
+      } else {
+        dir.create(out_path)
+        setwd(out_path)
+      }
+      
+      file.copy(copy_vars_full,out_path,overwrite = TRUE)
     }
-    
-    file.copy(copy_vars_full,out_path,overwrite = TRUE)
   }
   
   # Read function for loading data
@@ -67,15 +75,28 @@ ThirdStage_REddyProc <- function(pathSetIni) {
     for (j in 1:length(years_REddyProc)) {
       
       # Load ini file
-#      cat("\n\nIn ThirdStage_REddyProc:\n")      
-#      cat("   Do we need to reload the ini file here again?\n\n")      
-#      source(pthIniFile)
+      #      cat("\n\nIn ThirdStage_REddyProc:\n")      
+      #      cat("   Do we need to reload the ini file here again?\n\n")      
+      #      source(pthIniFile)
       
       level_in <- "Clean/SecondStage" # Specify that this is data from the second stage we are using as inputs
       
-      # Create data frame for years & variables of interest 
-      data.now <- read_database(db_ini,years_REddyProc[j],site,level_in,vars,tv_input,export)
-      data <- dplyr::bind_rows(data,data.now)
+      if (data_source == "FLUXNET") {
+        
+        data.now <- read.csv(dir(paste0(db_ini,"/",years_REddyProc[j],"/",site,"/",level_in,"/",sep = ""), full.names=T, pattern="*.csv"))
+        data <- dplyr::bind_rows(data,data.now[,c("TIMESTAMP_START",vars)])
+        
+      } else {
+        
+        # Create data frame for years & variables of interest 
+        data.now <- read_database(db_ini,years_REddyProc[j],site,level_in,vars,tv_input,export)
+        data <- dplyr::bind_rows(data,data.now)
+      }
+    }
+    
+    if (data_source == "FLUXNET") {
+      data$datetime <- ymd_hm(data$TIMESTAMP_START)
+      data <- data[,!(names(data) %in% "TIMESTAMP_START")]
     }
     
     # Now load in storage terms if they exist
@@ -86,15 +107,22 @@ ThirdStage_REddyProc <- function(pathSetIni) {
       for (j in 1:length(years_REddyProc)) {
         
         # Load ini file
-#        cat("\n\nIn ThirdStage_REddyProc:\n")      
-#        cat("   Do we need to reload the ini file here again?\n\n")      
-#        source(pthIniFile)
+        #        cat("\n\nIn ThirdStage_REddyProc:\n")      
+        #        cat("   Do we need to reload the ini file here again?\n\n")      
+        #        source(pthIniFile)
         
         level_in <- "Clean/SecondStage" # Specify that this is data from the second stage we are using as inputs
         
-        # Create data frame for years & variables of interest 
-        data.now.storage <- read_database(db_ini,years_REddyProc[j],site,level_in,vars_storage,tv_input,export)
-        data.storage <- dplyr::bind_rows(data.storage,data.now.storage)
+        if (data_source == "FLUXNET") {
+          
+          data.now.storage <- read.csv(dir(paste0(db_ini,"/",years_REddyProc[j],"/",site,"/",level_in,"/",sep = ""), full.names=T, pattern="*.csv"))
+          data.storage <- dplyr::bind_rows(data,data.now.storage[,vars_storage])
+          
+        } else {
+          # Create data frame for years & variables of interest 
+          data.now.storage <- read_database(db_ini,years_REddyProc[j],site,level_in,vars_storage,tv_input,export)
+          data.storage <- dplyr::bind_rows(data.storage,data.now.storage)
+        }
       }
       
       # Add storage terms
@@ -141,10 +169,12 @@ ThirdStage_REddyProc <- function(pathSetIni) {
     #DT <- data.table(data_REddyProc[,-which(names(data_REddyProc) %in% c("Year","DoY","Hour","NEE","FC","H","LE","FCH4","Ustar"))])
     #last_ind <- max(DT[,lapply(.SD,function(x) which(x == tail(x[!is.na(x)],1)))])
     
-    DT <- data.table(data.storage[,-which(names(data.storage) %in% c("datetime"))])
-    last_ind <- max(DT[,lapply(.SD,function(x) which(x == tail(x[!is.na(x)],1)))])
-    
-    data_REddyProc <- data_REddyProc[c(1:last_ind),]
+    if (exists("vars_storage") == TRUE) {
+      DT <- data.table(data.storage[,-which(names(data.storage) %in% c("datetime"))])
+      last_ind <- max(DT[,lapply(.SD,function(x) which(x == tail(x[!is.na(x)],1)))])
+      
+      data_REddyProc <- data_REddyProc[c(1:last_ind),]
+    } 
     
     #Transforming missing values into NA:
     data_REddyProc[is.na(data_REddyProc)]<-NA
@@ -210,13 +240,15 @@ ThirdStage_REddyProc <- function(pathSetIni) {
     # Create data frame for REddyProc output
     FilledEddyData <- EProc$sExportResults()
     
-    # Fill back in the NA values
-    FilledEddyData_full <- data.frame(matrix(NA, nrow = nrow(data), ncol = ncol(FilledEddyData)))
-    FilledEddyData_full[c(1:last_ind),] <- FilledEddyData 
-    colnames(FilledEddyData_full) <-  colnames(FilledEddyData)
-    
-    # Re-save as FilledEddyData
-    FilledEddyData <- FilledEddyData_full
+    if (exists("vars_storage") == TRUE) {
+      # Fill back in the NA values
+      FilledEddyData_full <- data.frame(matrix(NA, nrow = nrow(data), ncol = ncol(FilledEddyData)))
+      FilledEddyData_full[c(1:last_ind),] <- FilledEddyData 
+      colnames(FilledEddyData_full) <-  colnames(FilledEddyData)
+      
+      # Re-save as FilledEddyData
+      FilledEddyData <- FilledEddyData_full
+    }
     
     # Delete uStar dulplicate columns since they are output for each gap-filled variables
     vars_remove <- c(colnames(FilledEddyData)[grepl('\\Thres.', names(FilledEddyData))],
@@ -228,13 +260,17 @@ ThirdStage_REddyProc <- function(pathSetIni) {
     for (j in 1:length(yrs)) {
       
       # indices corresponding to year of interest
-      ind_s <- which(data$year == yrs[j] & data$DOY == 1 & data$HHMM == 0.5)
-      ind_e <- which(data$year == yrs[j]+1 & data$DOY == 1 & data$HHMM == 0)
+      if (data_source == "FLUXNET") {
+        ind_s <- which(data$year == yrs[j] & data$DOY == 1 & data$HHMM == 0)
+        ind_e <- which(data$year == yrs[j] & data$DOY == last(data$DOY[data$year == yrs[j]]) & data$HHMM == 23.5)
+      } else {
+        ind_s <- which(data$year == yrs[j] & data$DOY == 1 & data$HHMM == 0.5)
+        ind_e <- which(data$year == yrs[j]+1 & data$DOY == 1 & data$HHMM == 0)
+      }
       
       ind <- seq(ind_s,ind_e)
       
       # First save all under ThirdStage_REddyProc_RF_Fast or ThirdStage_REddyProc_RF_Full
-      
       if (Ustar_scenario == 'full') { 
         
         out_path <- paste(db_out,"/",as.character(yrs[j]),"/",site,"/",level_REddyProc_Full, sep = "")
@@ -282,24 +318,53 @@ ThirdStage_REddyProc <- function(pathSetIni) {
       data_third_stage <- data_third_stage[, vars_third_stage_REddyProc]
       colnames(data_third_stage) <- vars_names_third_stage
       
-      for (i in 1:length(vars_names_third_stage)) {
-        writeBin(as.numeric(data_third_stage[ind,i]), vars_names_third_stage[i], size = 4)
+      if (data_source == "FLUXNET") {
+        
+        file_name <- list.files(path = paste0(db_ini,"/",yrs[j],"/",site,"/",level_in,sep = ""), pattern = "*.csv")
+        
+        data.now <- read.csv(dir(paste0(db_ini,"/",yrs[j],"/",site,"/",level_in,sep = ""), full.names=T, pattern="*.csv"))
+        var_names_csv <- colnames(data.now)
+        
+        # Remove variables from data.now that are also in data.all.stagethree
+        intersecting_vars <- intersect(vars_names_third_stage, var_names_csv)
+        
+        data.all.stagethree <- cbind(data.now[,!(names(data.now) %in% intersecting_vars)],data_third_stage[ind,])
+        
+        write.csv(data.all.stagethree, file_name, row.names=F)
+        
+      } else {
+        
+        for (i in 1:length(vars_names_third_stage)) {
+          writeBin(as.numeric(data_third_stage[ind,i]), vars_names_third_stage[i], size = 4)
+        }
       }
     }
   }
   
   # RF gap-filling for FCH4 (for now - add NEE, LE, H later)
   if (fill_RF_FCH4 == 1) {
+    
     # Read function for RF gap-filling data
     p <- sapply(list.files(pattern="RF_gf.R", path=fx_path, full.names=TRUE), source)
     
     data_RF <- data.frame()
     # Loop through each year specified for the RF gap-filling and merge all years together
     for (j in 1:length(years_RF)) {
-      
       # Load stage three data
-      data_RF.now <- read_database(db_ini,years_RF[j],site,level_RF_FCH4,predictors_FCH4,tv_input,export)
-      data_RF <- dplyr::bind_rows(data_RF,data_RF.now)
+      if (data_source == "FLUXNET") {
+        
+        data_RF.now <- read.csv(dir(paste0(db_ini,"/",years_REddyProc[j],"/",site,"/",level_RF_FCH4,"/",sep = ""), full.names=T, pattern="*.csv"))
+        data_RF <- dplyr::bind_rows(data_RF,data_RF.now)
+        
+      } else {
+        data_RF.now <- read_database(db_ini,years_RF[j],site,level_RF_FCH4,predictors_FCH4,tv_input,export)
+        data_RF <- dplyr::bind_rows(data_RF,data_RF.now)
+      }
+    }
+    
+    if (data_source == "FLUXNET") {
+      data_RF$datetime <- ymd_hm(data_RF$TIMESTAMP_START)
+      data_RF <- data_RF[,!(names(data_RF) %in% "TIMESTAMP_START")]
     }
     
     # Apply gap-filling function
@@ -311,8 +376,18 @@ ThirdStage_REddyProc <- function(pathSetIni) {
     for (j in 1:length(yrs)) {
       
       # indices corresponding to year of interest
-      ind_s <- which(year(gap_filled_FCH4$DateTime) == yrs[j] & yday(gap_filled_FCH4$DateTime) == 1 & hour(gap_filled_FCH4$DateTime) == 0 & minute(gap_filled_FCH4$DateTime) == 30)
-      ind_e <- which(year(gap_filled_FCH4$DateTime) == yrs[j]+1 & yday(gap_filled_FCH4$DateTime) == 1 & hour(gap_filled_FCH4$DateTime) == 0 & minute(gap_filled_FCH4$DateTime) == 0)
+      if (data_source == "FLUXNET") {
+        
+        ind_s <- which(year(gap_filled_FCH4$DateTime) == yrs[j] & yday(gap_filled_FCH4$DateTime) == 1 & hour(gap_filled_FCH4$DateTime) == 0 & minute(gap_filled_FCH4$DateTime) == 0)
+        last_day <- last(yday(gap_filled_FCH4$DateTime)[year(gap_filled_FCH4$DateTime) == yrs[j]])
+        ind_e <- which(year(gap_filled_FCH4$DateTime) == yrs[j] & yday(gap_filled_FCH4$DateTime) == last_day & hour(gap_filled_FCH4$DateTime) == 23 & minute(gap_filled_FCH4$DateTime) == 30)
+        
+      } else {
+        
+        # indices corresponding to year of interest
+        ind_s <- which(year(gap_filled_FCH4$DateTime) == yrs[j] & yday(gap_filled_FCH4$DateTime) == 1 & hour(gap_filled_FCH4$DateTime) == 0 & minute(gap_filled_FCH4$DateTime) == 30)
+        ind_e <- which(year(gap_filled_FCH4$DateTime) == yrs[j]+1 & yday(gap_filled_FCH4$DateTime) == 1 & hour(gap_filled_FCH4$DateTime) == 0 & minute(gap_filled_FCH4$DateTime) == 0)
+      }
       
       ind <- seq(ind_s,ind_e)
       
@@ -362,20 +437,22 @@ ThirdStage_REddyProc <- function(pathSetIni) {
       }
       
       # Save only RF filled FCH4 flux
-      writeBin(as.numeric(gap_filled_FCH4[ind,1]), vars_third_stage_RF_FCH4, size = 4)
       
-      # Copy over clean_tv to REddyProc_RF
-      # set wd to third stage
-      out_path <- paste(db_out,"/",as.character(yrs[j]),"/",site,"/",level_out, sep = "")
-      
-      if (file.exists(out_path)){
-        setwd(out_path)
+      if (data_source == "FLUXNET") {
+        
+        file_name <- list.files(path = paste0(db_ini,"/",yrs[j],"/",site,"/",level_RF_FCH4,sep = ""), pattern = "*.csv")
+        data.now <- read.csv(dir(paste0(db_ini,"/",yrs[j],"/",site,"/",level_RF_FCH4,sep = ""), full.names=T, pattern="*.csv"))
+        
+        RF_FCH4 <- as.data.frame(gap_filled_FCH4[ind,1])
+        colnames(RF_FCH4) <- vars_third_stage_RF_FCH4
+        data.all.RF.stagethree <- cbind(data.now,RF_FCH4)
+        
+        write.csv(data.all.RF.stagethree, file_name, row.names=F)
+        rm(RF_FCH4)
+        
       } else {
-        dir.create(out_path)
-        setwd(out_path)
+        writeBin(as.numeric(gap_filled_FCH4[ind,1]), vars_third_stage_RF_FCH4, size = 4)
       }
-      
-      file.copy("clean_tv",paste(db_out,"/",as.character(yrs[j]),"/",site,"/REddyProc_RF",sep = ""),overwrite = TRUE)
     }
   }
 }
