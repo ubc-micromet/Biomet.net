@@ -23,11 +23,7 @@ ThirdStage_REddyProc <- function(pathSetIni) {
   db_ini <- db_root # base path to find the files
   db_out <- db_root # base path where to save the files
   
-  if (data_source == "FLUXNET") {
-    ini_path <- paste(db_root,"/Calculation_Procedures/","TraceAnalysis_ini_FLUXNET/",site,sep="") # specify base path to where the ini files are
-  } else {
-    ini_path <- paste(db_root,"/Calculation_Procedures/","TraceAnalysis_ini/",site,sep="") # specify base path to where the ini files are
-  }
+  ini_path <- paste(db_root,"/Calculation_Procedures/","TraceAnalysis_ini/",site,sep="") # specify base path to where the ini files are
   
   # Specify folders
   
