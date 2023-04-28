@@ -11,11 +11,14 @@ function runThirdStageCleaningREddyProc(yearIn,siteID,Ustar_scenario,yearsToProc
 %                     for gap-filling even when outputing one year only
 %
 % Zoran Nesic               File created:       Oct 25, 2022
-%                           Last modification:  Feb  2, 2023
+%                           Last modification:  Apr 28, 2023
 %
 
 % Revisions
 %
+% Apr 28, 2023 (Zoran)
+%   - Added a new paramter to _setThirdStageCleaningParameters.R:
+%       -  fprintf(fidIni,'data_source    <- "%s"\n','MICROMET');
 % Feb 2, 2022 (Zoran/June)
 %   - fixed a bug in sub-function findRPath that incorrectly identified 
 %     the newest Rscript installation.
@@ -93,6 +96,7 @@ function runThirdStageCleaningREddyProc(yearIn,siteID,Ustar_scenario,yearsToProc
     fprintf(fidIni,'# %s.m\n',st(1).name);
     fprintf(fidIni,'# %s\n',datestr(now));
     fprintf(fidIni,'#--------------------------------------------------------------\n');
+    fprintf(fidIni,'data_source    <- "%s"\n','MICROMET');
     fprintf(fidIni,'site    <- "%s"\n',siteID);
     fprintf(fidIni,'yrs     <- %d\n',yearIn);
     fprintf(fidIni,'db_root <- "%s"\n',pthDatabase);

@@ -4,8 +4,8 @@ function mergeSmartFluxUSBdata(siteName,inputFolder)
 % Cycle through all subfolders of inputFolder and robocopy 
 % data to the mergedDataFolder.
 
-baseSourceFolder = '\\137.82.254.70\data-dump';
-baseMergedDataFolder = '\\137.82.254.70\highfreq';
+baseSourceFolder     = '\\137.82.55.154\data-dump';
+baseMergedDataFolder = '\\137.82.55.154\highfreq';
 % siteName = 'DSM';
 % inputFolder = '2021_Flux';
 
