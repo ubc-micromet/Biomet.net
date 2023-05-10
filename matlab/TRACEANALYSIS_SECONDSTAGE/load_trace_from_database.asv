@@ -21,14 +21,12 @@ function trace_out = load_trace_from_database(trace_in)
 %         else
 %             inputFileName = char(trace_in.ini.inputFileName(i,:));
 %         end
-%   - Bug fix: instead of testing if ~exist('temp_data','var') I used to
-%     check if i==1 (very wrong)
 %    - Another bug. Changed:
 %         ind = find(tvYear >= trace_in.ini.inputFileName_dates(i,1) & ...
 %             tvYear < trace_in.ini.inputFileName_dates(i,2));
 % to
-%         ind = find(tvYear >= trace_in.ini.inputFileName_dates(i,1) & ...
-%             tvYear <= trace_in.ini.inputFileName_dates(i,2));
+%         ind = find(tvYear > trace_in.ini.inputFileName_dates(i,1) & ...
+%             tvYear < trace_in.ini.inputFileName_dates(i,2));
 % Feb 11, 2023 (Zoran)
 %   - Removed old comments that are not relevant anymore.
 %   - Removed a big chunk of code that didn't do anything useful anymore.
@@ -78,7 +76,7 @@ if isfield(trace_in.ini,'inputFileName_dates')
             % files are read.
             [temp_data_cur,timeVector] = read_db(Year,SiteID,...
                 trace_in.ini.measurementType,inputFileName,warn_flag);
-            if ~exist('temp_data','var')
+            if i == 1
                 % Create a NaN array of the appropriate length.
                 temp_data = NaN.*ones(length(timeVector),1);
             end
