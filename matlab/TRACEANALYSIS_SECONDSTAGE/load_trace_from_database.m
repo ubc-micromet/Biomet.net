@@ -69,7 +69,7 @@ if isfield(trace_in.ini,'inputFileName_dates')
         else
             inputFileName = char(trace_in.ini.inputFileName(i,:));
         end
-        ind = find(tvYear >= trace_in.ini.inputFileName_dates(i,1) & ...
+        ind = find(tvYear > trace_in.ini.inputFileName_dates(i,1) & ...
             tvYear <= trace_in.ini.inputFileName_dates(i,2));        
         if ~isempty(ind)
             % load data only if this input file is relevant for this year.
