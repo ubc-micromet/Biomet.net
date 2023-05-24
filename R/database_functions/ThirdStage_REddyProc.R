@@ -283,6 +283,20 @@ ThirdStage_REddyProc <- function(pathSetIni) {
           writeBin(as.numeric(FilledEddyData[ind,i]), var_names[i], size = 4)
         }
         
+        in_path <- paste(db_ini,"/",as.character(yrs[j]),"/",site,"/clean/SecondStage/", sep = "")
+        tv_var_full <- paste(in_path,"clean_tv", sep="")
+        
+        out_path <- paste(db_ini,"/",as.character(yrs[j]),"/",site,"/",level_REddyProc_Full, sep = "")
+        
+        if (file.exists(out_path)){
+          setwd(out_path)
+        } else {
+          dir.create(out_path)
+          setwd(out_path)
+        }
+        
+        file.copy(tv_var_full,out_path,overwrite = TRUE)
+        
       } else if (Ustar_scenario == 'fast') { 
         out_path <- paste(db_out,"/",as.character(yrs[j]),"/",site,"/",level_REddyProc_Fast, sep = "")
         
@@ -297,6 +311,20 @@ ThirdStage_REddyProc <- function(pathSetIni) {
         for (i in 1:length(var_names)) {
           writeBin(as.numeric(FilledEddyData[ind,i]), var_names[i], size = 4)
         }
+        
+        in_path <- paste(db_ini,"/",as.character(yrs[j]),"/",site,"/clean/SecondStage/", sep = "")
+        tv_var_full <- paste(in_path,"clean_tv", sep="")
+        
+        out_path <- paste(db_ini,"/",as.character(yrs[j]),"/",site,"/",level_REddyProc_Fast, sep = "")
+        
+        if (file.exists(out_path)){
+          setwd(out_path)
+        } else {
+          dir.create(out_path)
+          setwd(out_path)
+        }
+        
+        file.copy(tv_var_full,out_path,overwrite = TRUE)
       }
       
       # Output variables to stage three

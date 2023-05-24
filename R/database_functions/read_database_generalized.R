@@ -50,6 +50,7 @@ read_data_generalized <-
       tv <- readBin(paste0(inpath,"/",tv_input,sep=""), double(), n = 18000)
       datetime <-
         as.POSIXct((tv - 719529) * 86400, origin = "1970-01-01", tz = "UTC")
+      
       # Round to nearest 30 min
       datetime <- lubridate::round_date(datetime, "30 minutes")
       

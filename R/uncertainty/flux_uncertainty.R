@@ -17,16 +17,11 @@ library("plotly")
 # Run ini file first 
 
 # Read function for loading data
-p <- sapply(list.files(pattern="read_database.R", path=fx_path, full.names=TRUE), source)
+p <- sapply(list.files(pattern="read_database_generalized.R", path=fx_path, full.names=TRUE), source)
 
-# Loop through each year
-df <- data.frame()
-for (j in 1:length(yrs)) {
-  
-  # Create data frame for years & variables of interest to import into REddyProc
-  df.now <- load.export.data(basepath,yrs[j],site,level_in,vars,tv_input,export)
-  df <- dplyr::bind_rows(df,df.now)
-}
+
+# Create data frame for years & variables of interest to import into REddyProc
+df <- read_data_generalized(basepath,yrs,site,level_in,vars,tv_input,export)
 
 # LOOP OVER YEARS
 start_ind <- which(df$datetime==start_dates[1])+1 #+1 added to start at 30 min 
@@ -48,22 +43,22 @@ data <- data %>%
       is.finite(NEE_uStar_orig), NEE_uStar_fsd, NA), # NEE_orig_sd includes NEE_uStar_fsd only for measured values
     NEE_uStar_fgood = ifelse(
       NEE_uStar_fqc <= 1, is.finite(NEE_uStar_f), NA), # Only include filled values for the most reliable gap-filled observations. Note that is.finite() shouldn't be used here.
-    resid = ifelse(NEE_uStar_fqc == 0, NEE_uStar_orig - NEE_uStar_fall, NA)) # quantify the error terms, i.e. model-data residuals (only using observations and exclude also
-    # "good" gap-filled data)
+    resid = ifelse(NEE_uStar_fqc == 0, NEE_uStar_orig - NEE_uStar_fall, NA)) # quantify the error terms, i.e. data-model residuals (only using observations (i.e., NEE_uStar_fqc == 0 is original data) and exclude also
+# "good" gap-filled data)
 # plot_ly(data = data, x = ~datetime, y = ~NEE_uStar_f, name = 'filled', type = 'scatter', mode = 'markers',marker = list(size = 3)) %>%
 #   add_trace(data = data, x = ~datetime, y = ~NEE_uStar_orig, name = 'orig', mode = 'markers') %>% 
 #   toWebGL()
-
+        
 # visualizing data
 plot_ly(data = data, x = ~datetime, y = ~NEE_U2.5_orig, name = 'U2.5', type = 'scatter', mode = 'markers',marker = list(size = 3)) %>%
-   add_trace(data = data, x = ~datetime, y =~NEE_uStar_orig, name = 'uStar', mode = 'markers') %>% 
-   add_trace(data = data, x = ~datetime, y =~NEE_U97.5_orig, name = 'U97.5', mode = 'markers') %>% 
-   toWebGL()
+  add_trace(data = data, x = ~datetime, y =~NEE_uStar_orig, name = 'uStar', mode = 'markers') %>% 
+  add_trace(data = data, x = ~datetime, y =~NEE_U97.5_orig, name = 'U97.5', mode = 'markers') %>% 
+  toWebGL()
 
 plot_ly(data = data, x = ~datetime, y = ~NEE_U2.5_fall, name = 'U2.5 fall', type = 'scatter', mode = 'markers',marker = list(size = 3)) %>%
   #add_trace(data = data, x = ~datetime, y =~NEE_U2.5_fall, name = 'U2.5 fall', mode = 'markers') %>% 
   #add_trace(data = data, x = ~datetime, y =~NEE_uStar_f, name = 'uStar fill', mode = 'markers') %>% 
-  #add_trace(data = data, x = ~datetime, y =~NEE_uStar_fall, name = 'uStar fall', mode = 'markers') %>% 
+  add_trace(data = data, x = ~datetime, y =~NEE_uStar_fall, name = 'uStar fall', mode = 'markers') %>% 
   #add_trace(data = data, x = ~datetime, y =~NEE_U97.5_f, name = 'U97.5 fill', mode = 'markers') %>% 
   add_trace(data = data, x = ~datetime, y =~NEE_U97.5_fall, name = 'U97.5 fall', mode = 'markers') %>% 
   add_trace(data = data, x = ~datetime, y =~NEE_uStar_orig, name = 'uStar orig', mode = 'markers',marker = list(size = 5)) %>% 
