@@ -13,8 +13,7 @@ function trace_out = ta_load_from_db(trace_in)
 % Revisions:
 %
 % May 24, 2023 (Zoran)
-%   - changed inputFileName(1) to inputFileName(1,:) to properly handle the string arrays
-%
+%   - changed inputFileName(1) to inputFileName(1,:) to 
 %  Elyn 07.11.01 - allow for different inputFileNames associated with different times
 %                   for eg. when a sensor is changed from one logger to another
 
@@ -29,20 +28,20 @@ if isfield(trace_in.ini,'inputFileName_dates')
     ind_year  = find(pick_year(:,1) <= Year);
     if ~isempty(ind_year) %allow tv to be loaded and empty trace created even if data not available
         ind_year  = floor(ind_year(end));
-        tmp_inputFileName = deblank(char(trace_in.ini.inputFileName(ind_year)));
+        tmp_inputFileName = char(trace_in.ini.inputFileName(ind_year));
     else
         for i = 1:size(pick_year,1)
             tmp_FileName = char(trace_in.ini.inputFileName(i));
             ind = find( tmp_FileName == filesep | tmp_FileName == '.' );
             tmp_FileName = tmp_FileName(1:ind-1);
             if exist([pth tmp_FileName],'dir') == 7
-                tmp_inputFileName = deblank(char(trace_in.ini.inputFileName(i)));
+                tmp_inputFileName = char(trace_in.ini.inputFileName(i));
                 break
             end
         end    
     end
 else
-    tmp_inputFileName = deblank(char(trace_in.ini.inputFileName));
+    tmp_inputFileName = char(trace_in.ini.inputFileName);
 end
 
 % switch trace_in.ini.measurementType
@@ -77,7 +76,7 @@ if isfield(trace_in.ini,'inputFileName_dates')
     inputFileName = char(trace_in.ini.inputFileName);  
     for i = 1:nDates
         [temp_data_cur,timeVector] = read_db(Year,SiteID,...
-            trace_in.ini.measurementType,deblank(inputFileName(i,:)));
+            trace_in.ini.measurementType,inputFileName(i,:));
         ind = find(timeVector >= inputFileName_dates(i,1) & ...
             timeVector < inputFileName_dates(i,2));
         if i == 1
