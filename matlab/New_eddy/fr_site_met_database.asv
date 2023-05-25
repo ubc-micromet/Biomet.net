@@ -35,7 +35,8 @@ function [numOfFilesProcessed,numOfDataPointsProcessed] = ...
 %                             (structPrefix.TimeVector,...) so that multiple loggers
 %                             can be stored in the same database folder
 %       missingPointValue   - default 0 (Biomet legacy), all new non-Biomet sites should be NaN
-%       default_Csi_name    - 
+%       default_Csi_name    - default [] (Biomet legacy)
+%       tv_input_format     - default []; see: fr_read_csi()
 %
 % Zoran Nesic           File Created:      June 16, 2005
 %                       Last modification: May  25, 2023  
@@ -183,9 +184,21 @@ for i=1:length(h)
                 case 3
                     % Read data using readtable function
                     % Assumptions:
-                    %   - csv file
+                    %   - file can be read using readtable with no additional parameters
                     %   - contains column named "date"
-                    ClimateStats = readtable(fullfile(pth,h(i).name));
+                    opts = detectImportOptions(fullfile(pth,h(i).name));
+                    for cntVars = 1:length(opts.VariableTypes)
+                        % change variable types for all variables to 'double'
+                        % except for the variable 'date'
+                        varName = char(opts.VariableNames(cntVars));
+                        if ~strcmpi(varName,'date')
+                           opts = setvartype(opts,varName,{'double'});
+                        end
+                    end
+                    if ~isempty(chanNames)
+                        opts.SelectedVariableNames = chanNames;
+                    end
+                    ClimateStats = readtable(fullfile(pth,h(i).name),opts);
                     tv = datenum(ClimateStats.date(:));                    
                     ClimateStats.date = [];         % remove date field 
                     ClimateStats.TimeVector = tv+ time_shift;   % Add TimeVector field (apply time shift if needed)

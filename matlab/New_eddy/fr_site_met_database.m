@@ -48,6 +48,7 @@ function [numOfFilesProcessed,numOfDataPointsProcessed] = ...
 %     - added an option to load up a generic csv file using readtable
 %       and to process it into database. The csv file must have "date" column
 %       that can be converted to a proper datetime format.
+%     - added more comments.
 %   July 27, 2022 (Zoran)
 %     - left a bug (parameter defaultSeparator was left in the program but
 %     not defined). I removed it.
@@ -186,21 +187,26 @@ for i=1:length(h)
                     % Assumptions:
                     %   - file can be read using readtable with no additional parameters
                     %   - contains column named "date"
-                    ClimateStats = readtable(fullfile(pth,h(i).name));
-                    tv = datenum(ClimateStats.date(:));                    
-                    ClimateStats.date = [];         % remove date field 
-                    ClimateStats.TimeVector = tv+ time_shift;   % Add TimeVector field (apply time shift if needed)
-                    if ~isempty(chanNames)                        
-                        % keep only the fields that are requested
-                        allChanNames = fieldnames(ClimateStats);
-                        % Find channels to remove (keep the 3 Table-specific fields)
-                        chanToRemove = setdiff(allChanNames,chanNames);
-                        chanToRemove = setdiff(chanToRemove,{'Properties','Row','Variables','TimeVector'});
-                        for cntChans = 1:length(chanToRemove)
-                            ClimateStats.(char(chanToRemove(cntChans)))=[];
-                        end                        
+                    opts = detectImportOptions(fullfile(pth,h(i).name));
+                    for cntVars = 1:length(opts.VariableTypes)
+                        % change variable types for all variables to 'double'
+                        % except for the variable 'date'
+                        varName = char(opts.VariableNames(cntVars));
+                        if ~strcmpi(varName,'date')
+                           opts = setvartype(opts,varName,{'double'});
+                        end
                     end
-                    ClimateStats = table2struct(ClimateStats); % ClimateStats is now a structure
+                    if ~isempty(chanNames)
+                        % add field 'date' to the list of chanNames to import
+                        tmpChanNames = chanNames;
+                        tmpChanNames{end+1} = 'date';
+                        opts.SelectedVariableNames = tmpChanNames;                        
+                    end
+                    ClimateStats = readtable(fullfile(pth,h(i).name),opts);
+                    tv = datenum(ClimateStats.date(:));                    
+                    ClimateStats.date = [];                     % remove date field 
+                    ClimateStats.TimeVector = tv+ time_shift;   % Add TimeVector field (apply time shift if needed)
+                    ClimateStats = table2struct(ClimateStats);  % ClimateStats is now a structure
                 otherwise
                     fprintf('Wrong file type in fr_site_met_database.m');
             end
