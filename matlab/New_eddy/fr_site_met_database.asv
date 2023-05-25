@@ -35,8 +35,7 @@ function [numOfFilesProcessed,numOfDataPointsProcessed] = ...
 %                             (structPrefix.TimeVector,...) so that multiple loggers
 %                             can be stored in the same database folder
 %       missingPointValue   - default 0 (Biomet legacy), all new non-Biomet sites should be NaN
-%       default_Csi_name    - default [] (Biomet legacy)
-%       tv_input_format     - default []; see: fr_read_csi()
+%       default_Csi_name    - 
 %
 % Zoran Nesic           File Created:      June 16, 2005
 %                       Last modification: May  25, 2023  
@@ -184,7 +183,7 @@ for i=1:length(h)
                 case 3
                     % Read data using readtable function
                     % Assumptions:
-                    %   - file can be read using readtable with no additional parameters
+                    %   - csv file
                     %   - contains column named "date"
                     ClimateStats = readtable(fullfile(pth,h(i).name));
                     tv = datenum(ClimateStats.date(:));                    
