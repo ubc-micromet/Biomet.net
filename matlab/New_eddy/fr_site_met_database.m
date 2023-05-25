@@ -203,9 +203,9 @@ for i=1:length(h)
                         opts.SelectedVariableNames = tmpChanNames;                        
                     end
                     ClimateStats = readtable(fullfile(pth,h(i).name),opts);
-                    tv = datenum(ClimateStats.date(:));                    
+                    tv = fr_round_time(datenum(ClimateStats.date(:)));                    
                     ClimateStats.date = [];                     % remove date field 
-                    ClimateStats.TimeVector = tv+ time_shift;   % Add TimeVector field (apply time shift if needed)
+                    ClimateStats.TimeVector = tv + time_shift;  % Add TimeVector field (apply time shift if needed)
                     ClimateStats = table2struct(ClimateStats);  % ClimateStats is now a structure
                 otherwise
                     fprintf('Wrong file type in fr_site_met_database.m');
