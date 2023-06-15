@@ -1,4 +1,4 @@
-function run_ECCC_climate_station_update(yearsIn,monthsIn,stationIDs)
+function run_ECCC_climate_station_update(yearsIn,monthsIn,stationIDs,dbase_pth)
 % run_ECCC_climate_station_update(yearsIn,monthsIn,stationIDs)
 %
 % Process ECCC climate station data. 
@@ -9,12 +9,17 @@ function run_ECCC_climate_station_update(yearsIn,monthsIn,stationIDs)
 % stationIDs    - a vector of station IDs. They can be found here:
 %                 https://drive.google.com/drive/folders/1WJCDEU34c60IfOnG4rv5EPZ4IhhW9vZH
 %                 File: "Station Inventory EN.csv"
+% dbase_pth     - Optional data base path
 %
 % Zoran Nesic                   File created:               2022
-%                               Last modification:  Nov 29, 2022
+%                               Last modification:  Jun 15, 2023
 
 % Revisions
 %
+% Jun 15, 2023 (Zoran)
+%  - Switch to using db_pth_root instead of biomet_database_default. 
+%    The new may is more generic and it should always work.
+%  - added an optional database path (dbase_pth)
 % Nov 29, 2022 (Zoran)
 %  - Program now defaults to processing stations:[49088 10927 925 51357 51442]
 %    Used to default to 49088 only.
@@ -30,6 +35,7 @@ monthRange = monthNow-1:monthNow;
 arg_default('yearsIn',yearNow)
 arg_default('monthsIn',monthRange)
 arg_default('stationIDs',[49088 10927 925 51357 51442] )
+arg_default('dbase_pth',db_pth_root);
 
 for cntStations = 1:length(stationIDs)
     sID = stationIDs(cntStations);
@@ -50,7 +56,7 @@ for cntStations = 1:length(stationIDs)
     if ~isempty(pathECCC)
         try
             db_ECCC_climate_station(yearsIn,monthsIn,sID,...
-                                    fullfile(biomet_database_default,pathECCC),60);
+                                    fullfile(dbase_pth,pathECCC),60);
         catch
             fprintf('Error processing station: %d (year: %d, month: %d)\n',sID,yearsIn,monthsIn(end));
         end
