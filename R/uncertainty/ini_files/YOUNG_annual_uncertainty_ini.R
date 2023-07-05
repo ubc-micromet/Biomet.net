@@ -4,7 +4,7 @@
 
 #paths
 fx_path <- "/Users/sara/Code/Biomet.net/R/database_functions/" # Specify path for loading functions
-basepath <- "/Users/sara/Library/CloudStorage/OneDrive-UBC/UBC/database" # Specify base path
+basepath <- "/Users/sara/Library/CloudStorage/OneDrive-McGillUniversity/database" # Specify base path
 
 # Specify data path, years, level, and variables 
 yrs <- c(2021,2022) # for multiple years use c(year1,year2)

@@ -75,7 +75,7 @@ resRand <- data %>% summarise(
   , varMean = sum(NEE_orig_sd^2, na.rm = TRUE) / nRec / (!!nEff - 1)
   , sdMean = sqrt(varMean) 
   , sdMeanApprox = mean(NEE_orig_sd, na.rm = TRUE) / sqrt(!!nEff - 1)
-) %>% select(NEEagg, sdMean, sdMeanApprox)
+) %>% dplyr::select(NEEagg, sdMean, sdMeanApprox)
 
 # can also compute Daily aggregation -> but not done here.
 
