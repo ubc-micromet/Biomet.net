@@ -148,8 +148,8 @@ end
                     outStruct(j,1).(char(Header.var_names(i))) =x(j);  
                 end
             catch ME
-                fprintf('**** ERROR ==>  ');
-                fprintf('%s\n',ME.message);
+                fprintf('**** ERROR ****\n')
+                fprintf('%s\n',
                 rethrow(ME)
             end
         end

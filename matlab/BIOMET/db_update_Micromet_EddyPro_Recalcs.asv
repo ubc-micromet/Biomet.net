@@ -51,18 +51,8 @@ for k=1:length(yearIn)
         [numOfFilesProcessed,numOfDataPointsProcessed]= fr_SmartFlux_database(inputPath,progressListPath,outputPath,[],[],missingPointValue);           
         fprintf('%s  EddyPro_full_output:  Number of files processed = %d, Number of HHours = %d\n',siteID,numOfFilesProcessed,numOfDataPointsProcessed);
         
-        % Check if processing of Biomet EddyPro output files is requested
-        if flagProcessBiometEddyProFiles ~= 0
-            % Data goes to Met folder in the database
-            % Path to Met Database
-            outputPath = fullfile(pth_db,'yyyy',siteID,'Met');                     
-            % Path to the source files
-            inputPath = fullfile(sites_pth,...
-                               sprintf('%s/Flux/eddypro_%s_%d*_biomet*_adv.csv',siteID,siteID,yearIn(k)));
-            % Process the new files
-            [numOfFilesProcessed,numOfDataPointsProcessed]= fr_SmartFlux_database(inputPath,progressListPath,outputPath,[],[],missingPointValue);           
-            fprintf('%s  EddyPro_biomet:  Number of files processed = %d, Number of HHours = %d\n',siteID,numOfFilesProcessed,numOfDataPointsProcessed);
-        end
+        % Check i
+
     end %j  site counter
     
 end %k   year counter

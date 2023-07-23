@@ -22,13 +22,15 @@ function [numOfFilesProcessed,numOfDataPointsProcessed] = fr_SmartFlux_database(
 %                     consecutive data points). Default 30 (hhour)
 %
 % Zoran Nesic           File Created:      July 14, 2018
-%                       Last modification: Aug  25, 2022
+%                       Last modification: July 22, 2023
 
 % Created based on fr_site_met_database
 
 %
 % Revisions:
 %
+%  July 22, 2023 (Zoran)
+%      - Added option for processing _biomet_ files
 %  Aug 25, 2022 (Zoran)
 %       - added ability to differentiate between SmartFlux summary files and EddyPro full_output files
 %         and to process either of them.
@@ -99,6 +101,8 @@ for i=1:length(h)
             fileName = fullfile(pth,h(i).name);
             if contains(fileName,'_full_output_')
                 [~, ~,tv] = fr_read_EddyPro_file(fileName,'caller','Stats');
+            elseif contains(fileName,'_biomet_')
+                [~, ~,tv] = fr_read_EddyPro_file(fileName,'caller','Stats');                
             else
                 [~, ~,tv] = fr_read_SmartFlux_file(fileName,'caller','Stats');
             end
