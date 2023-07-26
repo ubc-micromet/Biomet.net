@@ -117,7 +117,7 @@ for i=1:length(h)
             yearVector = datevec(tv);
             yearVector = yearVector(:,1);
             years = unique(yearVector)';
-            ind_yyyy = strfind(databasePath,'\yyyy\');
+            ind_yyyy = strfind(databasePath,[filesep 'yyyy' filesep]);
             if ~isempty(ind_yyyy)            
                 databasePathNew = databasePath;
                 for year_ind = years
