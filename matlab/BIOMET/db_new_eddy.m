@@ -29,9 +29,12 @@ function [k,StatsAll,dbFileNames, dbFieldNames] = db_new_eddy(arg1,wildcard,pthO
 %       k           -   number of files processed
 %
 % (c) Zoran Nesic               File created:       Apr  1, 2004
-%                               Last modification:  Jul 27, 2022
+%                               Last modification:  Jul 26, 2023
 
 % Revisions:
+%
+%   July 26, 2023 (Zoran)
+%    - Converted a few '\' into filesep to keep the program compatible with MacOS
 %
 %   July 27, 2022 (Zoran)
 %       - changed Clean_tv into clean_tv
@@ -120,7 +123,7 @@ pth_tmp = fr_valid_path_name(pthOut);          % check the path and create
 if isempty(pth_tmp)                         
    fprintf(1,'Directory %s does not exist!... ',pthOut);
    fprintf(1,'Creating new folder!... ');
-   indDrive = find(pthOut == '\');
+   indDrive = find(pthOut == filesep);
    [successFlag] = mkdir(pthOut(1:indDrive(1)),pthOut(indDrive(1)+1:end));
    if successFlag
        fprintf(1,'New folder created!\n');
@@ -142,7 +145,7 @@ if exist('pthIn')
    for i=1:n
       %if D(i).isdir == 0 & ~strcmp(D(i).name(7),'s')       % avoid directories and short form hhour files
       if D(i).isdir == 0        % avoid directories, use short form hhour files (Jan 18, 2000)
-         if find(D(i).name == ':' | D(i).name == '\') 
+         if find(D(i).name == ':' | D(i).name == filesep) 
             tempStats = load(D(i).name);
          else
             tempStats = load([pthIn D(i).name]);
@@ -567,7 +570,7 @@ pth_tmp = fr_valid_path_name(pthOut);          % check the path and create
 if isempty(pth_tmp)                         
    fprintf(1,'Directory %s does not exist!... ',pthOut);
    fprintf(1,'Creating new folder!... ');
-   indDrive = find(pthOut == '\');
+   indDrive = find(pthOut == filesep);
    [successFlag] = mkdir(pthOut(1:indDrive(1)),pthOut(indDrive(1)+1:end));
    if successFlag
        fprintf(1,'New folder created!\n');
@@ -589,7 +592,7 @@ if exist('pthIn')
    for i=1:n
       %if D(i).isdir == 0 & ~strcmp(D(i).name(7),'s')       % avoid directories and short form hhour files
       if D(i).isdir == 0        % avoid directories, use short form hhour files (Jan 18, 2000)
-         if find(D(i).name == ':' | D(i).name == '\') 
+         if find(D(i).name == ':' | D(i).name == filesep) 
             load(D(i).name);
          else
             load([pthIn D(i).name]);
