@@ -29,8 +29,6 @@ function [numOfFilesProcessed,numOfDataPointsProcessed] = fr_SmartFlux_database(
 %
 % Revisions:
 %
-%  July 26, 2023 (Zoran)
-%      - replaced "\" with "filesep" to make it compatible with MacOS.
 %  July 22, 2023 (Zoran)
 %      - Added option for processing _biomet_ files
 %  Aug 25, 2022 (Zoran)
