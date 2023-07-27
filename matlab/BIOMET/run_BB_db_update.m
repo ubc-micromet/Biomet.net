@@ -19,7 +19,7 @@ function run_BB_db_update(yearIn,sites)
 
 dv=datevec(now);
 arg_default('yearIn',dv(1));                                  % default - current year
-arg_default('sites',{'BB','BB2','DSM','RBM','Young','Hogg'}); % default - all sites
+arg_default('sites',{'BB','BB2','DSM','RBM','Young','Hogg','OHM'}); % default - all sites
 
 %Cycle through all the sites and do site specific chores
 % (netCam picture taking, Manitoba daily values calculations,...)
@@ -54,7 +54,7 @@ for cntStr = sites
     %Run quick daily total calculation for Pascal (DUC)
     try
         switch siteID
-            case {'Hogg','Young'}
+            case {'Hogg','Young','OHM'}
                 Manitoba_dailyvalues(cntStr,[]);
             otherwise
         end    

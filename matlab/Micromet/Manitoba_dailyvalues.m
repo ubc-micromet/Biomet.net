@@ -30,6 +30,8 @@ for siteNum = 1:length(siteNames)
             Years = 2021:Year_now;
         case 'Young'
             Years = 2021:Year_now;
+        case 'OHM'
+            Years = 2021:Year_now;            
         otherwise
             error('Wrong site name!')
     end
