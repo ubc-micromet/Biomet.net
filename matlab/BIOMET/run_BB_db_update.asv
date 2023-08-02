@@ -8,8 +8,7 @@ function run_BB_db_update(yearIn,sites)
 %
 % Revisions:
 %
-% Jul 27, 2023 (Zoran, June)
-%   - added OHM and BBS
+% Jul 27, 2023 (Zoran
 % Nov 18, 2022 (Zoran)
 %   - added processing of the Flags files (P:/Sites/siteID/MET/siteID_flags_yyyy.xlsx)
 %     For more on these files check out: db_update_flags_files function
