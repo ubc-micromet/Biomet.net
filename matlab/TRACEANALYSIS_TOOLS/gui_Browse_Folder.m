@@ -8,15 +8,20 @@ function gui_Browse_Folder(pathIn)
 %
 %
 % Zoran Nesic                   File created:       May 26, 2023
-%                               Last modifications: May 26, 2023
+%                               Last modifications: Jul 31, 2023
 
 % Revisions:
 %
+% July 31, 2023 (Zoran)
+%   - added "TimeVector" to the list of varibles that should not be
+%   plotted.
 
     % Find a time vector first
     if exist(fullfile(pathIn,'clean_tv'),'file')
         fileNameTv = 'clean_tv';
     elseif exist(fullfile(pathIn,'Time_Vector'),'file')
+        fileNameTv = 'Time_Vector';
+    elseif exist(fullfile(pathIn,'TimeVector'),'file')
         fileNameTv = 'Time_Vector';
     end
 
@@ -39,6 +44,7 @@ function gui_Browse_Folder(pathIn)
         currentFile = fullfile(pathIn,s_all(cntS).name);
         if ~exist(currentFile,'dir') ...
             && ~contains(currentFile,'Time_vector')...
+            && ~contains(currentFile,'TimeVector')...            
             && ~contains(currentFile,'clean_tv')
             cntTmp = cntTmp+1;
             if cntTmp == 1
