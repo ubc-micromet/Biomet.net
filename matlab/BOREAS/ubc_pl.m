@@ -9,6 +9,8 @@ function [t,x] = ubc_pl(ind, year, select, fig_num_inc,pause_flag,corrected)
 
 % Revisions:
 % 
+% Aug 3, 2023 (Zoran)
+%   - started added traces from CR1000 new climate logger
 % Dec 31, 2022 (Zoran)
 %   - Prevented program from trying to plot data past "now". 
 %     See variable: time_now
@@ -138,12 +140,13 @@ end
 trace_name  = 'Battery Voltages';
 trace_path  = char(fullfile(pth, 'ubc.12'),...
                    fullfile(cg_pth, 'cg.6'),...
-                   fullfile(TF_rad_pth,'\TABLE_RAW\30min\RAW_BatteryVolt_Avg'));
+                   fullfile(TF_rad_pth,'\TABLE_RAW\30min\RAW_BatteryVolt_Avg'),...
+                   fullfile(root_pth, 'BattVolt_Avg'));
  
 %trace_path  = char([pth '\ubc.12'],[pth '\ubc.20']);
 %trace_path  = char([pth '\ubc.13'],[pth '\ubc.26'],[cg_pth '\cg.7']);
 
-trace_legend = char('Totem Pwr','Cecil Green Pwr','Radiation Pwr');
+trace_legend = char('Totem Pwr','Cecil Green Pwr','Radiation Pwr','CR1000');
 trace_units = '(volts)';
 y_axis      = [12 14];
 fig_num = fig_num + fig_num_inc;
@@ -156,9 +159,12 @@ if pause_flag == 1;pause;end
 % air temperatures
 %----------------------------------------------------------
 trace_name  = 'Air temperature';
-if year > 2020
-    trace_path  = char([pth 'ubc.5']);
-    trace_legend = char('HMP');
+if year >= 2023
+    trace_path  = char(fullfile(pth,'ubc.5'),fullfile(root_pth,'HMP_T_Avg'));
+    trace_legend = char('HMP45C','HMP60');
+elseif year > 2020
+    trace_path  = char(fullfile(pth,'ubc.5'));
+    trace_legend = char('HMP45C');    
 else
     trace_path  = char([pth 'ubc.5'],[pth 'ubc.22'],[pth 'ubc.23']);
     trace_legend = char('HMP','S Screen','2 m FWTC');
@@ -167,6 +173,20 @@ trace_units = '(degC)';
 y_axis      = [-5 30];
 fig_num = fig_num + fig_num_inc;
 x = plt_msig( trace_path, ind, trace_name, trace_legend, year, trace_units, y_axis, t, fig_num );
+indAxes = indAxes+1; allAxes(indAxes) = gca;
+if pause_flag == 1;pause;end
+
+%-----------------------------------
+% humidity
+%-----------------------------------
+trace_name  = 'Relative Humidity';
+trace_path  = char(fullfile(pth, 'ubc.6'),fullfile(root_pth,'HMP_RH_Avg'));
+trace_units = '%';
+trace_legend=char('HMP45C','HMP60');
+y_axis      = [0 110];
+fig_num = fig_num + fig_num_inc;
+%x = plt_sig( trace_path, ind,trace_name, year, trace_units, y_axis, t, fig_num );
+x = plt_msig( trace_path, ind, trace_name, trace_legend, year,trace_units, y_axis, t,fig_num);
 indAxes = indAxes+1; allAxes(indAxes) = gca;
 if pause_flag == 1;pause;end
 
@@ -316,20 +336,6 @@ if 1==0 % turn off longwave plot. Instrument removed
             if pause_flag == 1;pause;end
 
 end % if 1==0
-
-%-----------------------------------
-% humidity
-%-----------------------------------
-trace_name  = 'Relative Humidity';
-trace_path  = [pth 'ubc.6'];
-trace_units = '%';
-trace_legend={};
-y_axis      = [0 110];
-fig_num = fig_num + fig_num_inc;
-%x = plt_sig( trace_path, ind,trace_name, year, trace_units, y_axis, t, fig_num );
-x = plt_msig( trace_path, ind, trace_name, trace_legend, year,trace_units, y_axis, t,fig_num);
-indAxes = indAxes+1; allAxes(indAxes) = gca;
-if pause_flag == 1;pause;end
 
 %-----------------------------------
 % snow depth
