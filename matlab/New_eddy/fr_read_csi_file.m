@@ -1,4 +1,4 @@
-function [EngUnits,Header,tv,dataOut] = fr_read_csi_file(fileName,chanInd,tableID,assign_in,timeUnit,roundType,tv_input_format) 
+function [EngUnits,Header,tv,dataOut] = fr_read_csi_file(fileName,chanInd,chanNames,tableID,timeUnit,roundType,tv_input_format) 
 % [EngUnits,Header,tv] = fr_read_TOA5_file(fileName,chanInd,tableID,assign_in,timeUnit,roundType,tv_input_format) 
 %
 % Read CSI 23x files (ascii output tables from table based loggers)
@@ -19,8 +19,6 @@ function [EngUnits,Header,tv,dataOut] = fr_read_csi_file(fileName,chanInd,tableI
 %                           DecDOY:     [2    year    0.0-364.99 NA     ] not implemented                         
 %                           DecDOY:     [3    year    1.0-365.99 NA     ] not implemented
 %                           no yearCol: [4    year    DOYcol     timeCol] not implemented
-%       varName          - variable name to be given to the dataOut
-%                         structure in callers space (when assign_in = 'calller')
 %
 %
 % (c) Zoran Nesic                               File created:      Aug 27, 2023
@@ -29,7 +27,7 @@ function [EngUnits,Header,tv,dataOut] = fr_read_csi_file(fileName,chanInd,tableI
 
 % Revisions:
 %
-fprintf('\n\nNeed to add some way to input variable names. Maybe use FSL files?\n\n');
+
 % Default arguments
 arg_default('timeUnit','30min');        % rounding to half hour
 arg_default('roundType',2);             % rounding to the end of timeUnit
@@ -73,11 +71,16 @@ if ~exist('chanInd','var') || isempty(chanInd)
     chanInd = 1:numOfVars;
 end
 
+if exist('chanNames','var') && ~isempty(chanNames)
+    climateDataTable.Properties.VariableNames = chanNames;
+end
+
 EngUnits = table2array(climateDataTable);
 ind = find(EngUnits(:,1) == tableID);
 EngUnits = EngUnits(ind,:);
 climateDataTable = climateDataTable(ind,:);
 
+ 
 
     
 % Export time vector if exists 

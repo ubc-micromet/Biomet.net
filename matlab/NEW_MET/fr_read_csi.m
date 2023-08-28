@@ -1,7 +1,11 @@
 function [tv,climateData] = fr_read_csi(wildCard,dateIn,chanInd,tableID,verbose_flag,timeUnit,roundType,tv_input_format)
 % fr_read_sci_net(wildCard,dateIn,chanInd)
 %                      - extract all or selected data from a csi file
-% 
+%
+% ****************************************
+% For new projects use fr_read_csi_file.m!
+% ****************************************
+%
 % [tv,climateData] = fr_read_csi(wildCard,dateIn,chanInd)
 %
 % Inputs:
