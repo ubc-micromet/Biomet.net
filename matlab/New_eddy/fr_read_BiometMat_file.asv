@@ -6,9 +6,7 @@ function [EngUnits,Header] = fr_read_BiometMat_file(fileName,assign_in,varName)
 % Revisions:
 %
 %  Aug 28, 2023 (Zoran)
-%   - Made is compatible with the output of other fr_read_* functions. It
-%     can now pass to the caller a structure with the name given in varName.
-%     
+%   - Made is compatible 
 
 arg_default('assign_in','[]');
 arg_default('varName','[]');
@@ -18,11 +16,6 @@ Header = [];
 % The following line will load up EngUnits and Header from 
 % the file.
 load(fileName,'-mat'); %#ok<LOAD>
-
-if exist('DataHF','var')
-    % this is a PICARRO file HF file
-    EngUnits = DataHF;
-end
 
 % It is possible to ask the program to output, in addition to the
 % matrix EngUnits, all the variables and to put them in the callers
