@@ -2,7 +2,7 @@ function configIn = SAL_init_all(dateIn)
 % Parameters, paths and files needed to do SAL chamber flux calculations
 %
 % File created:              20230825 (Zoran)
-% Last modification:         20230829 (Zoran)
+% Last modification:         20230825 (Zoran)
 % 
 %
 % Revisions:
@@ -22,8 +22,7 @@ function configIn = SAL_init_all(dateIn)
     configIn.ext           = '.mat';
     configIn.hhour_ext     = '.hSAL.mat';
     configIn.site          = 'SAL-FARM';
-    configIn.ch_ctrl       = 'CH_CTRL';    % name of the chamber control logger
-    configIn.analyzer      = 'PICARRO';    % main gas analyzer
+    configIn.ch_ctrl       = 'ACS_CR23x_final_storage_2.dat';    % name of the chamber control logger
     configIn.localPCname   = fr_get_pc_name;							% check for this name later on to select
     configIn.gmt_to_local  = -8/24;
 
@@ -42,7 +41,7 @@ function configIn = SAL_init_all(dateIn)
     %-----------------------
     % Closed path PICARRO CH4/N2O/CO2 definitions:
     %-----------------------
-    configIn.Instrument(nPICARRO).varName    = configIn.analyzer;
+    configIn.Instrument(nPICARRO).varName    = 'PICARRO';
     configIn.Instrument(nPICARRO).Type       = 'analyzer';      % case sensitive!
     configIn.Instrument(nPICARRO).SerNum     = NaN;
     configIn.Instrument(nPICARRO).FileType   = 'PICARRO';          %
@@ -52,7 +51,7 @@ function configIn = SAL_init_all(dateIn)
     %-----------------------
     % CH_CTRL logger definitions:
     %-----------------------
-    configIn.Instrument(nCH_CTRL).varName    = configIn.ch_ctrl;
+    configIn.Instrument(nCH_CTRL).varName    = 'CH_CTRL';
     configIn.Instrument(nCH_CTRL).fileName   = 'ACS_CR23x_final_storage_2';
     configIn.Instrument(nCH_CTRL).Type       = 'logger';        % case sensitive!
     configIn.Instrument(nCH_CTRL).SerNum     = NaN;
@@ -419,23 +418,19 @@ function configIn = get_traces(configIn,dateIn)
     % {'matlab trace name',  'analyzer/logger', 'inst. name', 'original trace name'}
     for i=1:configIn.chNbr
         configIn.chamber(i).traces = { ...
-            'h2o_ppm',          'analyzer', 'PICARRO' ,    'H2O';...
+            'h2o_ppm',          'analyzer', 'PICARRO' ,    'H2O_ppm';...
             'co2_dry',          'analyzer', 'PICARRO' ,    'CO2_dry';...
             'ch4_dry',          'analyzer', 'PICARRO' ,    'CH4_dry';...
             'n2o_dry',          'analyzer', 'PICARRO' ,    'N2O_dry';...
             'pressureInlet',            [],         [],           [];...
             'pressureOutlet',           [],         [],           [];...
-            'Pbarometer',         'logger','MET_30min',   'Pbar2_AVG';...            
-            'airTemperature',     'logger',  'CH_CTRL',sprintf('Tc_%d',i);...
-            'soilTemperature_in', 'logger','MET_30min',sprintf('Ts_%d_AVG',i);...
-            'soilVWC_in',         'logger','MET_30min',sprintf('VWC_%d_AVG',i);...
+            'airTemperature',     'logger',  'CH_CTRL', sprintf('Tc_%d',i);...
+            'soilTemperature_in', 'logger', 'MET_30min',sprintf('Ts_%d_AVG',i);...
+            'soilVWC_in',         'logger', 'MET_30min',sprintf('VWC_%d_AVG',i);...
+            'Pbarometer',         'logger', 'MET_30min',   'Pbar_AVG';...
             };
     end
-
-%  This is the syntax in case that individual chambers have 
-%  their own individual parameters that cannot be set by 
-%  the loop above:
-%
+    
 %     % then define each chamber's individual traces
 %     configIn.chamber(1).traces = [configIn.chamber(1).traces;
 %         {
@@ -583,14 +578,8 @@ function configIn = get_chamber_size(configIn,dateIn)
 end
 
 function configIn = get_23x_variable_names(configIn,dateIn)
-%
-% NOTES: 
-%   Chamber Number field needs to be called chamberNumber!
-%   Had to manually rename ChNum to chamberNumber and '101' and '102' to 'tableID'
-%
-
     configIn.varNames.tableID_101 = {'tableID','Year_RTM','Day_RTM','Hour_Minute_RTM','Seconds_RTM',...
-            'chamberNumber','Tc_1','Tc_2','Tc_3','Tc_4','Tc_5','Tc_6',...
+            'ChNum','Tc_1','Tc_2','Tc_3','Tc_4','Tc_5','Tc_6',...
             'Tc_7','Tc_8','Tc_9','Tc_10','Tc_11','Tc_12','Tc_13',...
             'Tc_14','Tc_15','Tc_16','Tc_17','Tc_18','Tc_19','Tc_20',...
             'Tc_21','Tc_22','Tc_23','Tc_24','Tc_25'};

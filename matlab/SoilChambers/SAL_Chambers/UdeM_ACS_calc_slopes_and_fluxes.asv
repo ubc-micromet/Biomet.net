@@ -102,7 +102,7 @@ function dataStruct = UdeM_ACS_calc_slopes_and_fluxes(dataStruct,plotFlag,fullCa
         indX = indOut.analyzer.(strAnalyzerName)(chNum).start';
         indY = indOut.analyzer.(strAnalyzerName)(chNum).end';
         % Find CO2 raw trace
-        strRawCO2 = findRawTraceName(configIn,chNum,'co2_dry');
+        strRawCO2 = findRawTraceName(configIn,chNum,'CO');
         traceY = medfilt1(dataStruct.rawData.analyzer.(strAnalyzerName).(strRawCO2),3);   % filter out the spikes
         %
         % Calculate only selected slopes (user can decide to calculate only a particular 
@@ -234,9 +234,7 @@ end
 function dataStruct = UdeM_data_fit(dataStruct,chNum,sampleNum,gasType,fitType,useLicorMethod,flagVerbose)
     arg_default('flagVerbose',false)
     tz = now;
-    
-    configIn = dataStruct.configIn;
-    
+
     % Analyzer name
     strAnalyzerName = char(fields(dataStruct.rawData.analyzer));                   
 

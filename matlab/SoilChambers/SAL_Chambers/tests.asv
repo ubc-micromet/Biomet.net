@@ -2,7 +2,7 @@
 dateIn = datenum(2023,8,17);
 configIn = fr_get_init('SAL',dateIn);
 %dataOut = SAL_read_one_day(dateIn,configIn);
-dataStruct = SAL_ACS_calc_one_day(dateIn,'SAL',1,1,[],[],1);
+dataStruct = SAL_ACS_calc_one_day(dateIn,'SAL',plotFlag,fullCalcFlag,chambersToCalc,slopesToCalc,flagSaveData)
 return
 
 %%

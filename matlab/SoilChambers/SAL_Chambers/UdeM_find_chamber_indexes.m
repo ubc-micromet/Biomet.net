@@ -34,11 +34,14 @@ function indOut = UdeM_find_chamber_indexes(dataIn,configIn)
 %   indOut = UdeM_find_chamber_indexes(dateIn,configIn); % find all indexes for Aug 22, 2019 data
 %
 % Zoran Nesic                   File created:       Jan 29, 2020
-%                               Last modification:  Jan 27, 2022
+%                               Last modification:  Aug 29, 2023
 %
 
 % Revisions (newest first):
 %
+% Aug 29, 2023 (Zoran)
+%   - Properly calculated the numOfSamples (used to be set to 24 samples/day).
+% 
 % Jan 27, 2022 (Zoran)
 %   - added a check to see if the system switched to CH #20 (happens when
 %     there is an issue with the flow and the system goes to a bypass mode
@@ -74,6 +77,7 @@ for i = 1:length(indd)
 end
 
 tv_ch_ctrl = dataIn.rawData.logger.(ch_ctrl).tv;
+numOfSamples = (24*60*60)/configIn.chNbr/configIn.sampleTime;
 
 for instrumentNum = 1:length(configIn.Instrument)
     % for each instrument that's not the ch_ctrl
@@ -85,8 +89,8 @@ for instrumentNum = 1:length(configIn.Instrument)
         instrumentType = configIn.Instrument(instrumentNum).Type;
         % pre-alocate space with NaNs
         for chNum = 1:length(indOut.logger.(configIn.ch_ctrl))
-            indOut.(instrumentType).(instrumentVarName)(chNum).start = NaN*zeros(1,24);
-            indOut.(instrumentType).(instrumentVarName)(chNum).end = NaN*zeros(1,24);
+            indOut.(instrumentType).(instrumentVarName)(chNum).start = NaN*zeros(1,numOfSamples);
+            indOut.(instrumentType).(instrumentVarName)(chNum).end = NaN*zeros(1,numOfSamples);
         end
         if ~isempty(dataIn.rawData.(instrumentType).(instrumentVarName))
             % if the data for this instrument exists proceed with finding
