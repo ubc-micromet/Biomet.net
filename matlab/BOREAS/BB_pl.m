@@ -6,12 +6,14 @@ function [t,x] = BB_pl(ind, year, siteID, select, fig_num_inc,flgPause)
 %   the UBC data-base formated files.
 %
 % (c) c) Nesic Zoran         File created:       May 11, 2021      
-%                            Last modification:  Aug 25, 2023
+%                            Last modification:  Aug 30, 2023
 %           
 %
 
 % Revisions:
 %
+% Aug 30, 2023 (Zoran)
+%   - Added RH_1_1_1 plotting to Manitoba sites
 % Aug 25, 2023 (Zoran)
 %   - Added plotting of OHM site.
 % Feb 26, 2023 (Zoran)
@@ -128,14 +130,17 @@ indAxes = indAxes+1; allAxes(indAxes) = gca;
 trace_name  = sprintf('%s: %s',siteID,' Relative Humidity');
 switch siteID
     case {'HOGG','YOUNG','OHM'}
-        trace_path  = char(fullfile(pthSite,'flux','RH'));
+        trace_path  = char(fullfile(pthSite,'flux','RH_1_1_1'),...
+                           fullfile(pthSite,'flux','RH'));
+        trace_legend = char('MET','LI-7500');
     case{'RBM'}
         trace_path  = char(fullfile(pthSite,'MET','MET_HMP_RH_4m_Avg'));
+        trace_legend = [];
     otherwise
         trace_path  = char(fullfile(pthSite,'MET','MET_HMP_RH_2m_Avg'));
+        trace_legend = [];
 end
 
-trace_legend = [];
 trace_units = 'RH (%)';
 y_axis      = [];
 fig_num = fig_num + fig_num_inc;
