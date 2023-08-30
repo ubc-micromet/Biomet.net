@@ -60,10 +60,10 @@ function UdeM_visualize_one_fit(dataOut,chNum,slopeNum,fitType,gasType,figNumIn,
         indY = dataOut.indexes.analyzer.(dataOut.configIn.analyzer)(chNum).end';
 
         t_oneSlope_hours = ch_time_hours_analyzer(indX(slopeNum):indY(slopeNum));
-        t_oneSlope_sec = (t_oneSlope_hours-t_oneSlope_hours(1))*3600;
-        t_skip_sec = t_oneSlope_sec(optionsIn.skipPoints);
-        t_oneSlope_sec = t_oneSlope_sec - t_skip_sec;
-        c_oneSlope = dataOut.rawData.analyzer.(dataOut.configIn.analyzer).(gasName)(indX(slopeNum):indY(slopeNum));
+%         t_oneSlope_sec = (t_oneSlope_hours-t_oneSlope_hours(1))*3600;
+%         t_skip_sec = t_oneSlope_sec(optionsIn.skipPoints);
+%         t_oneSlope_sec = t_oneSlope_sec - t_skip_sec;
+%         c_oneSlope = dataOut.rawData.analyzer.(dataOut.configIn.analyzer).(gasName)(indX(slopeNum):indY(slopeNum));
 
         dcdt = fitOut.dcdt; %#ok<*SAGROW>
         rmse_exp = fitOut.rmse;
@@ -74,8 +74,8 @@ function UdeM_visualize_one_fit(dataOut,chNum,slopeNum,fitType,gasType,figNumIn,
         c0All = fitOut.c0All;
         dcdtAll = fitOut.dcdtAll;
         rmseAll = fitOut.rmseAll;
-        ind_fit_samples = find(t_oneSlope_sec >= t0 );
-        ind_fit_samples = ind_fit_samples(1)+[0:optionsIn.timePeriodToFit-1]; %#ok<*NBRAK>
+%         ind_fit_samples = find(t_oneSlope_sec >= t0 );
+%         ind_fit_samples = ind_fit_samples(1)+[0:optionsIn.timePeriodToFit-1]; %#ok<*NBRAK>
         
         
         [t_oneSlope_sec,c_oneSlope,t_curvefit,gas_curvefit] = ...

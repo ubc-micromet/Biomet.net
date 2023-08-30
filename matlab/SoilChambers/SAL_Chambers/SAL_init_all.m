@@ -211,12 +211,10 @@ function configIn = set_quad_fit_parameters(configIn,chNum,gasType,skipPoints,de
 end
 
 function configIn = get_fit_parameters(configIn,dateIn) %#ok<*INUSD>
-    defaultPointsToExpFitCO2  = [];
+    defaultPointsToExpFitCO2  = 100;
     defaultPointsToLinFitCO2  = 60;
-    defaultPointsToQuadFitCO2 = 60;
     defaultPointsToExpFitCH4  = [];
     defaultPointsToLinFitCH4  = [];
-    defaultPointsToQuadFitCH4 = [];
     chNum = 1;
         a = 20; b = 10; c = 20;
         % input parameters               (configIn,chNum,gasType,skipPoints,deadBand,pointsToTest,pointsToFit)
