@@ -118,7 +118,7 @@ try
     end
 
     % Extract time and gas concentration values to be used for curve fitting.
-    [t,co2_in,t_curvefit,co2_curvefit] = UdeM_findPointsToFit(timeIn,co2_in,skipPoints,deadBand,timePeriodToFit);
+    [t,co2_in,x_t_curvefit,x_co2_curvefit] = UdeM_findPointsToFit(timeIn,co2_in,skipPoints,deadBand,timePeriodToFit);
 
 % the code above replaced this chunk:
 %     % Skip a predetermined # of points (avoid chamber transition/purging period)

@@ -126,13 +126,13 @@ function dataStruct = UdeM_ACS_calc_slopes_and_fluxes(dataStruct,plotFlag,fullCa
                 % ================================================================
 
 
-                %--------------------------
-                % Run iterative quadratic fit
-                %--------------------------            
-                oneIteration = false;
-                flagVerbose = true;
-                dataStruct = UdeM_data_fit(dataStruct,chNum,sampleNum,'co2','fit_quad',oneIteration,flagVerbose);
-                dataStruct = UdeM_data_fit(dataStruct,chNum,sampleNum,'ch4','fit_quad',oneIteration,flagVerbose);            
+%                 %--------------------------
+%                 % Run iterative quadratic fit
+%                 %--------------------------            
+%                 oneIteration = false;
+%                 flagVerbose = true;
+%                 dataStruct = UdeM_data_fit(dataStruct,chNum,sampleNum,'co2','fit_quad',oneIteration,flagVerbose);
+%                 dataStruct = UdeM_data_fit(dataStruct,chNum,sampleNum,'ch4','fit_quad',oneIteration,flagVerbose);            
 
                 %--------------------------
                 % Run iterative linear fit

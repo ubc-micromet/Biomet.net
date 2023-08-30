@@ -2,7 +2,7 @@ function configIn = SAL_init_all(dateIn)
 % Parameters, paths and files needed to do SAL chamber flux calculations
 %
 % File created:              20230825 (Zoran)
-% Last modification:         20230825 (Zoran)
+% Last modification:         20230829 (Zoran)
 % 
 %
 % Revisions:
@@ -22,7 +22,8 @@ function configIn = SAL_init_all(dateIn)
     configIn.ext           = '.mat';
     configIn.hhour_ext     = '.hSAL.mat';
     configIn.site          = 'SAL-FARM';
-    configIn.ch_ctrl       = 'ACS_CR23x_final_storage_2.dat';    % name of the chamber control logger
+    configIn.ch_ctrl       = 'CH_CTRL';    % name of the chamber control logger
+    configIn.analyzer      = 'PICARRO';    % main gas analyzer
     configIn.localPCname   = fr_get_pc_name;							% check for this name later on to select
     configIn.gmt_to_local  = -8/24;
 
@@ -41,7 +42,7 @@ function configIn = SAL_init_all(dateIn)
     %-----------------------
     % Closed path PICARRO CH4/N2O/CO2 definitions:
     %-----------------------
-    configIn.Instrument(nPICARRO).varName    = 'PICARRO';
+    configIn.Instrument(nPICARRO).varName    = configIn.analyzer;
     configIn.Instrument(nPICARRO).Type       = 'analyzer';      % case sensitive!
     configIn.Instrument(nPICARRO).SerNum     = NaN;
     configIn.Instrument(nPICARRO).FileType   = 'PICARRO';          %
@@ -51,7 +52,7 @@ function configIn = SAL_init_all(dateIn)
     %-----------------------
     % CH_CTRL logger definitions:
     %-----------------------
-    configIn.Instrument(nCH_CTRL).varName    = 'CH_CTRL';
+    configIn.Instrument(nCH_CTRL).varName    = configIn.ch_ctrl;
     configIn.Instrument(nCH_CTRL).fileName   = 'ACS_CR23x_final_storage_2';
     configIn.Instrument(nCH_CTRL).Type       = 'logger';        % case sensitive!
     configIn.Instrument(nCH_CTRL).SerNum     = NaN;
@@ -217,185 +218,89 @@ function configIn = get_fit_parameters(configIn,dateIn) %#ok<*INUSD>
     defaultPointsToLinFitCH4  = [];
     defaultPointsToQuadFitCH4 = [];
     chNum = 1;
-        a = 35; b = 40; c = 20;
+        a = 20; b = 10; c = 20;
         % input parameters               (configIn,chNum,gasType,skipPoints,deadBand,pointsToTest,pointsToFit)
         configIn = set_exp_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToExpFitCO2);
         configIn = set_exp_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToExpFitCH4);
         configIn = set_lin_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToLinFitCO2);    
         configIn = set_lin_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToLinFitCH4);
-        configIn = set_quad_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,4*c           ,defaultPointsToQuadFitCO2);    
-        configIn = set_quad_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,4*c           ,defaultPointsToQuadFitCH4);
     chNum = 2;
-        a = 35; b = 40; c = 20;
+        a = 20; b = 10; c = 20;
         % input parameters               (configIn,chNum,gasType,skipPoints,deadBand,pointsToTest,pointsToFit)
         configIn = set_exp_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToExpFitCO2);
         configIn = set_lin_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToLinFitCO2);
         configIn = set_exp_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToExpFitCH4);
-        configIn = set_lin_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToLinFitCH4);
-        configIn = set_quad_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToQuadFitCO2);    
-        configIn = set_quad_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToQuadFitCH4);        
+        configIn = set_lin_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToLinFitCH4);       
     chNum = 3;
-        a = 40; b = 40; c = 20;
+        a = 20; b = 10; c = 20;
         % input parameters               (configIn,chNum,gasType,skipPoints,deadBand,pointsToTest,pointsToFit)
         configIn = set_exp_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToExpFitCO2);
         configIn = set_lin_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToLinFitCO2);
         configIn = set_exp_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToExpFitCH4);
         configIn = set_lin_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToLinFitCH4);
-        configIn = set_quad_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToQuadFitCO2);    
-        configIn = set_quad_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToQuadFitCH4);
      chNum = 4;
-        a = 40; b = 40; c = 20;
+        a = 20; b = 10; c = 20;
         % input parameters               (configIn,chNum,gasType,skipPoints,deadBand,pointsToTest,pointsToFit)
         configIn = set_exp_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToExpFitCO2);
         configIn = set_lin_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToLinFitCO2);
         configIn = set_exp_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToExpFitCH4);
         configIn = set_lin_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToLinFitCH4);
-        configIn = set_quad_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToQuadFitCO2);    
-        configIn = set_quad_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToQuadFitCH4);
     chNum = 5;
-        a = 40; b = 40; c = 20;
+        a = 20; b = 10; c = 20;
         % input parameters               (configIn,chNum,gasType,skipPoints,deadBand,pointsToTest,pointsToFit)
         configIn = set_exp_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToExpFitCO2);
         configIn = set_lin_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToLinFitCO2);
         configIn = set_exp_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToExpFitCH4);
         configIn = set_lin_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToLinFitCH4);
-        configIn = set_quad_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToQuadFitCO2);    
-        configIn = set_quad_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToQuadFitCH4);
     chNum = 6;
-        a = 40; b = 40; c = 20;
+        a = 20; b = 10; c = 20;
         % input parameters               (configIn,chNum,gasType,skipPoints,deadBand,pointsToTest,pointsToFit)
         configIn = set_exp_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToExpFitCO2);
         configIn = set_lin_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToLinFitCO2);
         configIn = set_exp_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToExpFitCH4);
         configIn = set_lin_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToLinFitCH4);
-        configIn = set_quad_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToQuadFitCO2);    
-        configIn = set_quad_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToQuadFitCH4);
-    chNum = 7;
-		if dateIn < datenum(2021,1,1)
-			a = 35; b = 40; c = 20;   % settings for 2019
-		else
-			a = 40; b = 40; c = 20;   % settings for 2021
-		end
-		
+    chNum = 7;	
+        a = 20; b = 10; c = 20;
         % input parameters               (configIn,chNum,gasType,skipPoints,deadBand,pointsToTest,pointsToFit)
         configIn = set_exp_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToExpFitCO2);
         configIn = set_lin_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToLinFitCO2);
         configIn = set_exp_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToExpFitCH4);
         configIn = set_lin_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToLinFitCH4);
-        configIn = set_quad_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToQuadFitCO2);    
-        configIn = set_quad_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToQuadFitCH4);
     chNum = 8;
-        a = 40; b = 40; c = 20;
+        a = 20; b = 10; c = 20;
         % input parameters               (configIn,chNum,gasType,skipPoints,deadBand,pointsToTest,pointsToFit)
         configIn = set_exp_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToExpFitCO2);
         configIn = set_lin_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToLinFitCO2);
         configIn = set_exp_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToExpFitCH4);
         configIn = set_lin_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToLinFitCH4);
-        configIn = set_quad_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToQuadFitCO2);    
-        configIn = set_quad_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToQuadFitCH4);
     chNum = 9;
-        a = 40; b = 40; c = 20;
+        a = 20; b = 10; c = 20;
         % input parameters               (configIn,chNum,gasType,skipPoints,deadBand,pointsToTest,pointsToFit)
         configIn = set_exp_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToExpFitCO2);
         configIn = set_lin_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToLinFitCO2);
         configIn = set_exp_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToExpFitCH4);
         configIn = set_lin_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToLinFitCH4);
-        configIn = set_quad_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToQuadFitCO2);    
-        configIn = set_quad_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToQuadFitCH4);
     chNum = 10;
-		if dateIn < datenum(2021,1,1)
-			a = 45; b = 40; c = 20;   % settings for 2019
-		else
-			a = 55; b = 40; c = 20;   % settings for 2021
-		end 
+        a = 20; b = 10; c = 20;
         % input parameters               (configIn,chNum,gasType,skipPoints,deadBand,pointsToTest,pointsToFit)
         configIn = set_exp_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToExpFitCO2);
         configIn = set_lin_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToLinFitCO2);
         configIn = set_exp_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToExpFitCH4);
         configIn = set_lin_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToLinFitCH4);
-        configIn = set_quad_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,4*c           ,defaultPointsToQuadFitCO2);    
-        configIn = set_quad_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,4*c           ,defaultPointsToQuadFitCH4);
     chNum = 11;
-        a = 35; b = 40; c = 20;
+        a = 20; b = 10; c = 20;
         % input parameters               (configIn,chNum,gasType,skipPoints,deadBand,pointsToTest,pointsToFit)
         configIn = set_exp_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToExpFitCO2);
         configIn = set_lin_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToLinFitCO2);
         configIn = set_exp_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToExpFitCH4);
         configIn = set_lin_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToLinFitCH4);
-        configIn = set_quad_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToQuadFitCO2);    
-        configIn = set_quad_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToQuadFitCH4);
     chNum = 12;
-        a = 35; b = 40; c = 20;
+        a = 20; b = 10; c = 20;
         % input parameters               (configIn,chNum,gasType,skipPoints,deadBand,pointsToTest,pointsToFit)
         configIn = set_exp_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToExpFitCO2);
         configIn = set_lin_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToLinFitCO2);
         configIn = set_exp_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToExpFitCH4);
         configIn = set_lin_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToLinFitCH4);
-        configIn = set_quad_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToQuadFitCO2);    
-        configIn = set_quad_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToQuadFitCH4);
-    chNum = 13;
-        a = 35; b = 40; c = 20;
-        % input parameters               (configIn,chNum,gasType,skipPoints,deadBand,pointsToTest,pointsToFit)
-        configIn = set_exp_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToExpFitCO2);
-        configIn = set_lin_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToLinFitCO2);
-        configIn = set_exp_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToExpFitCH4);
-        configIn = set_lin_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToLinFitCH4);
-        configIn = set_quad_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToQuadFitCO2);    
-        configIn = set_quad_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToQuadFitCH4);
-    chNum = 14;
-        a = 35; b = 40; c = 20;
-        % input parameters               (configIn,chNum,gasType,skipPoints,deadBand,pointsToTest,pointsToFit)
-        configIn = set_exp_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToExpFitCO2);
-        configIn = set_lin_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToLinFitCO2);
-        configIn = set_exp_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToExpFitCH4);
-        configIn = set_lin_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToLinFitCH4);
-        configIn = set_quad_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToQuadFitCO2);    
-        configIn = set_quad_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToQuadFitCH4);
-    chNum = 15;
-		if dateIn < datenum(2021,1,1)
-			a = 45; b = 40; c = 20;   % settings for 2019
-		else
-			a = 55; b = 40; c = 20;   % settings for 2021
-		end
-        % input parameters               (configIn,chNum,gasType,skipPoints,deadBand,pointsToTest,pointsToFit)
-        configIn = set_exp_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToExpFitCO2);
-        configIn = set_lin_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToLinFitCO2);
-        configIn = set_exp_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToExpFitCH4);
-        configIn = set_lin_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToLinFitCH4);
-        configIn = set_quad_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToQuadFitCO2);    
-        configIn = set_quad_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToQuadFitCH4);
-    chNum = 16;
-		if dateIn < datenum(2021,1,1)
-			a = 40; b = 40; c = 20;   % settings for 2019
-		else
-			a = 35; b = 40; c = 20;   % settings for 2021
-		end	
-        
-        % input parameters               (configIn,chNum,gasType,skipPoints,deadBand,pointsToTest,pointsToFit)
-        configIn = set_exp_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToExpFitCO2);
-        configIn = set_lin_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToLinFitCO2);
-        configIn = set_exp_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToExpFitCH4);
-        configIn = set_lin_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToLinFitCH4);
-        configIn = set_quad_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToQuadFitCO2);    
-        configIn = set_quad_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToQuadFitCH4);
-    chNum = 17;
-        a = 40; b = 40; c = 20;
-        % input parameters               (configIn,chNum,gasType,skipPoints,deadBand,pointsToTest,pointsToFit)
-        configIn = set_exp_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToExpFitCO2);
-        configIn = set_lin_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToLinFitCO2);
-        configIn = set_exp_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToExpFitCH4);
-        configIn = set_lin_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToLinFitCH4);
-        configIn = set_quad_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToQuadFitCO2);    
-        configIn = set_quad_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToQuadFitCH4);
-    chNum = 18;
-        a = 35; b = 40; c = 20;
-        % input parameters               (configIn,chNum,gasType,skipPoints,deadBand,pointsToTest,pointsToFit)
-        configIn = set_exp_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToExpFitCO2);
-        configIn = set_lin_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToLinFitCO2);
-        configIn = set_exp_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToExpFitCH4);
-        configIn = set_lin_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToLinFitCH4);                                               
-        configIn = set_quad_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToQuadFitCO2);    
-        configIn = set_quad_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToQuadFitCH4);
 end
 
 
@@ -418,19 +323,23 @@ function configIn = get_traces(configIn,dateIn)
     % {'matlab trace name',  'analyzer/logger', 'inst. name', 'original trace name'}
     for i=1:configIn.chNbr
         configIn.chamber(i).traces = { ...
-            'h2o_ppm',          'analyzer', 'PICARRO' ,    'H2O_ppm';...
+            'h2o_ppm',          'analyzer', 'PICARRO' ,    'H2O';...
             'co2_dry',          'analyzer', 'PICARRO' ,    'CO2_dry';...
             'ch4_dry',          'analyzer', 'PICARRO' ,    'CH4_dry';...
             'n2o_dry',          'analyzer', 'PICARRO' ,    'N2O_dry';...
             'pressureInlet',            [],         [],           [];...
             'pressureOutlet',           [],         [],           [];...
-            'airTemperature',     'logger',  'CH_CTRL', sprintf('Tc_%d',i);...
-            'soilTemperature_in', 'logger', 'MET_30min',sprintf('Ts_%d_AVG',i);...
-            'soilVWC_in',         'logger', 'MET_30min',sprintf('VWC_%d_AVG',i);...
-            'Pbarometer',         'logger', 'MET_30min',   'Pbar_AVG';...
+            'Pbarometer',         'logger','MET_30min',   'Pbar2_AVG';...            
+            'airTemperature',     'logger',  'CH_CTRL',sprintf('Tc_%d',i);...
+            'soilTemperature_in', 'logger','MET_30min',sprintf('Ts_%d_AVG',i);...
+            'soilVWC_in',         'logger','MET_30min',sprintf('VWC_%d_AVG',i);...
             };
     end
-    
+
+%  This is the syntax in case that individual chambers have 
+%  their own individual parameters that cannot be set by 
+%  the loop above:
+%
 %     % then define each chamber's individual traces
 %     configIn.chamber(1).traces = [configIn.chamber(1).traces;
 %         {
@@ -500,24 +409,6 @@ function configIn = get_chamber_size(configIn,dateIn)
 		chNum = 12;
 			chamberHeight = 0.0460;                 % updated by Carolina for 2021 measurements
 			configIn = calc_chamber_volume(configIn,chNum,chamberRadius,chamberHeight,domeVolume,chamberSlope);
-		chNum = 13;
-			chamberHeight = 0.0160;                 % updated by Carolina for 2021 measurements
-			configIn = calc_chamber_volume(configIn,chNum,chamberRadius,chamberHeight,domeVolume,chamberSlope);
-		chNum = 14;
-			chamberHeight = 0.0635;                 % updated by Carolina for 2021 measurements
-			configIn = calc_chamber_volume(configIn,chNum,chamberRadius,chamberHeight,domeVolume,chamberSlope);
-		chNum = 15;
-			chamberHeight = 0.0200;                 % updated by Carolina for 2021 measurements
-			configIn = calc_chamber_volume(configIn,chNum,chamberRadius,chamberHeight,domeVolume,chamberSlope);
-		chNum = 16;
-			chamberHeight = 0.0260;                 % updated by Carolina for 2021 measurements
-			configIn = calc_chamber_volume(configIn,chNum,chamberRadius,chamberHeight,domeVolume,chamberSlope);
-		chNum = 17;
-			chamberHeight = 0.0340;                 % updated by Carolina for 2021 measurements
-			configIn = calc_chamber_volume(configIn,chNum,chamberRadius,chamberHeight,domeVolume,chamberSlope);
-		chNum = 18;
-			chamberHeight = 0.0055;                 % updated by Carolina for 2021 measurements
-			configIn = calc_chamber_volume(configIn,chNum,chamberRadius,chamberHeight,domeVolume,chamberSlope);
 	else
 	        
 		chNum = 1;
@@ -556,30 +447,18 @@ function configIn = get_chamber_size(configIn,dateIn)
 		chNum = 12;
 			chamberHeight = 0.0505;                 % from Carolina's email 20200220 for year 2019
 			configIn = calc_chamber_volume(configIn,chNum,chamberRadius,chamberHeight,domeVolume,chamberSlope);
-		chNum = 13;
-			chamberHeight = 0.0230;                 % from Carolina's email 20200220 for year 2019
-			configIn = calc_chamber_volume(configIn,chNum,chamberRadius,chamberHeight,domeVolume,chamberSlope);
-		chNum = 14;
-			chamberHeight = 0.0480;                 % from Carolina's email 20200220 for year 2019
-			configIn = calc_chamber_volume(configIn,chNum,chamberRadius,chamberHeight,domeVolume,chamberSlope);
-		chNum = 15;
-			chamberHeight = 0.0200;                 % from Carolina's email 20200220 for year 2019
-			configIn = calc_chamber_volume(configIn,chNum,chamberRadius,chamberHeight,domeVolume,chamberSlope);
-		chNum = 16;
-			chamberHeight = 0.0380;                 % from Carolina's email 20200220 for year 2019
-			configIn = calc_chamber_volume(configIn,chNum,chamberRadius,chamberHeight,domeVolume,chamberSlope);
-		chNum = 17;
-			chamberHeight = 0.0415;                 % from Carolina's email 20200220 for year 2019
-			configIn = calc_chamber_volume(configIn,chNum,chamberRadius,chamberHeight,domeVolume,chamberSlope);
-		chNum = 18;
-			chamberHeight = -0.001;                 % from Carolina's email 20200220 for year 2019
-			configIn = calc_chamber_volume(configIn,chNum,chamberRadius,chamberHeight,domeVolume,chamberSlope);
-	 end  
+	end  
 end
 
 function configIn = get_23x_variable_names(configIn,dateIn)
+%
+% NOTES: 
+%   Chamber Number field needs to be called chamberNumber!
+%   Had to manually rename ChNum to chamberNumber and '101' and '102' to 'tableID'
+%
+
     configIn.varNames.tableID_101 = {'tableID','Year_RTM','Day_RTM','Hour_Minute_RTM','Seconds_RTM',...
-            'ChNum','Tc_1','Tc_2','Tc_3','Tc_4','Tc_5','Tc_6',...
+            'chamberNumber','Tc_1','Tc_2','Tc_3','Tc_4','Tc_5','Tc_6',...
             'Tc_7','Tc_8','Tc_9','Tc_10','Tc_11','Tc_12','Tc_13',...
             'Tc_14','Tc_15','Tc_16','Tc_17','Tc_18','Tc_19','Tc_20',...
             'Tc_21','Tc_22','Tc_23','Tc_24','Tc_25'};

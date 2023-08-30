@@ -76,12 +76,6 @@ function UdeM_visualize_one_fit(dataOut,chNum,slopeNum,fitType,gasType,figNumIn,
         rmseAll = fitOut.rmseAll;
         ind_fit_samples = find(t_oneSlope_sec >= t0 );
         ind_fit_samples = ind_fit_samples(1)+[0:optionsIn.timePeriodToFit-1]; %#ok<*NBRAK>
-        
-        
-        [t_oneSlope_sec,c_oneSlope,t_curvefit,gas_curvefit] = ...
-                          UdeM_findPointsToFit(t_oneSlope_hours/24,c_oneSlope,...
-                                         optionsIn.skipPoints,optionsIn.deadBand,optionsIn.timePeriodToFit);
-
         switch fitType
             case {'exp_L','exp_B'}
                 cs = fCO2{N_optimum}.cs;
@@ -137,7 +131,7 @@ function UdeM_visualize_one_fit(dataOut,chNum,slopeNum,fitType,gasType,figNumIn,
         subplot(1,2,1)
         legend_handle_data = plot(t_oneSlope_sec,c_oneSlope,'.','MarkerSize',10);
         hold on
-        legend_handle_selected_points = plot(t_curvefit,gas_curvefit,'o','MarkerSize',6);
+        legend_handle_selected_points = plot(t_oneSlope_sec(ind_fit_samples),c_oneSlope(ind_fit_samples),'o','MarkerSize',6);
         legend_handle_fit = plot(t_oneSlope_sec,c_fit,'LineWidth',2);
         
         hold off
