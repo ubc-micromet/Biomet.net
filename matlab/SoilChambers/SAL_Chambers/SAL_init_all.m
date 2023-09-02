@@ -211,12 +211,12 @@ function configIn = set_quad_fit_parameters(configIn,chNum,gasType,skipPoints,de
 end
 
 function configIn = get_fit_parameters(configIn,dateIn) %#ok<*INUSD>
-    defaultPointsToExpFitCO2  = 100;
-    defaultPointsToLinFitCO2  = 60;
+    defaultPointsToExpFitCO2  = [];
+    defaultPointsToLinFitCO2  = 100;
     defaultPointsToExpFitCH4  = [];
     defaultPointsToLinFitCH4  = [];
     chNum = 1;
-        a = 20; b = 10; c = 20;
+        a = 25; b = 10; c = 20;
         % input parameters               (configIn,chNum,gasType,skipPoints,deadBand,pointsToTest,pointsToFit)
         configIn = set_exp_fit_parameters(configIn,chNum,'co2'  ,a         ,b       ,c           ,defaultPointsToExpFitCO2);
         configIn = set_exp_fit_parameters(configIn,chNum,'ch4'  ,a         ,b       ,c           ,defaultPointsToExpFitCH4);
@@ -327,6 +327,7 @@ function configIn = get_traces(configIn,dateIn)
             'n2o_dry',          'analyzer', 'PICARRO' ,    'N2O_dry';...
             'pressureInlet',            [],         [],           [];...
             'pressureOutlet',           [],         [],           [];...
+            'PAR_in',                   [],         [],           [];...
             'Pbarometer',         'logger','MET_30min',   'Pbar2_AVG';...            
             'airTemperature',     'logger',  'CH_CTRL',sprintf('Tc_%d',i);...
             'soilTemperature_in', 'logger','MET_30min',sprintf('Ts_%d_AVG',i);...

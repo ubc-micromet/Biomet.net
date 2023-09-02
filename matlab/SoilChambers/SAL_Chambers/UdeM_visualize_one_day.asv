@@ -42,9 +42,9 @@ function UdeM_visualize_one_day(dataStruct,chNum, figNum,flagInit)
         
         % If there is PAR data, create yy and xxaxis and plot PAR
         if ~isempty(strPARName)
-            sigPARTV = (dataStruct.rawData.(strPARInstrumentType).(strPARInstrumentName).tv ...
-                      - dataStruct.rawData.(strPARInstrumentType).(strPARInstrumentName).tv(1))*24;
-            sigPARY  =  dataStruct.rawData.(strPARInstrumentType).(strPARInstrumentName).(strPARName);  
+            sigPARTV = (dataStruct.rawData.(strTairInstrumentType).(strPARInstrumentName).tv ...
+                   - dataStruct.rawData.(strTairInstrumentType).(strPARInstrumentName).tv(1))*24;
+            sigPARY  =  dataStruct.rawData.(strTairInstrumentType).(strPARInstrumentName).(strPARName);  
             indX  = indOut.logger.(strPARInstrumentName)(chNum).start';
             indY = indOut.logger.(strPARInstrumentName)(chNum).end';            
             yyaxis righ	                            
@@ -75,8 +75,8 @@ function UdeM_visualize_one_day(dataStruct,chNum, figNum,flagInit)
         ylabel('T_{air}')
         xlabel('Hours')
         hold on
-        for sampleNum=1:length(indTairX)
-            plot(sigTairTV(indTairX(sampleNum):indTairY(sampleNum)),sigTairY(indTairX(sampleNum):indTairY(sampleNum)),'go')
+        for sampleNum=1:length(indX)
+            plot(sigTairTV(indTairX(sampleNum):indTairX(sampleNum)),sigTairY(indX(sampleNum):indY(sampleNum)),'go')
         end
         
         % Plot Tsoil

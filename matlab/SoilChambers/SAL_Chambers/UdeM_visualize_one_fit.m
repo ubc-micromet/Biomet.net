@@ -63,7 +63,7 @@ function UdeM_visualize_one_fit(dataOut,chNum,slopeNum,fitType,gasType,figNumIn,
 %         t_oneSlope_sec = (t_oneSlope_hours-t_oneSlope_hours(1))*3600;
 %         t_skip_sec = t_oneSlope_sec(optionsIn.skipPoints);
 %         t_oneSlope_sec = t_oneSlope_sec - t_skip_sec;
-%         c_oneSlope = dataOut.rawData.analyzer.(dataOut.configIn.analyzer).(gasName)(indX(slopeNum):indY(slopeNum));
+         c_oneSlope = dataOut.rawData.analyzer.(dataOut.configIn.analyzer).(gasName)(indX(slopeNum):indY(slopeNum));
 
         dcdt = fitOut.dcdt; %#ok<*SAGROW>
         rmse_exp = fitOut.rmse;
