@@ -60,10 +60,10 @@ function UdeM_visualize_one_fit(dataOut,chNum,slopeNum,fitType,gasType,figNumIn,
         indY = dataOut.indexes.analyzer.(dataOut.configIn.analyzer)(chNum).end';
 
         t_oneSlope_hours = ch_time_hours_analyzer(indX(slopeNum):indY(slopeNum));
-        t_oneSlope_sec = (t_oneSlope_hours-t_oneSlope_hours(1))*3600;
-        t_skip_sec = t_oneSlope_sec(optionsIn.skipPoints);
-        t_oneSlope_sec = t_oneSlope_sec - t_skip_sec;
-        c_oneSlope = dataOut.rawData.analyzer.(dataOut.configIn.analyzer).(gasName)(indX(slopeNum):indY(slopeNum));
+%         t_oneSlope_sec = (t_oneSlope_hours-t_oneSlope_hours(1))*3600;
+%         t_skip_sec = t_oneSlope_sec(optionsIn.skipPoints);
+%         t_oneSlope_sec = t_oneSlope_sec - t_skip_sec;
+         c_oneSlope = dataOut.rawData.analyzer.(dataOut.configIn.analyzer).(gasName)(indX(slopeNum):indY(slopeNum));
 
         dcdt = fitOut.dcdt; %#ok<*SAGROW>
         rmse_exp = fitOut.rmse;
@@ -74,12 +74,12 @@ function UdeM_visualize_one_fit(dataOut,chNum,slopeNum,fitType,gasType,figNumIn,
         c0All = fitOut.c0All;
         dcdtAll = fitOut.dcdtAll;
         rmseAll = fitOut.rmseAll;
-        ind_fit_samples = find(t_oneSlope_sec >= t0 );
-        ind_fit_samples = ind_fit_samples(1)+[0:optionsIn.timePeriodToFit-1]; %#ok<*NBRAK>
+%         ind_fit_samples = find(t_oneSlope_sec >= t0 );
+%         ind_fit_samples = ind_fit_samples(1)+[0:optionsIn.timePeriodToFit-1]; %#ok<*NBRAK>
         
         
         [t_oneSlope_sec,c_oneSlope,t_curvefit,gas_curvefit] = ...
-                          UdeM_findPointsToFit(ch_time_hours_analyzer,c_oneSlope,...
+                          UdeM_findPointsToFit(t_oneSlope_hours/24,c_oneSlope,...
                                          optionsIn.skipPoints,optionsIn.deadBand,optionsIn.timePeriodToFit);
 
         switch fitType
@@ -120,7 +120,8 @@ function UdeM_visualize_one_fit(dataOut,chNum,slopeNum,fitType,gasType,figNumIn,
         end
 
         if flagVerbose
-            fprintf('ch: %d  h: %d  rmse: %6.4f  dcdt: %6.4f   c0: %6.2f  t0: %6.2f\n\n',chNum,slopeNum,rmse_exp*unitGain,dcdt*unitGain,c0,t0)
+            fprintf('ch: %d  h: %d  rmse: %6.4f  dcdt: %6.4f   c0: %6.2f  t0: %6.2f\n\n',...
+                     chNum,slopeNum,rmse_exp*unitGain,dcdt*unitGain,c0,t0)
         end
 
         % ==================================================
@@ -128,7 +129,9 @@ function UdeM_visualize_one_fit(dataOut,chNum,slopeNum,fitType,gasType,figNumIn,
         % ==================================================
         figNum = figNumIn;
         figure(figNum);
-        set(figNum,'Name',sprintf('%s  Chamber %d, hour = %d        %s',upper(gasType),chNum,slopeNum,datestr(floor(tv(1)))),'numbertitle','off','menubar','none');
+        set(figNum,'Name',sprintf('%s  Chamber %d, hour = %d        %s',...
+             upper(gasType),chNum,slopeNum,datestr(floor(tv(1)))),...
+             'numbertitle','off','menubar','none');
         clf
         % ==================================================
         % First subplot contains the data fits plots 
@@ -166,29 +169,24 @@ function UdeM_visualize_one_fit(dataOut,chNum,slopeNum,fitType,gasType,figNumIn,
         legend_handle_patch_skipped=patch('Vertices',v2,'faces',f2,'facecolor','y','edgecolor','none','facealpha',0.3);
 
         v3 = [0                         max(ax(3),c0-10);
-            0                         min(ax(4),c0+10);
-            optionsIn.pointsToTest    min(ax(4),c0+10);
-            optionsIn.pointsToTest    max(ax(3),c0-10)];
+              0                         min(ax(4),c0+10);
+              optionsIn.pointsToTest    min(ax(4),c0+10);
+              optionsIn.pointsToTest    max(ax(3),c0-10)];
         f3=[1 2 3 4];
         legend_handle_search = patch('Vertices',v3,'faces',f3,'facecolor','none','edgecolor','#0072BD','facealpha',0.7,'linewidth',1);
         
-        % Add start (+) and end (x) markers
-        legend_handle_t0 =line(t0,c0,'marker','+','markersize',10,'color','#D95319','markerfacecolor','#D95319','linestyle','none','linewidth',2);
-        %hh=line(t_end,c_end,'marker','x','markersize',10,'color','#D95319','markerfacecolor','#D95319','linewidth',2);
-        
-        legend_handle_fit_dcdt = line([t0 max(t_oneSlope_sec)],[c0 dcdt*(max(t_oneSlope_sec)-t0)+c0] ,'linewidth',2,'color','g');
-        ind_line = find(t_oneSlope_sec>=t_oneSlope_sec(1)+t0 & t_oneSlope_sec < t_oneSlope_sec(1)+t0+60);
+        % Add start (+) marker
+        legend_handle_t0 =line(t0,c0,'marker','+','markersize',10,'color',...
+                              '#D95319','markerfacecolor','#D95319',...
+                              'linestyle','none','linewidth',2);              
+        legend_handle_fit_dcdt = line([t0 max(t_oneSlope_sec)],...
+                                      [c0 dcdt*(max(t_oneSlope_sec)-t0)+c0] ,...
+                                      'linewidth',2,'color','g');
 
         % -------------------------------------------
         % Use previously calculated line fit parameters
         % for comparison (use "classic" linear fit, using lin_B{mid_point}).
         % -------------------------------------------
-%         a = dataOut.chamber(chNum).sample(slopeNum).flux.(gasType).lin_B.fCO2;
-%         p1 = a{N_optimum}.p1;       % using the current fit's N_optimum (instead of lin_B's) 
-%                                     % to have the lines start at the same point
-%         y = ([t0 max(t_oneSlope_sec)] )*p1;
-%         y = y-y(1)+c0;        
-        %legend_handle_clasic_line_dcdt = line([t0 max(t_oneSlope_sec)],y,'linewidth',2,'color','k');
         legend_handle_clasic_line_dcdt = line(t_oneSlope_sec,c_fit_c,'linewidth',2,'color','k');
         zoom on
         all_legend_handles = [ ...

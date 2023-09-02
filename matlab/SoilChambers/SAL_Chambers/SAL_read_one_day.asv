@@ -89,14 +89,11 @@ end
 % configIn.chamber().traces. 
 % The program will now look for the raw data that goes into
 % the configIn.chamber().traces and runs it through the polynomials
-% (if they exist).
+% (if they exist)
 for cntTraces = 1:size(configIn.chamber(1).traces,1)
-    [strTraceName,strInstrumentName,strInstrumentType] = findRawTraceName(configIn,1,char(configIn.chamber(1).traces{cntTraces,1}));
-    if ~isempty(strTraceName)
-        calPoly = double(configIn.chamber(1).traces{cntTraces,5});
-        dataOut.rawData.(strInstrumentType).(strInstrumentName).(strTraceName) = ...
-            polyval(calPoly,dataOut.rawData.(strInstrumentType).(strInstrumentName).(strTraceName)) ;
-    end
+    [strTraceName,strInstrumentName,strInstrumentType] = findRawTraceName(configIn,1,char(configIn.chamber(1).traces{cntTraces,4}));
+    calPoly = double(traces{cntTraces,5});
+    dataOut.rawData.(strInstrumentType).(strInstrumentName).(strTraceName);
 end
 
 
