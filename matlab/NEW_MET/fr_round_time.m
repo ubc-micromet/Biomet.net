@@ -8,16 +8,23 @@ function dateOut = fr_round_time(dateIn,unitsIn,optionIn)
 %                   'day',
 %                   'hour',
 %                   '30min',   (default)
-%                   'min',
+%                   'Xmin', (X - is a number: 30min, 1min, 5min)
 %                   'sec'
 %   optionIn    -   1 - round to the nearest unitsIn            (default)
 %                   2 - round to the nearest end of unitsIn    
 %                   3 - round to the nearest start of unitsIn
 %
 % (c) Zoran Nesic               File created:       Sep  4, 2005
-%                               Last modification:  Feb 15, 2007
+%                               Last modification:  Sep  6, 2023
 
 % Revisions:
+%
+% Sep 6, 2023 (Zoran)
+%   - added 'Xmin' time unit. It replaced 'min','30min' with more generic
+%     approach. 
+%        - Use '5min' if you want the time to round to 5-min marks.
+%        - '60min' is the same as 'hour' (but 'hour' is left for the legacy code)
+%   - syntax cleanup.
 %  Feb 15, 2007 (Z)
 %       - fixed wrong defaults for optionIn in the comment lines
 
@@ -32,33 +39,39 @@ end
 [yearX,monthX,dayX,hourX,minuteX,secondX] = datevec(dateIn);
 
 switch optionIn
-    case 1,
+    case 1
         roundType = 'round';
-    case 2,
+    case 2
         roundType = 'ceil';
-    case 3,
+    case 3
         roundType = 'floor';
-    otherwise,
+    otherwise
         error 'Wrong optionIN'
 end
 
-if strcmp(upper(unitsIn),'SEC')
-    secondX = feval(roundType,secondX);
-elseif strcmp(upper(unitsIn),'MIN')
+if strcmpi(unitsIn(end-2:end),'MIN')
+    if length(unitsIn)==3
+        numOfMin = 1;
+    else
+        numOfMin = str2double(unitsIn(1:end-3));
+    end
+else
+    numOfMin = [];
+end
+
+if strcmpi(unitsIn,'SEC')
+    secondX = feval(roundType,secondX); %#ok<*FVAL>
+elseif ~isempty(numOfMin)
     minuteX = minuteX + secondX / 60;
     secondX = 0;
-    minuteX = feval(roundType,minuteX);    
-elseif strcmp(upper(unitsIn),'30MIN')
-    minuteX = minuteX + secondX / 60;
-    secondX = 0;
-    minuteX = 30 * feval(roundType,minuteX ./ 30);    
-elseif strcmp(upper(unitsIn),'HOUR')
+    minuteX = numOfMin * feval(roundType,minuteX/numOfMin);
+elseif strcmpi(unitsIn,'HOUR')
     minuteX = minuteX + secondX / 60;
     secondX = 0;
     hourX = hourX + minuteX / 60 ;
     minuteX = 0;    
     hourX = feval(roundType,hourX);    
-elseif strcmp(upper(unitsIn),'DAY')
+elseif strcmpi(unitsIn,'DAY')
     minuteX = minuteX + secondX / 60;
     secondX = 0;
     hourX = hourX + minuteX / 60 ;
@@ -66,7 +79,7 @@ elseif strcmp(upper(unitsIn),'DAY')
     dayX = dayX + hourX / 24;    
     hourX = 0;
     dayX = feval(roundType,dayX);    
-elseif strcmp(upper(unitsIn),'MONTH')
+elseif strcmpi(unitsIn,'MONTH')
     minuteX = minuteX + secondX / 60;
     secondX = 0;
     hourX = hourX + minuteX / 60 ;
