@@ -104,7 +104,9 @@ for i=1:length(h)
                     one_year_ind = find(tv > datenum(year_ind,1,1) & tv <= datenum(year_ind+1,1,1));
                     if ~isempty(one_year_ind)
                         databasePathNew(ind_yyyy+1:ind_yyyy+4) = num2str(year_ind);
-                        [k] = db_new_eddy(ClimateStats(one_year_ind),[],databasePathNew,0,[],timeUnit,missingPointValue); %#ok<*NASGU>
+                        for cntSamples = 1:length(one_year_ind)
+                            [k] = db_new_eddy(ClimateStats(one_year_ind(cntSamples)),[],databasePathNew,0,[],timeUnit,missingPointValue); %#ok<*NASGU>
+                        end
                     end
                 end
             else

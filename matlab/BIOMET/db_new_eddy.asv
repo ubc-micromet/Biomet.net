@@ -29,13 +29,10 @@ function [k,StatsAll,dbFileNames, dbFieldNames] = db_new_eddy(arg1,wildcard,pthO
 %       k           -   number of files processed
 %
 % (c) Zoran Nesic               File created:       Apr  1, 2004
-%                               Last modification:  Sep  6, 2023
+%                               Last modification:  Jul 26, 2023
 
 % Revisions:
 %
-%   Sep 6, 2023 (Zoran)
-%    - It's now possible to create database with any time resolution in minutes.
-%      If timeUnit == 3, data base will have resolution of 3 minutes. (search for 20230906)
 %   July 26, 2023 (Zoran)
 %    - Converted a few '\' into filesep to keep the program compatible with MacOS
 %
