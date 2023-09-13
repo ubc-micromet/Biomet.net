@@ -35,7 +35,7 @@ If you write any functions that you think the other group members could use, cre
 
 # 3) Creating a local copy of the database on your computer
 
-* Once you have Biomet.net set up and followed all the instructions from the `README` file in the [UBC PC Setup repository](https://github.com/ubc-micromet/UBC_PC_Setup-template), you can create a local copy of the database for testing and analysis purposes.
+* Once you have Biomet.net set up and followed all the instructions from the `README` file in the [UBC PC Setup repository](https://github.com/ubc-micromet/UBC_PC_Setup-template), you can create a local copy of the database for testing and analysis purposes. If you are on **MacOS** you can follow this [detailed tutorial](./tutorials/macos_initial_tutorial.md) that will cover the next few steps below up to **Plotting your data using R**
 
 * Zoran created an app that allows for easy copying of the database (it's called `setupLocalDataCleaning`). This app enables users to do local cleaning of database traces by copying the server database to you local machine. User can then work on the ini files, do the cleaning and check the results. Once everything is working, the user can (manually) copy the ini files and any functions from Derived_Variables to the main server and re-run the cleaning there to update the server database (**Note that this is done by sharing your files with Zoran who will then upload them to Vinimet**). The results on the server should now be the same as after the cleaning on the local computer.
 
