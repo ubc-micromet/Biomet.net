@@ -4,17 +4,21 @@ import pandas as pd
 import configparser
 import argparse
 import datetime
+import shutil
+import pathlib
+import sys
 
 class Dbase():
     def __init__(self,ini):
         self.ini = configparser.ConfigParser()
         self.ini.read('ini_files/BiometPy.ini')
         self.ini.read(ini)
+        self.Year = datetime.datetime.now().year
         self.find_Sites()
 
     def find_Sites(self):
         start = 2014
-        end = datetime.datetime.now().year+1
+        end = self.Year+1
 
         Root = self.ini['Paths']['database'].split('SITE')[0]
         self.years_by_site = {}
@@ -31,12 +35,13 @@ class Dbase():
                             else:
                                 self.years_by_site[site] = [year]
         
-    def sub(self,val):
+    def sub(self,s):
         for path in self.ini['Paths'].keys():
-            val = val.replace(path.upper(),self.ini['Paths'][path])
-        v = val.replace('YEAR',str(self.Year)).replace('SITE',self.Site)
-        return(v)
-
+            s = s.replace(path.upper(),self.ini['Paths'][path])
+        for key,value in {'YEAR':self.Year,'SITE':self.site_name}.items():
+            if key in s:
+                s = s.replace(key,value)
+        return(s)
 
     def dateIndex(self):
         Date_cols = [i for i in self.ini[self.Site_File]['Date_Cols'].split(',')]
@@ -44,7 +49,6 @@ class Dbase():
             Date_col = Date_cols[0]
             self.Data[Date_col] = pd.DatetimeIndex(self.Data[Date_col])
             self.Data = self.Data.set_index(Date_col)
-
         else:
             self.Data['Timestamp'] = ''
             for col in self.ini[self.Site_File]['Date_Cols'].split(','):
@@ -80,7 +84,6 @@ class Dbase():
     
     def Write_Trace(self):
         self.write_dir = self.ini['Paths']['database'].replace('YEAR',str(self.y)).replace('SITE',self.site_name)+self.ini[self.Site_File]['subfolder']
-
         if os.path.isdir(self.write_dir)==False:
             print('Creating new directory at:\n', self.write_dir)
             os.makedirs(self.write_dir)
@@ -98,9 +101,37 @@ class Dbase():
             with open(f'{self.write_dir}/{T}','wb') as out:
                 Trace.tofile(out)
 
+    def copy_raw_data_files(self,dir=None,file=None,format='dat'):
+
+        copy_to = self.sub(self.ini['Paths']['sites'])
+        if os.path.isdir(copy_to) == False:
+            print('Warning: ',copy_to,' Does not exist.  Ensure this is the correct location to save then create the folder before proceeding.')
+            sys.exit()
+        elif os.path.isdir(f"{copy_to}/{self.ini[self.Site_File]['subfolder']}") == False:
+            os.makedirs(f"{copy_to}/{self.ini[self.Site_File]['subfolder']}")
+        copy_to = f"{copy_to}/{self.ini[self.Site_File]['subfolder']}"
+
+        if format == 'dat':
+            fname = pathlib.Path(dir+'/'+file)
+            mod_time = datetime.datetime.fromtimestamp(fname.stat().st_mtime).strftime("%Y%m%dT%H%M")
+            shutil.copy(f"{dir}/{file}",f"{copy_to}/{self.Site_File}_{mod_time}.dat")
+            with open(f"{copy_to}/{self.Site_File}_README.md",'w+') as readme:
+
+                str = f'# README\n\nLast update{datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}'
+                str += '\n\n' +self.ini[self.Site_File]['readme']
+                readme.write(str)
+
+        elif format == 'csv':
+            file.to_csv(f"{copy_to}/{self.Site_File}.csv")
+
+            with open(f"{copy_to}/{self.Site_File}_README.md",'w+') as readme:
+
+                str = f'# README\n\nLast update{datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}'
+                str += '\n\n' +self.ini[self.Site_File]['readme']
+                readme.write(str)
 
 class MakeTraces(Dbase):
-    def __init__(self,ini='ini_files/WriteTraces.ini'):
+    def __init__(self,ini='ini_files/WriteTraces_BBS.ini'):
         super().__init__(ini)
         for self.Site_File in self.ini['Input']['Files'].split(','):
             self.site_name = self.ini[self.Site_File]['Site']
@@ -114,6 +145,7 @@ class MakeTraces(Dbase):
             for file in (files):
                 fn = f"{dir}/{file}"
                 if len([p for p in patterns if p not in fn])==0:
+                    self.copy_raw_data_files(dir=dir,file=file)
                     if self.ini[self.Site_File]['subtable_id'] == '':
                         self.readSingle(fn)
                     else:
@@ -142,7 +174,6 @@ class MakeTraces(Dbase):
         self.Data = pd.concat([self.Data,Data],axis=0)
 
     def readSubTables(self,fn):
-        # Read the file - if the first row is corrupted, it will be dropped
         try:
             Data = pd.read_csv(fn,header=None,na_values=[-6999,6999])
         except:
@@ -186,6 +217,7 @@ class GSheetDump(Dbase):
         i = int(self.ini[self.Site_File]['subtable_id'])
         self.Data = pd.read_html(self.ini[self.Site_File]['path_patterns'],
                      skiprows=int(self.ini[self.Site_File]['Header_Row']))[i]
+        self.copy_raw_data_files(file=self.Data,format='csv')
         self.dateIndex()
         if self.ini[self.Site_File]['Exclude'] != '':
             colFilter = self.Metadata.filter(self.ini[self.Site_File]['Exclude'].split(','))
@@ -198,10 +230,9 @@ class MakeCSV(Dbase):
     def __init__(self,Sites=None,Years=None,ini='ini_files/ReadTraces.ini'):
         super().__init__(ini)
 
-        for Site in Sites:
-            self.Site = Site
+        for self.site_name in Sites:
             for Request in self.ini['Output']['Requests'].split(','):
-                print(f'Creating .csv files for {Site}: {Request}')
+                print(f'Creating .csv files for {self.site_name}: {Request}')
                 self.Request = Request
                 if self.ini[self.Request]['by_Year']=='False':
                     self.AllData = pd.DataFrame()
@@ -277,7 +308,7 @@ class MakeCSV(Dbase):
 
     def write_csv(self):
         if self.AllData.empty:
-            print(f'No data to write for{self.Site}: {self.Year}')
+            print(f'No data to write for{self.site_name}: {self.Year}')
         else:
             output_path = self.sub(self.ini[self.Request]['Output_Paths'])
             if os.path.exists(output_path)==False:
