@@ -8,7 +8,7 @@ import shutil
 import pathlib
 import sys
 
-class Dbase():
+class DatabaseFunctions():
     def __init__(self,ini):
         self.ini = configparser.ConfigParser()
         self.ini.read('ini_files/BiometPy.ini')
@@ -40,7 +40,7 @@ class Dbase():
             s = s.replace(path.upper(),self.ini['Paths'][path])
         for key,value in {'YEAR':self.Year,'SITE':self.site_name}.items():
             if key in s:
-                s = s.replace(key,value)
+                s = s.replace(key,str(value))
         return(s)
 
     def dateIndex(self):
@@ -67,7 +67,26 @@ class Dbase():
         if self.ini[self.Site_File]['aggregate']!='':
             self.Data = self.Data.agg(self.ini[self.Site_File]['aggregate'].split(','),axis=1)
 
-    def FullYear(self):
+    def readBinary(self,file,dtype):
+        file = self.dpath+file
+        if os.path.isfile(file):
+            with open(file, mode='rb') as f:
+                trace = np.fromfile(f, dtype)
+                return(trace)
+            
+    def readTimeVector(self):
+        clean_tv = self.readBinary(self.ini['Database']['timestamp'],self.ini['Database']['timestamp_dtype'])
+        if clean_tv is None:
+            clean_tv = self.readBinary(self.ini['Database']['timestamp_alt'],self.ini['Database']['timestamp_dtype'])
+        if clean_tv is not None:
+            base = float(self.ini['Database']['datenum_base'])
+            unit = self.ini['Database']['datenum_base_unit']
+            self.Time_Trace = pd.to_datetime(clean_tv-base,unit=unit).round('T')
+        else:
+            print('Warning - time vector does not exist - generating anyway, double check the inputs / outputs')
+            self.Time_Trace = pd.date_range(start='2022-01-01 00:30',end='2023-01-01',freq='30T')
+    
+    def padFullYear(self):
         for self.y in self.Data.index.year.unique():
             self.Year = pd.DataFrame(data={'Timestamp':pd.date_range(start = f'{self.y}01010030',end=f'{self.y+1}01010001',freq='30T')})
             self.Year = self.Year.set_index('Timestamp')
@@ -81,7 +100,7 @@ class Dbase():
             self.Year[self.ini['Database']['timestamp']] = self.Year['Secs']+self.Year['Days']
             self.Year = self.Year.drop(columns=['Floor','Secs','Days'])
             self.Write_Trace()
-    
+
     def Write_Trace(self):
         self.write_dir = self.ini['Paths']['database'].replace('YEAR',str(self.y)).replace('SITE',self.site_name)+self.ini[self.Site_File]['subfolder']
         if os.path.isdir(self.write_dir)==False:
@@ -102,7 +121,6 @@ class Dbase():
                 Trace.tofile(out)
 
     def copy_raw_data_files(self,dir=None,file=None,format='dat'):
-
         copy_to = self.sub(self.ini['Paths']['sites'])
         if os.path.isdir(copy_to) == False:
             print('Warning: ',copy_to,' Does not exist.  Ensure this is the correct location to save then create the folder before proceeding.')
@@ -130,7 +148,7 @@ class Dbase():
                 str += '\n\n' +self.ini[self.Site_File]['readme']
                 readme.write(str)
 
-class MakeTraces(Dbase):
+class MakeTraces(DatabaseFunctions):
     def __init__(self,ini='ini_files/WriteTraces_BBS.ini'):
         super().__init__(ini)
         for self.Site_File in self.ini['Input']['Files'].split(','):
@@ -145,7 +163,8 @@ class MakeTraces(Dbase):
             for file in (files):
                 fn = f"{dir}/{file}"
                 if len([p for p in patterns if p not in fn])==0:
-                    self.copy_raw_data_files(dir=dir,file=file)
+                    if self.ini['Input']['copy_to_sites'] == 'True':
+                        self.copy_raw_data_files(dir=dir,file=file)
                     if self.ini[self.Site_File]['subtable_id'] == '':
                         self.readSingle(fn)
                     else:
@@ -156,7 +175,7 @@ class MakeTraces(Dbase):
             self.Metadata.drop(colFilter,inplace=True,axis=1)  
             colFilter = self.Data.filter(self.ini[self.Site_File]['Exclude'].split(','))
             self.Data.drop(colFilter,inplace=True,axis=1)
-        self.FullYear()
+        self.padFullYear()
 
     def readSingle(self,fn):
         if self.ini[self.Site_File]['Header_Row'] != '':
@@ -205,7 +224,7 @@ class MakeTraces(Dbase):
             Subtable.columns=header.columns
             self.Data = pd.concat([self.Data,Subtable],axis=0)
         
-class GSheetDump(Dbase):
+class GSheetDump(DatabaseFunctions):
     def __init__(self, ini='ini_files/WriteTraces_Gsheets.ini'):
         super().__init__(ini)
         for self.Site_File in self.ini['Input']['Files'].split(','):
@@ -217,100 +236,57 @@ class GSheetDump(Dbase):
         i = int(self.ini[self.Site_File]['subtable_id'])
         self.Data = pd.read_html(self.ini[self.Site_File]['path_patterns'],
                      skiprows=int(self.ini[self.Site_File]['Header_Row']))[i]
-        self.copy_raw_data_files(file=self.Data,format='csv')
+        
+        if self.ini['Input']['copy_to_sites'] == 'True':
+            self.copy_raw_data_files(file=self.Data,format='csv')
         self.dateIndex()
         if self.ini[self.Site_File]['Exclude'] != '':
             colFilter = self.Metadata.filter(self.ini[self.Site_File]['Exclude'].split(','))
             self.Metadata.drop(colFilter,inplace=True,axis=1)
             colFilter = self.Data.filter(self.ini[self.Site_File]['Exclude'].split(','))
             self.Data.drop(colFilter,inplace=True,axis=1)
-        self.FullYear()
+        self.padFullYear()
 
-class MakeCSV(Dbase):
+class MakeCSV(DatabaseFunctions):
     def __init__(self,Sites=None,Years=None,ini='ini_files/ReadTraces.ini'):
         super().__init__(ini)
-
+        if Sites is None:
+            Sites = self.years_by_site.keys()
         for self.site_name in Sites:
-            for Request in self.ini['Output']['Requests'].split(','):
-                print(f'Creating .csv files for {self.site_name}: {Request}')
-                self.Request = Request
-                if self.ini[self.Request]['by_Year']=='False':
-                    self.AllData = pd.DataFrame()
-                for Year in Years:
-                    self.Year = Year
-                    if os.path.exists(self.sub(self.ini['Paths']['database'])+self.ini[self.Request]['Stage']):
-                        self.readDB()
-                    else:
-                        pass
-                if self.ini[self.Request]['by_Year']=='False':
-                    self.write_csv()
-                    
-    def readDB(self):
-        self.getTime()
-        if self.skip_Flag == False:
-            self.traces = self.ini[self.Request]['Traces'].split(',')
-            D_traces = self.readTrace()
-            self.Data = pd.DataFrame(index=self.Time_Trace,data=D_traces)
-            self.Data[self.ini[self.Request]['timestamp']] = self.Data.index.floor('Min').strftime(self.ini[self.Request]['timestamp_FMT'])
-            self.traces.insert(0,self.ini[self.Request]['timestamp'])
-            self.renames = {}
-            for renames in self.ini[self.Request]['Rename'].split(','):
-                r = renames.split('|')
-                if len(r)>1:
-                    self.renames[r[0]]=r[1]
-            self.Data = self.Data.rename(columns=self.renames)
-            if self.ini[self.Request]['by_Year']=='True':
-                self.AllData = self.Data
+            for self.Request in self.ini['Output']['requests'].split(','):
+                if Years is not None:
+                    self.years_by_site[self.site_name] = Years
+                print(f'Creating .csv files for {self.site_name}: {self.Request}')
+                self.AllData = pd.DataFrame()
+                for self.Year in Years:
+                    self.dpath = self.sub(self.ini['Paths']['database'])+self.ini[self.Request]['stage']+'/'
+                    if os.path.exists(self.dpath):
+                        self.readYear()
                 self.write_csv()
-            else:
-                self.AllData = pd.concat([self.AllData,self.Data])
+                    
+    def readYear(self):
+        self.readTimeVector()
+        self.Data = pd.DataFrame(index=self.Time_Trace,data=self.readTraces())
+        self.Data[self.ini[self.Request]['timestamp']] = self.Data.index.floor('Min').strftime(self.ini[self.Request]['timestamp_FMT'])
+        for renames in self.ini[self.Request]['rename'].split(','):
+            r = renames.split('|')
+            if len(r)>1:
+                self.Data = self.Data.rename(columns={r[0]:r[1]})
+        self.AllData = pd.concat([self.AllData,self.Data])
 
-    def getTime(self):
-        Timestamp = self.ini['Database']['timestamp']
-        Timestamp_alt = self.ini['Database']['timestamp']
-        filename = self.sub(self.ini['Paths']['database'])+self.ini[self.Request]['Stage']+Timestamp
-        filename_alt = self.sub(self.ini['Paths']['database'])+self.ini[self.Request]['Stage']+Timestamp_alt
-        if os.path.isfile(filename)+os.path.isfile(filename_alt) == 0:
-            self.skip_Flag = True
-        else:
-            try:
-                with open(filename, mode='rb') as file:
-                    Time_Trace = np.fromfile(file, self.ini['Database']['timestamp_dtype'])
-            except:
-                with open(filename_alt, mode='rb') as file:
-                    Time_Trace = np.fromfile(file, self.ini['Database']['timestamp_dtype'])
-                pass
-            if self.ini['Database']['timestamp_fmt'] == 'datenum':
-                base = float(self.ini['Database']['datenum_base'])
-                unit = self.ini['Database']['datenum_base_unit']
-                self.Time_Trace_Num = Time_Trace+0
-                self.Time_Trace = pd.to_datetime(Time_Trace-base,unit=unit).round('T')
-            else:
-                # Datenum is depreciated and we should consider upgrading
-                warning = 'Revise code for new timestamp format'
-                sys.exit(warning)
-            self.skip_Flag=False
-
-    def readTrace(self):
+    def readTraces(self):
         D_traces = {}
-        for Trace_Name in self.traces:
-            filename = self.sub(self.ini['Paths']['database'])+self.ini[self.Request]['Stage']+Trace_Name
-            try:
-                with open(filename, mode='rb') as file:
-                    trace = np.fromfile(file, self.ini['Database']['trace_dtype'])
-            except:
-                print(f'Trace does not exist {filename} , proceeding without')
-                trace = np.empty(self.Time_Trace.shape[0])
-                trace[:] = np.nan
-                pass
-            D_traces[Trace_Name]=trace
+        for Trace_Name in self.ini[self.Request]['traces'].split(','):
+            trace = self.readBinary(Trace_Name,self.ini['Database']['trace_dtype'])
+            if trace is not None:
+                D_traces[Trace_Name]=trace
         return (D_traces)
-
+    
     def write_csv(self):
         if self.AllData.empty:
             print(f'No data to write for{self.site_name}: {self.Year}')
         else:
-            output_path = self.sub(self.ini[self.Request]['Output_Paths'])
+            output_path = self.sub(self.ini[self.Request]['output_paths'])
             if os.path.exists(output_path)==False:
                 os.makedirs(output_path)
             output_path = output_path+self.Request+'.csv'
@@ -319,12 +295,10 @@ class MakeCSV(Dbase):
             self.AllData.to_csv(output_path)
         
     def addUnits(self):
-        if self.ini[self.Request]['Units_in_Header'].lower() == 'true':
-            units = self.ini[self.Request]['Units'].split(',')
-            units.insert(0,self.ini[self.Request]['timestamp_Units'])
-            unit_dic = {t:u for t,u in zip(self.traces,units)}
-            for key,val in self.renames.items():
-                unit_dic[val] = unit_dic.pop(key)
+        if self.ini[self.Request]['units_in_header'].lower() == 'true':
+            units = self.ini[self.Request]['units'].split(',')
+            units.append(self.ini[self.Request]['timestamp_units'])
+            unit_dic = {t:u for t,u in zip(self.AllData.columns,units)}
             self.AllData = pd.concat([pd.DataFrame(index=[-1],data=unit_dic),self.AllData])
             
 
@@ -353,4 +327,4 @@ if __name__ == '__main__':
     elif args.func == 'Write':
         MakeTraces()
     elif args.func == 'GSheetDump':
-        MakeTraces()
+        GSheetDump()
