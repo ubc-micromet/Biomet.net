@@ -44,28 +44,28 @@ class DatabaseFunctions():
         return(s)
 
     def dateIndex(self):
-        Date_cols = [i for i in self.ini[self.Site_File]['Date_Cols'].split(',')]
-        if self.ini[self.Site_File]['Date_Fmt'] == 'Auto':
+        Date_cols = [i for i in self.ini[self.batch]['Date_Cols'].split(',')]
+        if self.ini[self.batch]['Date_Fmt'] == 'Auto':
             Date_col = Date_cols[0]
             self.Data[Date_col] = pd.DatetimeIndex(self.Data[Date_col])
             self.Data = self.Data.set_index(Date_col)
-        else:
+        elif self.ini[self.batch]['Date_Fmt'] != '':
             self.Data['Timestamp'] = ''
-            for col in self.ini[self.Site_File]['Date_Cols'].split(','):
-                ix = self.ini[self.Site_File]['Header_list'].split(',').index(col)
-                unit = self.ini[self.Site_File]['Header_units'].split(',')[ix]
+            for col in self.ini[self.batch]['Date_Cols'].split(','):
+                ix = self.ini[self.batch]['Header_list'].split(',').index(col)
+                unit = self.ini[self.batch]['Header_units'].split(',')[ix]
                 if unit.upper() == 'HHMM':
                     self.Data.loc[self.Data[col]==2400,col]=0
                 self.Data['Timestamp'] = self.Data['Timestamp'].str.cat(self.Data[col].astype(str).str.zfill(len(unit)),sep='')
-            self.Data['Timestamp'] = pd.to_datetime(self.Data['Timestamp'],format=self.ini[self.Site_File]['Date_Fmt'])
+            self.Data['Timestamp'] = pd.to_datetime(self.Data['Timestamp'],format=self.ini[self.batch]['Date_Fmt'])
             self.Data = self.Data.set_index('Timestamp')
 
         self.Aggregate()
         self.Data=self.Data.resample('30T').first()
 
     def Aggregate(self):
-        if self.ini[self.Site_File]['aggregate']!='':
-            self.Data = self.Data.agg(self.ini[self.Site_File]['aggregate'].split(','),axis=1)
+        if self.ini[self.batch]['aggregate']!='':
+            self.Data = self.Data.agg(self.ini[self.batch]['aggregate'].split(','),axis=1)
 
     def readBinary(self,file,dtype):
         file = self.dpath+file
@@ -102,7 +102,7 @@ class DatabaseFunctions():
             self.Write_Trace()
 
     def Write_Trace(self):
-        self.write_dir = self.ini['Paths']['database'].replace('YEAR',str(self.y)).replace('SITE',self.site_name)+self.ini[self.Site_File]['subfolder']
+        self.write_dir = self.ini['Paths']['database'].replace('YEAR',str(self.y)).replace('SITE',self.site_name)+self.ini[self.batch]['subfolder']
         if os.path.isdir(self.write_dir)==False:
             print('Creating new directory at:\n', self.write_dir)
             os.makedirs(self.write_dir)
@@ -113,10 +113,10 @@ class DatabaseFunctions():
             else:
                 fmt = self.ini['Database']['trace_dtype']
             Trace = self.Year[T].astype(fmt).values
-            if self.ini[self.Site_File]['prefix']!='' and T != self.ini['Database']['timestamp']:
-                T = self.ini[self.Site_File]['prefix'] + '_' + T
-            if self.ini[self.Site_File]['suffix']!='' and T != self.ini['Database']['timestamp']:
-                T += '_' + self.ini[self.Site_File]['suffix']
+            if self.ini[self.batch]['prefix']!='' and T != self.ini['Database']['timestamp']:
+                T = self.ini[self.batch]['prefix'] + '_' + T
+            if self.ini[self.batch]['suffix']!='' and T != self.ini['Database']['timestamp']:
+                T += '_' + self.ini[self.batch]['suffix']
             with open(f'{self.write_dir}/{T}','wb') as out:
                 Trace.tofile(out)
 
@@ -125,70 +125,85 @@ class DatabaseFunctions():
         if os.path.isdir(copy_to) == False:
             print('Warning: ',copy_to,' Does not exist.  Ensure this is the correct location to save then create the folder before proceeding.')
             sys.exit()
-        elif os.path.isdir(f"{copy_to}/{self.ini[self.Site_File]['subfolder']}") == False:
-            os.makedirs(f"{copy_to}/{self.ini[self.Site_File]['subfolder']}")
-        copy_to = f"{copy_to}/{self.ini[self.Site_File]['subfolder']}"
+        elif os.path.isdir(f"{copy_to}/{self.ini[self.batch]['subfolder']}") == False:
+            os.makedirs(f"{copy_to}/{self.ini[self.batch]['subfolder']}")
+        copy_to = f"{copy_to}/{self.ini[self.batch]['subfolder']}"
 
         if format == 'dat':
             fname = pathlib.Path(dir+'/'+file)
             mod_time = datetime.datetime.fromtimestamp(fname.stat().st_mtime).strftime("%Y%m%dT%H%M")
-            shutil.copy(f"{dir}/{file}",f"{copy_to}/{self.Site_File}_{mod_time}.dat")
-            with open(f"{copy_to}/{self.Site_File}_README.md",'w+') as readme:
+            shutil.copy(f"{dir}/{file}",f"{copy_to}/{self.batch}_{mod_time}.dat")
+            with open(f"{copy_to}/{self.batch}_README.md",'w+') as readme:
 
                 str = f'# README\n\nLast update{datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}'
-                str += '\n\n' +self.ini[self.Site_File]['readme']
+                str += '\n\n' +self.ini[self.batch]['readme']
                 readme.write(str)
 
         elif format == 'csv':
-            file.to_csv(f"{copy_to}/{self.Site_File}.csv")
+            file.to_csv(f"{copy_to}/{self.batch}.csv")
 
-            with open(f"{copy_to}/{self.Site_File}_README.md",'w+') as readme:
+            with open(f"{copy_to}/{self.batch}_README.md",'w+') as readme:
 
                 str = f'# README\n\nLast update{datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}'
-                str += '\n\n' +self.ini[self.Site_File]['readme']
+                str += '\n\n' +self.ini[self.batch]['readme']
                 readme.write(str)
 
 class MakeTraces(DatabaseFunctions):
-    def __init__(self,ini='ini_files/WriteTraces_BBS.ini'):
+    # Accepts an ini file that prompt a search of the datadump folder - or a pandas dataframe with a datetime index
+    def __init__(self,ini='ini_files/WriteTraces_BBS.ini',DataTable=None):
         super().__init__(ini)
-        for self.Site_File in self.ini['Input']['Files'].split(','):
-            self.site_name = self.ini[self.Site_File]['Site']
-            self.findFiles()
+        
+        if DataTable is None:
+            for self.batch in self.ini['Input']['file_batches'].split(','):
+                self.site_name = self.ini[self.batch]['Site']
+                self.findFiles()
+        else:
+            self.batch = self.ini['Input']['file_batches'].split(',')[0]
+            self.site_name = self.ini[self.batch]['Site']
+            self.Data = DataTable
 
-    def findFiles(self):
-        patterns = self.ini[self.Site_File]['path_patterns'].split(',')
-        self.Data = pd.DataFrame()
-        self.Metadata = pd.DataFrame()
-        for dir,_,files in os.walk(self.ini['Paths']['datadump'].replace('SITE',self.site_name)):
-            for file in (files):
-                fn = f"{dir}/{file}"
-                if len([p for p in patterns if p not in fn])==0:
-                    if self.ini['Input']['copy_to_sites'] == 'True':
-                        self.copy_raw_data_files(dir=dir,file=file)
-                    if self.ini[self.Site_File]['subtable_id'] == '':
-                        self.readSingle(fn)
-                    else:
-                        self.readSubTables(fn)
         self.dateIndex()
-        if self.ini[self.Site_File]['Exclude'] != '':
-            colFilter = self.Metadata.filter(self.ini[self.Site_File]['Exclude'].split(','))
+        if self.ini[self.batch]['Exclude'] != '':
+            colFilter = self.Metadata.filter(self.ini[self.batch]['Exclude'].split(','))
             self.Metadata.drop(colFilter,inplace=True,axis=1)  
-            colFilter = self.Data.filter(self.ini[self.Site_File]['Exclude'].split(','))
+            colFilter = self.Data.filter(self.ini[self.batch]['Exclude'].split(','))
             self.Data.drop(colFilter,inplace=True,axis=1)
         self.padFullYear()
 
+
+    def findFiles(self):
+        file_patterns = self.ini[self.batch]['filename'].split(',')
+        self.Data = pd.DataFrame()
+        self.Metadata = pd.DataFrame()
+        search_dir = self.ini['Paths']['datadump'].replace('SITE',self.site_name) + self.ini[self.batch]['restrict_search_to']
+        for dir,_,files in os.walk(search_dir):
+            # if len(path_patterns)==0:proceed = True
+            # elif len([p for p in path_patterns if p in dir])!=0:proceed = True
+            # else:proceed = False
+            # if proceed == True:
+            print(dir)
+            for file in (files):
+                fn = f"{dir}/{file}"
+                if len([p for p in file_patterns if p not in fn])==0:
+                    if self.ini['Input']['copy_to_sites'] == 'True':
+                        self.copy_raw_data_files(dir=dir,file=file)
+                    if self.ini[self.batch]['subtable_id'] == '':
+                        self.readSingle(fn)
+                    else:
+                        self.readSubTables(fn)
+
     def readSingle(self,fn):
-        if self.ini[self.Site_File]['Header_Row'] != '':
-            header = pd.read_csv(fn,skiprows=int(self.ini[self.Site_File]['Header_Row']),nrows=int(self.ini[self.Site_File]['First_Data_Row'])-int(self.ini[self.Site_File]['Header_Row']))
+        if self.ini[self.batch]['Header_Row'] != '':
+            header = pd.read_csv(fn,skiprows=int(self.ini[self.batch]['Header_Row']),nrows=int(self.ini[self.batch]['First_Data_Row'])-int(self.ini[self.batch]['Header_Row']))
             self.Metadata = pd.concat([self.Metadata,header],axis=0)
             headers = header.columns
         else:
-            headers = self.ini[self.Site_File]['Header_list'].split(',')
-            units = self.ini[self.Site_File]['Header_units'].split(',')
+            headers = self.ini[self.batch]['Header_list'].split(',')
+            units = self.ini[self.batch]['Header_units'].split(',')
             header = pd.DataFrame(columns=headers)
             header.iloc[0] = units
             self.Metadata = pd.concat([self.Metadata,header],axis=0)
-        Data = pd.read_csv(fn,skiprows=int(self.ini[self.Site_File]['First_Data_Row']),header=None)
+        Data = pd.read_csv(fn,skiprows=int(self.ini[self.batch]['First_Data_Row']),header=None)
         Data.columns=headers
         self.Data = pd.concat([self.Data,Data],axis=0)
 
@@ -199,7 +214,7 @@ class MakeTraces(DatabaseFunctions):
             Data = pd.read_csv(fn,header=None,na_values=[-6999,6999],skiprows=1)
             First = pd.read_csv(fn,header=None,na_values=[-6999,6999],nrows=1)
             pass
-        for subtable_id,headers,units in zip(self.ini[self.Site_File]['subtable_id'].split('|'),self.ini[self.Site_File]['Header_list'].split('|'),self.ini[self.Site_File]['Header_units'].split('|')):
+        for subtable_id,headers,units in zip(self.ini[self.batch]['subtable_id'].split('|'),self.ini[self.batch]['Header_list'].split('|'),self.ini[self.batch]['Header_units'].split('|')):
             headers = headers.split(',')
             units = units.split(',')
             if Data.shape[1]<len(headers):
@@ -227,23 +242,23 @@ class MakeTraces(DatabaseFunctions):
 class GSheetDump(DatabaseFunctions):
     def __init__(self, ini='ini_files/WriteTraces_Gsheets.ini'):
         super().__init__(ini)
-        for self.Site_File in self.ini['Input']['Files'].split(','):
-            self.site_name = self.ini[self.Site_File]['Site']
+        for self.batch in self.ini['Input']['Files'].split(','):
+            self.site_name = self.ini[self.batch]['Site']
             self.readSheet()
 
     def readSheet(self):
         self.Metadata=pd.DataFrame()
-        i = int(self.ini[self.Site_File]['subtable_id'])
-        self.Data = pd.read_html(self.ini[self.Site_File]['path_patterns'],
-                     skiprows=int(self.ini[self.Site_File]['Header_Row']))[i]
+        i = int(self.ini[self.batch]['subtable_id'])
+        self.Data = pd.read_html(self.ini[self.batch]['filename'],
+                     skiprows=int(self.ini[self.batch]['Header_Row']))[i]
         
         if self.ini['Input']['copy_to_sites'] == 'True':
             self.copy_raw_data_files(file=self.Data,format='csv')
         self.dateIndex()
-        if self.ini[self.Site_File]['Exclude'] != '':
-            colFilter = self.Metadata.filter(self.ini[self.Site_File]['Exclude'].split(','))
+        if self.ini[self.batch]['Exclude'] != '':
+            colFilter = self.Metadata.filter(self.ini[self.batch]['Exclude'].split(','))
             self.Metadata.drop(colFilter,inplace=True,axis=1)
-            colFilter = self.Data.filter(self.ini[self.Site_File]['Exclude'].split(','))
+            colFilter = self.Data.filter(self.ini[self.batch]['Exclude'].split(','))
             self.Data.drop(colFilter,inplace=True,axis=1)
         self.padFullYear()
 
