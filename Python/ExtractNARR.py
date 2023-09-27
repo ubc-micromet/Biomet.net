@@ -20,7 +20,6 @@ class PointSample():
     def __init__(self,Site_code,Years,NARR_ini='ini_files/WriteTraces_NARR.ini',verbose=0):
         self.ini = configparser.ConfigParser()
         self.ini.read('ini_files/BiometPy.ini')
-        # self.ini.read(f'ini_files/site_configurations/{Site_code}.metadata')
         self.ini.read(f'ini_files/site_configurations/{Site_code}.ini')
         self.ini.read(NARR_ini)
         self.verbose = verbose

@@ -7,6 +7,7 @@ import datetime
 import shutil
 import pathlib
 import sys
+import TzFuncs
 
 class DatabaseFunctions():
     def __init__(self,ini):
@@ -34,6 +35,11 @@ class DatabaseFunctions():
                                 self.years_by_site[site].append(year)
                             else:
                                 self.years_by_site[site] = [year]
+        for site_name in self.years_by_site.keys():
+            if os.path.isfile(f'ini_files/site_configurations/{site_name}.ini'):
+                self.ini.read(f'ini_files/site_configurations/{site_name}.ini')
+            else:
+                print(f'{site_name} config file does not exist. Skpping')
         
     def sub(self,s):
         for path in self.ini['Paths'].keys():
@@ -44,21 +50,27 @@ class DatabaseFunctions():
         return(s)
 
     def dateIndex(self):
-        Date_cols = [i for i in self.ini[self.batch]['Date_Cols'].split(',')]
-        if self.ini[self.batch]['Date_Fmt'] == 'Auto':
-            Date_col = Date_cols[0]
+        date_cols = [i for i in self.ini[self.batch]['date_cols'].split(',')]
+        if self.ini[self.batch]['date_Fmt'] == 'Auto':
+            Date_col = date_cols[0]
             self.Data[Date_col] = pd.DatetimeIndex(self.Data[Date_col])
             self.Data = self.Data.set_index(Date_col)
-        elif self.ini[self.batch]['Date_Fmt'] != '':
+        elif self.ini[self.batch]['date_Fmt'] != '':
             self.Data['Timestamp'] = ''
-            for col in self.ini[self.batch]['Date_Cols'].split(','):
+            for col in self.ini[self.batch]['date_cols'].split(','):
                 ix = self.ini[self.batch]['Header_list'].split(',').index(col)
                 unit = self.ini[self.batch]['Header_units'].split(',')[ix]
                 if unit.upper() == 'HHMM':
                     self.Data.loc[self.Data[col]==2400,col]=0
                 self.Data['Timestamp'] = self.Data['Timestamp'].str.cat(self.Data[col].astype(str).str.zfill(len(unit)),sep='')
-            self.Data['Timestamp'] = pd.to_datetime(self.Data['Timestamp'],format=self.ini[self.batch]['Date_Fmt'])
+            self.Data['Timestamp'] = pd.to_datetime(self.Data['Timestamp'],format=self.ini[self.batch]['date_Fmt'])
             self.Data = self.Data.set_index('Timestamp')
+        if self.ini[self.batch]['is_dst'] == 'True':
+            lat_lon=[float(self.ini[self.site_name]['latitude']),float(self.ini[self.site_name]['longitude'])]
+            tzf = TzFuncs.Tzfuncs(self.Data.index,lat_lon=lat_lon,DST=True)
+            print(self.Data.index)
+            self.Data = self.Data.set_index(tzf.Standard_Time)
+            print(tzf.Standard_Time)
 
         self.Aggregate()
         self.Data=self.Data.resample('30T').first()
@@ -242,7 +254,7 @@ class MakeTraces(DatabaseFunctions):
 class GSheetDump(DatabaseFunctions):
     def __init__(self, ini='ini_files/WriteTraces_Gsheets.ini'):
         super().__init__(ini)
-        for self.batch in self.ini['Input']['Files'].split(','):
+        for self.batch in self.ini['Input']['file_batches'].split(','):
             self.site_name = self.ini[self.batch]['Site']
             self.readSheet()
 
