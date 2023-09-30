@@ -150,7 +150,7 @@ for k=1:length(yearIn)
                 inputPath = fullfile('p:\sites',siteID,'Chambers','*.csv');
                 progressListPath = fullfile(pth_db,[siteID '_Chambers_progressList_' num2str(yearIn(k)) '.mat'');']);
                 % Synchronize csv files created by SoilFluxPro software
-                csvSourceFolder = fullfile('\\137.82.55.154\data-dump',siteID,'Chamberdata\Fluxesdata\Fluxesdata_recomputed\csv_file\*.csv');
+                csvSourceFolder = fullfile('\\137.82.55.154\data-dump',siteID,'Chamberdata\Fluxesdata\Fluxesdata_recomputed\csv_file');
                 csvOutputFolder = fullfile('P:\Sites', siteID, 'Chambers');
                 cmdTMP = ['robocopy ' csvSourceFolder ' ' csvOutputFolder ' /R:3 /W:10 /REG /NDL /NFL /NJH /log+:P:\Sites\Log_files\' siteID '_chambers_sync.log' ];
                 dos(cmdTMP);
