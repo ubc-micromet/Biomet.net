@@ -139,7 +139,7 @@ end % cntYear
 % Save all files
 %
 %===============================================================
-function errCode = saveAll(Stats,fileNamesIn,fieldNamesIn,currentTv,inputTv,missingPointValue)
+function errCode = saveAll(Stats,fileNamesIn,fieldNamesIn,currentTv,inputTv)
 
 errCode = 0;
 % combine the two time vectors
@@ -164,38 +164,39 @@ for i=1:length(fileNamesIn)
                     save_bor(fileName,8,newTv);
                     ind = strfind(fileName,'TimeVector');
                     save_bor([fileName(1:ind-1) 'clean_tv'],8,newTv);
-                elseif contains(fileName,'RecalcTime')
-                    dataTemp = missingPointValue * zeros(size(newTv));
-                    dataTemp(indTv) = dataIn;
-                    save_bor(fileName,8,dataTemp);
+                elseif contains(fileName,'RecalcTime')  || contains(fileName,'sample_tv')
+                    save_bor(fileName,8,dataIn);
                 else
-                    dataTemp = missingPointValue * zeros(size(newTv));
-                    save_bor(fileName,1,dataTemp);
+                    save_bor(fileName,1,dataIn);
                 end
             else
                 % if file already exist open it up
                 % add the new data in
                 % save it back
 
-                    if contains(fileName,'RecalcTime')
-                        oldTrace = read_bor(fileName,8);
-                    else
-                        oldTrace = read_bor(fileName);
-                    end % findstr(fileName,'RecalcTime')
-                    % combine new with old data
-                    dataOut = NaN * size(newTv);
-                    if ~isempty(oldDataInd)
-                        dataOut(oldDataInd) = oldTrace;
-                    end
-                    if ~isempty(newDataInd)
-                        dataOut(newDataInd) = dataIn;
-                    end
-                    % Save the new combined trace
-                    if contains(fileName,'RecalcTime')
-                        save_bor(fileName,8,dataOut);
-                    else
-                        save_bor(fileName,1,dataOut);
-                    end
+                if contains(fileName,'RecalcTime') ...
+                        || contains(fileName,'TimeVector') ...
+                        || contains(fileName,'sample_tv')
+                    oldTrace = read_bor(fileName,8);
+                else
+                    oldTrace = read_bor(fileName);
+                end % findstr(fileName,'RecalcTime')
+                % combine new with old data
+                dataOut = NaN * size(newTv);
+                if ~isempty(oldDataInd)
+                    dataOut(oldDataInd) = oldTrace;
+                end
+                if ~isempty(newDataInd)
+                    dataOut(newDataInd) = dataIn;
+                end
+                % Save the new combined trace
+                if contains(fileName,'RecalcTime') ...
+                        || contains(fileName,'TimeVector') ...
+                        || contains(fileName,'sample_tv')
+                    save_bor(fileName,8,dataOut);
+                else
+                    save_bor(fileName,1,dataOut);
+                end
                
             end % ~exist(fileName,'file')
         end % ~isempty(dataIn)
@@ -223,7 +224,7 @@ if length(ind)==1   % the special code of '__' works only if there is only one i
     oldName = [oldName(1:ind-1) '.' oldName(ind+2:end)];
 end
 ind = find(oldName == '(' | oldName == ',');
-oldName(ind) = '_';
+oldName(ind) = '_'; %#ok<*FNDSB>
 ind = find(oldName == ')');
 oldName(ind) = [];
 fileName = oldName;

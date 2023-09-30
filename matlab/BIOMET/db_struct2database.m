@@ -28,7 +28,7 @@ function [structIn,dbFileNames, dbFieldNames] = db_struct2database(structIn,pthO
 %       k           -   number of files processed
 %
 % (c) Zoran Nesic               File created:       Sep 28, 2023
-%                               Last modification:  Sep 28, 2023
+%                               Last modification:  Sep 29, 2023
 
 % Revisions:
 %
@@ -182,7 +182,7 @@ for i=1:length(fileNamesIn)
                     oldTrace = read_bor(fileName);
                 end % findstr(fileName,'RecalcTime')
                 % combine new with old data
-                dataOut = NaN * size(newTv);
+                dataOut = missingPointValue * size(newTv);
                 if ~isempty(oldDataInd)
                     dataOut(oldDataInd) = oldTrace;
                 end
