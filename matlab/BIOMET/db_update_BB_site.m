@@ -158,7 +158,16 @@ for k=1:length(yearIn)
                 [numOfFilesProcessed,numOfDataPointsProcessed]= ...
                           fr_SoilFluxPro_database(inputPath,progressListPath,outputPath,'1min',[],missingPointValue);                                                            
                 fprintf('%s  Manual chambers:  Number of files processed = %d, Number of HHours = %d\n',siteID,numOfFilesProcessed,numOfDataPointsProcessed);
-            end
+                % Backup all data
+                csvSourceFolder = fullfile('\\137.82.55.154\data-dump',siteID,'Chamberdata\Fluxesdata\Fluxesdata_originalcopy');
+                csvOutputFolder = fullfile('P:\Sites', siteID, 'Chambers','HF_data','Original');
+                cmdTMP = ['robocopy ' csvSourceFolder ' ' csvOutputFolder ' /xf: .DS_Store /R:3 /W:10 /REG /NDL /NFL /NJH /log+:P:\Sites\Log_files\' siteID '_chambers_sync.log' ];
+                dos(cmdTMP);
+                csvSourceFolder = fullfile('\\137.82.55.154\data-dump',siteID,'Chamberdata\Fluxesdata\Fluxesdata_recomputed');
+                csvOutputFolder = fullfile('P:\Sites', siteID, 'Chambers','HF_data','Recomputed');
+                cmdTMP = ['robocopy ' csvSourceFolder ' ' csvOutputFolder ' /xf: .DS_Store /R:3 /W:10 /S /REG /NDL /NFL /NJH /log+:P:\Sites\Log_files\' siteID '_chambers_sync.log' ];
+                dos(cmdTMP);                  
+            end            
         catch
         end
 
