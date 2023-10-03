@@ -14,7 +14,7 @@
   <picture>
     <img src="../images/vpn_cisco.png" alt="Cisco AnyConnect Client Login" width="50%" height="50%" align=center>
     <figcaption>Cisco AnyConnect Client</figcaption>
-  </picture>
+  </picture>https://ubc-micromet.github.io/https://ubc-micromet.github.io/
 </div>
 
 
