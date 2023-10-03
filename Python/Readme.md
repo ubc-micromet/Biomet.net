@@ -1,9 +1,19 @@
 # Python Code for UBC Micromet
 
-Each application is in a separate folder, and each was created in a separate virtual environment.  For best results, you should use Python 3.10 or higher.
+## Contents
+
+1. DatabaseFunctions.py
+
+2. ExtractNARR.py
+
+3. TzFuncs.py
+
+# Setup
+
+For best results, you should use Python 3.10 or higher and run this code in a virtual environment
 
 * Its is not explicitly required to use virtual environments, but it is good practice to ensure all dependencies are met and you don't corrupt your base Python installation
-* The root folder of each application has a "requirement.txt" which lists the packages installed in the virtual environment
+* The root folder "Biomet.Net/Python" has a "requirement.txt" which lists the packages installed in the virtual environment
     * To install the packages, you can follow the steps listed below
     * It is best to do this in a dedicated virtual environment so you don't run into any conflicts with pre-existing installations in your main python environment.
     * See the instructions below to create a generic virtual environment with pip

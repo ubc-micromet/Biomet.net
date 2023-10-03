@@ -67,10 +67,9 @@ class DatabaseFunctions():
             self.Data = self.Data.set_index('Timestamp')
         if self.ini[self.batch]['is_dst'] == 'True':
             lat_lon=[float(self.ini[self.site_name]['latitude']),float(self.ini[self.site_name]['longitude'])]
-            tzf = TzFuncs.Tzfuncs(self.Data.index,lat_lon=lat_lon,DST=True)
-            print(self.Data.index)
+            tzf = TzFuncs.Tzfuncs(lat_lon=lat_lon,DST=True)
+            tzf.convert(self.Data.index)
             self.Data = self.Data.set_index(tzf.Standard_Time)
-            print(tzf.Standard_Time)
 
         self.Aggregate()
         self.Data=self.Data.resample('30T').first()
@@ -189,11 +188,6 @@ class MakeTraces(DatabaseFunctions):
         self.Metadata = pd.DataFrame()
         search_dir = self.ini['Paths']['datadump'].replace('SITE',self.site_name) + self.ini[self.batch]['restrict_search_to']
         for dir,_,files in os.walk(search_dir):
-            # if len(path_patterns)==0:proceed = True
-            # elif len([p for p in path_patterns if p in dir])!=0:proceed = True
-            # else:proceed = False
-            # if proceed == True:
-            print(dir)
             for file in (files):
                 fn = f"{dir}/{file}"
                 if len([p for p in file_patterns if p not in fn])==0:
@@ -334,13 +328,7 @@ if __name__ == '__main__':
     os.chdir(file_path)
 
     CLI=argparse.ArgumentParser()
-    # CLI.add_argument(
-    # "--ini",  # name on the CLI - drop the `--` for positional/required parameters
-    # nargs=1,  # 0 or more values expected => creates a list
-    # type=str,
-    # default='WriteTraces.ini',  # default if nothing is provided
-    # )
-    
+
     CLI.add_argument(
         "--func",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1,  # 0 or more values expected => creates a list
