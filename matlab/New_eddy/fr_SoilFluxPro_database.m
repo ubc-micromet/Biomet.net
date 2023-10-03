@@ -4,7 +4,7 @@ function [numOfFilesProcessed,numOfDataPointsProcessed] = fr_SoilFluxPro_databas
 % fr_LI8200_database - read LI8200 processed fluxes and create/update 
 %                        Biomet/Micromet climate data base
 % 
-% [numOfFilesProcessed,numOfDataPointsProcessed] = fr_LI8200_database(...
+% [numOfFilesProcessed,numOfDataPointsProcessed] = fr_SoilFluxPro_database(...
 %                 wildCardPath,...
 %                 processProgressListPath,databasePath,...
 %                 timeUnit,structPrefix,missingPointValue)
@@ -28,10 +28,13 @@ function [numOfFilesProcessed,numOfDataPointsProcessed] = fr_SoilFluxPro_databas
 %       missingPointValue   - default 0 (Biomet legacy), all new non-Biomet sites should be NaN
 %
 % Zoran Nesic           File Created:      Sep  6, 2023
-%                       Last modification: Sep  6, 2023  
+%                       Last modification: Sep 29, 2023  
 
 %
 % Revisions:
+%
+% Sep 29, 2023 (Zoran)
+%   - replaced db_new_eddy with db_struct2database (using sparse instead of complete data base files)
 %
 
 arg_default('timeUnit',5);              % default is 5 minutes
@@ -101,16 +104,22 @@ for i=1:length(h)
                 ind_yyyy = strfind(databasePath,'\yyyy\');
                 databasePathNew = databasePath;
                 for year_ind = years
-                    one_year_ind = find(tv > datenum(year_ind,1,1) & tv <= datenum(year_ind+1,1,1));
+                    one_year_ind = find(tv > datenum(year_ind,1,1) & tv <= datenum(year_ind+1,1,1)); %#ok<*DATNM>
                     if ~isempty(one_year_ind)
                         databasePathNew(ind_yyyy+1:ind_yyyy+4) = num2str(year_ind);
                         for cntSamples = 1:length(one_year_ind)
-                            [k] = db_new_eddy(ClimateStats(one_year_ind(cntSamples)),[],databasePathNew,0,[],timeUnit,missingPointValue); %#ok<*NASGU>
+                            %[k] = db_new_eddy(ClimateStats(one_year_ind(cntSamples)),[],databasePathNew,0,[],timeUnit,missingPointValue); %#ok<*NASGU>
+                            db_struct2database(ClimateStats(one_year_ind(cntSamples)),...
+                                               databasePathNew,[],[],...
+                                               timeUnit,missingPointValue);
                         end
                     end
                 end
             else
-                [k] = db_new_eddy(ClimateStats,[],databasePath,0,[],timeUnit,missingPointValue);
+                %[k] = db_new_eddy(ClimateStats,[],databasePath,0,[],timeUnit,missingPointValue);
+                db_struct2database(ClimateStats,...
+                                   databasePath,[],[],...
+                                   timeUnit,missingPointValue);
             end
             % if there is no errors update records
             numOfFilesProcessed = numOfFilesProcessed + 1;
