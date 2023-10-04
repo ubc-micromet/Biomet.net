@@ -39,14 +39,11 @@ function [numOfFilesProcessed,numOfDataPointsProcessed] = ...
 %       tv_input_format     - default []; see: fr_read_csi()
 %
 % Zoran Nesic           File Created:      June 16, 2005
-%                       Last modification: Oct   4, 2023  
+%                       Last modification: May  25, 2023  
 
 %
 % Revisions:
 %
-%   Oct 4, 2023 (Zoran)
-%       - Added checking if db_new_eddy returned and error. The file progress list 
-%         will now get updated only if errCode == 0.
 %   May 25, 2023 (Zoran)
 %     - added an option to load up a generic csv file using readtable
 %       and to process it into database. The csv file must have "date" column
@@ -274,20 +271,17 @@ for i=1:length(h)
                     one_year_ind = find(tv > datenum(year_ind,1,1) & tv <= datenum(year_ind+1,1,1));
                     if ~isempty(one_year_ind)
                         databasePathNew(ind_yyyy+1:ind_yyyy+4) = num2str(year_ind);
-                        [~,~,~,~,errCode] = db_new_eddy(ClimateStats(one_year_ind),[],databasePathNew,0,[],timeUnit,missingPointValue); %#ok<*NASGU>
+                        [k,~,~,~,errCode] = db_new_eddy(ClimateStats(one_year_ind),[],databasePathNew,0,[],timeUnit,missingPointValue); %#ok<*NASGU>
                     end
                 end
             else
-                [~,~,~,~,errCode] = db_new_eddy(ClimateStats,[],databasePath,0,[],timeUnit,missingPointValue);
+                [k,~,~,~,errCode] = db_new_eddy(ClimateStats,[],databasePath,0,[],timeUnit,missingPointValue);
             end
             % if there is no errors update records
             numOfFilesProcessed = numOfFilesProcessed + 1;
             numOfDataPointsProcessed = numOfDataPointsProcessed + length(tv);
-            if errCode == 0
-                % verify that the file was correctly processed by changing
-                % its Modified data from 0 to the actual date.
-                filesProcessProgressList(j).Modified = datenum(h(i).date); %#ok<*DATNM>
-            end
+            if errCode
+            filesProcessProgressList(j).Modified = datenum(h(i).date);
         catch
             fprintf('Error in processing of: %s\n',fullfile(pth,h(i).name));
         end % of try
