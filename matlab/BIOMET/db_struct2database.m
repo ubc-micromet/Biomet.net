@@ -1,4 +1,4 @@
-function [structIn,dbFileNames, dbFieldNames] = db_struct2database(structIn,pthOut,verbose_flag,excludeSubStructures,timeUnit,missingPointValue)
+function [structIn,dbFileNames, dbFieldNames,errCode] = db_struct2database(structIn,pthOut,verbose_flag,excludeSubStructures,timeUnit,missingPointValue)
 %
 % eg. k = db_new_eddy('\\annex001\database\2000\cr\flux\raw\',
 %                             '0001*.hp.mat','\\annex001\database\2000\cr\flux\');
@@ -28,10 +28,13 @@ function [structIn,dbFileNames, dbFieldNames] = db_struct2database(structIn,pthO
 %       k           -   number of files processed
 %
 % (c) Zoran Nesic               File created:       Sep 28, 2023
-%                               Last modification:  Sep 29, 2023
+%                               Last modification:  Oct  4, 2023
 
 % Revisions:
 %
+% Oct 4, 2023 (Zoran)
+%  - added errCode as an output
+
 
 arg_default('verbose_flag',1);              % default 1 (ON)
 arg_default('excludeSubStructures',[]);     % default exclude none
@@ -64,7 +67,7 @@ end
 % extract the time vector and round it to the nearest timeUnit
 %
 tic;
-new_tv = fr_round_time(get_stats_field(structIn,'TimeVector'),timeUnit,1);
+new_tv = fr_round_time(get_stats_field_fast(structIn,'TimeVector'),timeUnit,1);
 %
 % Keep only tv that are numbers
 ind_finite = find(isfinite(new_tv));
@@ -113,6 +116,28 @@ for currentYear = allYears
     for cntStruct = 1:length(structIn)
         dbFileNamesTmp = unique([dbFileNamesTmp recursiveStrucFieldNames(structIn,cntStruct)]);
     end
+    % Remove the cells that do not contain data
+    % If there is a field .LR1 that also exists in .LR1.(another_field)
+    % than .LR1 does not contain data (it contains cells) and it should be
+    % ignored.
+    delFields = [];
+    cntDelFields = 0;
+    for cntFields = 1:length(dbFileNamesTmp)
+        currentField = [char(dbFileNamesTmp(cntFields)) '.'];
+        for cntOtherFields = cntFields+1:length(dbFileNamesTmp)
+            % if the currentField exists as a start of any other field
+            % that means that it does not contain data. Erase
+            if strfind(char(dbFileNamesTmp(cntOtherFields)),currentField)==1
+                cntDelFields = cntDelFields + 1;
+                delFields(cntDelFields) = cntFields;
+                break
+            end
+        end
+    end
+    % Erase selected names
+    if cntFields > 0
+        dbFileNamesTmp(delFields) = [];
+    end
     nFiles = length(dbFileNamesTmp);
     dbFileNames = [];
     dbFieldNames = [];
@@ -129,8 +154,10 @@ for currentYear = allYears
     tm = toc;
     if errCode ~= 0
         fprintf('***  %d errors during processing. ***\n',errCode);
+    else
+        if verbose_flag,fprintf('%i database entries generated in %4.3f seconds.\n',length(structIn), tm);end
     end
-    if verbose_flag,fprintf('%i database entries generated in %4.3f seconds.\n',length(structIn), tm);end
+    
 end % cntYear
 
 
@@ -153,7 +180,7 @@ for i=1:length(fileNamesIn)
     fileName = char(fileNamesIn(i));
     fieldName = char(fieldNamesIn(i));
     try
-        dataIn = get_stats_field(Stats,fieldName);
+        dataIn = get_stats_field_fast(Stats,fieldName);
         if ~isempty(dataIn)
             if ~exist(fileName,'file')
                 % if the file doesn't exist
@@ -182,7 +209,7 @@ for i=1:length(fileNamesIn)
                     oldTrace = read_bor(fileName);
                 end % findstr(fileName,'RecalcTime')
                 % combine new with old data
-                dataOut = missingPointValue * size(newTv);
+                dataOut = missingPointValue * ones(size(newTv));
                 if ~isempty(oldDataInd)
                     dataOut(oldDataInd) = oldTrace;
                 end
@@ -270,7 +297,7 @@ for i = 1:length(statsFieldNames)
                         %-------------------------
                         % recursive call goes here
                         %-------------------------
-                        %                    fieldI = get_stats_field(StatsAll,fName);
+                        %                    fieldI = get_stats_field_fast(StatsAll,fName);
                         if nCol == 1 | nRow == 1
                             % if it's a one dimensional vector use only one index
                             jj = max(j,j1);
@@ -300,7 +327,7 @@ for i = 1:length(statsFieldNames)
                 %-------------------------
                 % recursive call goes here
                 %-------------------------
-                %                    fieldI = get_stats_field(StatsAll,fName);
+                %                    fieldI = get_stats_field_fast(StatsAll,fName);
                 dbFileNamesTmp = recursiveStrucFieldNames(fieldTmp);
                 mFiles = length(dbFileNamesTmp);
                 dbFileNamesBase = char(dbFileNames{nFiles});
