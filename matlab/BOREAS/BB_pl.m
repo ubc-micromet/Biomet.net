@@ -6,12 +6,15 @@ function [t,x] = BB_pl(ind, year, siteID, select, fig_num_inc,flgPause)
 %   the UBC data-base formated files.
 %
 % (c) c) Nesic Zoran         File created:       May 11, 2021      
-%                            Last modification:  Aug 30, 2023
+%                            Last modification:  Oct 15, 2023
 %           
 %
 
 % Revisions:
 %
+% Oct 15, 2023 (Zoran)
+%   - Changed the plotting of OHM site signal strengths. OHM is currently not supported 
+%     by "monitorSites" app so I had to remove those traces so the legend does not get confused.
 % Aug 30, 2023 (Zoran)
 %   - Added RH_1_1_1 plotting to Manitoba sites
 % Aug 25, 2023 (Zoran)
@@ -534,13 +537,18 @@ indAxes = indAxes+1; allAxes(indAxes) = gca;
 %----------------------------------------------------------
 trace_name  = sprintf('%s: %s',siteID,' Signal Strength');
 switch siteID
-    case {'HOGG','YOUNG','OHM'}
+    case {'HOGG','YOUNG'}
         trace_path = char(fullfile(pthSite,'monitorSites',sprintf('%s.signalStrength7200.avg',siteID)),...
                            fullfile(pthSite,'monitorSites',sprintf('%s.signalStrength7700.avg',siteID)),...
                            fullfile(pthSite,'Flux','mean_value_LI_7500'),...
                           fullfile(pthSite,'Flux','rssi_77_mean')...
                           );
         trace_legend = char('7500_{MO}','7700_{MO}','7500_{EP}','7700_{EP}');
+    case {'OHM'}
+        trace_path = char(fullfile(pthSite,'Flux','mean_value_LI_7500'),...
+                          fullfile(pthSite,'Flux','rssi_77_mean')...
+                          );
+        trace_legend = char('7500_{EP}','7700_{EP}');
     otherwise
         trace_path  = char(fullfile(pthSite,'monitorSites',sprintf('%s.signalStrength7200.avg',siteID)),...
                            fullfile(pthSite,'monitorSites',sprintf('%s.signalStrength7700.avg',siteID)),...
