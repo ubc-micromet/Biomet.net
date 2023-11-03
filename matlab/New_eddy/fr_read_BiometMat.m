@@ -1,4 +1,4 @@
-function [EngUnits,Header] = fr_read_BiometMat(dateIn,configIn,instrumentNum)
+function [EngUnits,Header,varName] = fr_read_BiometMat(dateIn,configIn,instrumentNum)
 % fr_read_BiometMat - reads data that is stored as a matlab file 
 % 
 % This procedure supports all the new (2001->)UBC DAQ programs that use
@@ -26,8 +26,17 @@ function [EngUnits,Header] = fr_read_BiometMat(dateIn,configIn,instrumentNum)
     if isempty(fileName)
         error(['File: ' dummy ' does not exist!'])
     end
-
-    [EngUnits,Header] = fr_read_BiometMat_file(fileName);
+    
+    if isfield(configIn.Instrument,'varName') && ~isempty(configIn.Instrument(instrumentNum).varName)
+        str_varName         = configIn.Instrument(instrumentNum).varName;
+        assign_in           = configIn.Instrument(instrumentNum).assign_in;
+        [EngUnits,Header]   = fr_read_BiometMat_file(fileName,assign_in,str_varName);
+        eval(['varName = ' str_varName ';']);
+    else
+        [EngUnits,Header]   = fr_read_BiometMat_file(fileName);
+        eval(['varName = [];']);
+    end
+        
     
     if length(EngUnits)>5000 % only knock out NaNs for HF traces
        % remove NaN entries

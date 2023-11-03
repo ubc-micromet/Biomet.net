@@ -1,7 +1,11 @@
 function [tv,climateData] = fr_read_csi(wildCard,dateIn,chanInd,tableID,verbose_flag,timeUnit,roundType,tv_input_format)
 % fr_read_sci_net(wildCard,dateIn,chanInd)
 %                      - extract all or selected data from a csi file
-% 
+%
+% ****************************************
+% For new projects use fr_read_csi_file.m!
+% ****************************************
+%
 % [tv,climateData] = fr_read_csi(wildCard,dateIn,chanInd)
 %
 % Inputs:
@@ -14,7 +18,7 @@ function [tv,climateData] = fr_read_csi(wildCard,dateIn,chanInd,tableID,verbose_
 %                         fr_round_time). When rounding on the seconds function
 %                         will assume that the time is in columns 2-5 otherwise
 %                         2-4 (YEAR, DOY, HHMM, SECONDS)
-%       roundType       - 1,2,3 -> see fr_round_type for details
+%       roundType       - 1,2,3 -> see fr_round_time for details
 %       tv_input_format -               [type arg1    arg2       arg3   ]
 %                           21x files:  [1    yearCol DOYcol     timeCol]
 %                           DecDOY:     [2    year    0.0-364.99 NA     ] not implemented                         
@@ -22,10 +26,12 @@ function [tv,climateData] = fr_read_csi(wildCard,dateIn,chanInd,tableID,verbose_
 %                           no yearCol: [4    year    DOYcol     timeCol] not implemented
 %
 % Zoran Nesic           File Created:      Apr 21, 2005
-%                       Last modification: Jul 26, 2022
+%                       Last modification: Aug 25, 2023
 
 % Revisions
 %
+% Aug 25, 2023 (Zoran)
+%   - syntax cleaning
 % July 26, 2022 (Zoran)
 %   - added parameter tv_input_format to provide the same functionality
 %     that dbase_updata ini file had. This is from an original ini file
@@ -80,9 +86,8 @@ switch tv_input_format(1)
 end
 
 tv = [];
-climateData = [];
 
-x = findstr('\',wildCard);
+x = strfind(wildCard,filesep);
 pth = wildCard(1:x(end));
 h = dir(wildCard);
 % remove path from h.name if necessery
@@ -99,9 +104,9 @@ for i=1:length(h)
     if verbose_flag,fprintf(1,'Loading: %s. ', [pth h(i).name]);end
     dataInNew = csvread([pth h(i).name]);
     ind = find(dataInNew(:,1) == tableID);
-    dataInNew = dataInNew(ind,:);
+    dataInNew = dataInNew(ind,:); %#ok<*FNDSB>
     if verbose_flag,fprintf(1,'  Length = %f\n',size(dataInNew,1));end
-    climateData = [climateData ; dataInNew];
+    climateData = [climateData ; dataInNew]; %#ok<*AGROW>
 end
 
 % exit if there is no data to process
@@ -109,7 +114,7 @@ if isempty(climateData)
     return
 end
 
-if ~exist('chanInd') | isempty(chanInd)
+if ~exist('chanInd','var') || isempty(chanInd)
     chanInd = 1:size(climateData,2);
 end
 
@@ -122,11 +127,11 @@ end
 
 tv = fr_round_time(tv,timeUnit,roundType);
 [tv,indSort] = sort(tv);
-climateData = [climateData(indSort,chanInd)];
+climateData = climateData(indSort,chanInd);
 
-if exist('dateIn') & ~isempty(dateIn)
+if exist('dateIn','var') && ~isempty(dateIn)
     dateIn = fr_round_time(dateIn,timeUnit,roundType);
-    [junk,junk,indExtract] = intersect(dateIn,tv );
+    [~,~,indExtract] = intersect(dateIn,tv );
 else
     indExtract = 1:size(tv,1);
 end

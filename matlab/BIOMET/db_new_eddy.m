@@ -1,4 +1,4 @@
-function [k,StatsAll,dbFileNames, dbFieldNames] = db_new_eddy(arg1,wildcard,pthOut,verbose_flag,excludeSubStructures,timeUnit,missingPointValue)
+function [k,StatsAll,dbFileNames, dbFieldNames,errCode] = db_new_eddy(arg1,wildcard,pthOut,verbose_flag,excludeSubStructures,timeUnit,missingPointValue)
 %
 % eg. k = db_new_eddy('\\annex001\database\2000\cr\flux\raw\',
 %                             '0001*.hp.mat','\\annex001\database\2000\cr\flux\');
@@ -29,10 +29,17 @@ function [k,StatsAll,dbFileNames, dbFieldNames] = db_new_eddy(arg1,wildcard,pthO
 %       k           -   number of files processed
 %
 % (c) Zoran Nesic               File created:       Apr  1, 2004
-%                               Last modification:  Jul 26, 2023
+%                               Last modification:  Oct  4, 2023
 
 % Revisions:
 %
+%   Oct 4, 2023 (Zoran)
+%    - added errCode to the output parameters. It can then be used to verify
+%      if the progress list should be updated (everything went OK) or not 
+%      (there were errors in data saving).
+%   Sep 6, 2023 (Zoran)
+%    - It's now possible to create database with any time resolution in minutes.
+%      If timeUnit == 3, data base will have resolution of 3 minutes. (search for 20230906)
 %   July 26, 2023 (Zoran)
 %    - Converted a few '\' into filesep to keep the program compatible with MacOS
 %
@@ -240,14 +247,23 @@ end
 % and find where the data belongs
 nDays = datenum(year1(1)+1,1,1) - datenum(year1(1),1,1);
 fullYearTv = datenum(year1(1),1,1,0,timeUnit:timeUnit:nDays*24*60,0)';
-if timeUnit == 30
-    [junk,indTv] = intersect(fr_round_time(fullYearTv,'30min',1),fr_round_time(tv,'30min',1));
-    % intersect(fr_round_hhour(fullYearTv),fr_round_hhour(tv));
-else
-    % assume that timeUnit is in minutes (which is what it should be)
-    [junk,indTv] = intersect(fr_round_time(fullYearTv,'min',1),fr_round_time(tv,'min',1));
-end
+% 20230906 - 
+%     Made time resolution more generic. Instead of using timeUnit == 30 or == 1 
+%     timeUnit can now be generic (see fr_round_time). 
+%     
+% if timeUnit == 30
+%     [junk,indTv] = intersect(fr_round_time(fullYearTv,'30min',1),fr_round_time(tv,'30min',1));
+%     % intersect(fr_round_hhour(fullYearTv),fr_round_hhour(tv));
+% else
+%     % assume that timeUnit is in minutes (which is what it should be)
+%     [junk,indTv] = intersect(fr_round_time(fullYearTv,'min',1),fr_round_time(tv,'min',1));
+% end
 %
+
+% Create strTimeUnit instead of using the if-else that's commended out above.
+strTimeUnit = sprintf('%dmin',timeUnit);
+[~,indTv] = intersect(fr_round_time(fullYearTv,strTimeUnit,1),fr_round_time(tv,strTimeUnit,1));
+
 %--------------------------------------------------------------------------------
 % Start storing the variables, first analyze the ones we know are 
 % always there, then go for the generic names

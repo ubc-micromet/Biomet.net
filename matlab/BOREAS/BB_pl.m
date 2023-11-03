@@ -6,12 +6,19 @@ function [t,x] = BB_pl(ind, year, siteID, select, fig_num_inc,flgPause)
 %   the UBC data-base formated files.
 %
 % (c) c) Nesic Zoran         File created:       May 11, 2021      
-%                            Last modification:  Feb 26, 2023
+%                            Last modification:  Oct 15, 2023
 %           
 %
 
 % Revisions:
 %
+% Oct 15, 2023 (Zoran)
+%   - Changed the plotting of OHM site signal strengths. OHM is currently not supported 
+%     by "monitorSites" app so I had to remove those traces so the legend does not get confused.
+% Aug 30, 2023 (Zoran)
+%   - Added RH_1_1_1 plotting to Manitoba sites
+% Aug 25, 2023 (Zoran)
+%   - Added plotting of OHM site.
 % Feb 26, 2023 (Zoran)
 %   - added time-lag plot
 % July 18, 2022 (Zoran)
@@ -78,7 +85,7 @@ datesTmp = datenum(year,1,[st ed]);
 rangeYears = rangeYears(1):rangeYears(2);
 
 switch siteID
-    case {'HOGG','YOUNG'}
+    case {'HOGG','YOUNG','OHM'}
         tv=fr_round_time(read_bor(fullfile(pthSite,'flux','Clean_tv'),8,[],rangeYears));     % get time from the data base
     otherwise
         tv=fr_round_time(read_bor(fullfile(pthSite,'MET','TimeVector'),8,[],rangeYears)); % get time from the data base
@@ -98,7 +105,7 @@ indAxes = 0;
 %----------------------------------------------------------
 trace_name  = sprintf('%s: %s',siteID,' Air Temperature');
 switch siteID
-    case {'HOGG','YOUNG'}
+    case {'HOGG','YOUNG','OHM'}
         trace_path  = char(fullfile(pthSite,'Flux','air_temperature'),...
                            fullfile(pthSite,'Flux','TA_1_1_1'),...
                            fullfile(pthSite,'Flux','sonic_temperature')...
@@ -125,15 +132,18 @@ indAxes = indAxes+1; allAxes(indAxes) = gca;
 %----------------------------------------------------------
 trace_name  = sprintf('%s: %s',siteID,' Relative Humidity');
 switch siteID
-    case {'HOGG','YOUNG'}
-        trace_path  = char(fullfile(pthSite,'flux','RH'));
+    case {'HOGG','YOUNG','OHM'}
+        trace_path  = char(fullfile(pthSite,'flux','RH_1_1_1'),...
+                           fullfile(pthSite,'flux','RH'));
+        trace_legend = char('MET','LI-7500');
     case{'RBM'}
         trace_path  = char(fullfile(pthSite,'MET','MET_HMP_RH_4m_Avg'));
+        trace_legend = [];
     otherwise
         trace_path  = char(fullfile(pthSite,'MET','MET_HMP_RH_2m_Avg'));
+        trace_legend = [];
 end
 
-trace_legend = [];
 trace_units = 'RH (%)';
 y_axis      = [];
 fig_num = fig_num + fig_num_inc;
@@ -164,7 +174,7 @@ indAxes = indAxes+1; allAxes(indAxes) = gca;
 %----------------------------------------------------------
 trace_name  = sprintf('%s: %s',siteID,' Battery Voltage');
 switch siteID
-    case {'HOGG','YOUNG'}
+    case {'HOGG','YOUNG','OHM'}
         trace_path  = char(fullfile(pthSite,'flux','DRM_V_MAIN_1_1_1'));
     otherwise
         trace_path  = char(fullfile(pthSite,'MET','SYS_PBox_Batt_Volt_Avg'));
@@ -191,7 +201,7 @@ switch siteID
         trace_path  = char(fullfile(pthSite,'MET','SYS_Batt_DCCurrent_Avg'));
         trace_legend = [];   
         coeffSign = 1;
-    case {'HOGG','YOUNG'}
+    case {'HOGG','YOUNG','OHM'}
         coeffSign = 0;
         trace_path = [];     % this indicates that trace is not available
         fig_num = fig_num-1;
@@ -228,7 +238,7 @@ switch siteID
         Ibb1(isnan(Ibb1))=0;
         trace_path = (1+cumsum(Ibb1/2)/2600)*100;    % Ah / Ah
         trace_legend = [];
-    case {'HOGG','YOUNG'}
+    case {'HOGG','YOUNG','OHM'}
         trace_path = [];
         fig_num = fig_num-1;
 end
@@ -255,7 +265,7 @@ switch siteID
                           fullfile(pthSite,'MET','SYS_CR1000_Batt_Volt_Avg')...                           
                       );
         trace_legend = char('Power Supply','Logger');
-    case {'HOGG','YOUNG'}
+    case {'HOGG','YOUNG','OHM'}
         trace_path  = char(fullfile(pthSite,'flux','DRM_V_BATTERY_1_1_1'),...
                            fullfile(pthSite,'flux','VIN_1_1_1'),...
                            fullfile(pthSite,'flux','vin_sf_mean')...
@@ -283,7 +293,7 @@ switch siteID
         end
     case {'BB2','DSM','RBM'}
         trace_path = sum(sysVoltage(:,1).*sysCurrent,2,'omitnan');
-    case {'HOGG','YOUNG'}
+    case {'HOGG','YOUNG','OHM'}
         trace_path = [];
         fig_num = fig_num-1;
 end
@@ -298,7 +308,7 @@ indAxes = indAxes+1; allAxes(indAxes) = gca;
 %----------------------------------------------------------
 trace_name  = sprintf('%s: %s',siteID,' System Energy');
 switch siteID
-    case {'HOGG','YOUNG'}
+    case {'HOGG','YOUNG','OHM'}
         trace_path = [];
         fig_num = fig_num-1;
     otherwise
@@ -346,7 +356,7 @@ switch siteID
                    fullfile(pthSite,'MET','SYS_chargerTC_Avg')...
                    );
         trace_legend = char('Battery Box','CR1000','TC Reference','Charger Space');
-    case {'HOGG','YOUNG'}
+    case {'HOGG','YOUNG','OHM'}
         trace_path = [];
         fig_num = fig_num-1;
 end
@@ -361,7 +371,7 @@ indAxes = indAxes+1; allAxes(indAxes) = gca;
 %----------------------------------------------------------
 trace_name  = sprintf('%s: %s',siteID,' LI-7200 Thermocouples');
 switch siteID
-    case {'HOGG','YOUNG'}
+    case {'HOGG','YOUNG','OHM'}
         trace_path = [];
         fig_num = fig_num-1;
     otherwise
@@ -383,7 +393,7 @@ indAxes = indAxes+1; allAxes(indAxes) = gca;
 %----------------------------------------------------------
 trace_name  = sprintf('%s: %s',siteID,' LI-7200 Flow Rate');
 switch siteID
-    case {'HOGG','YOUNG'}
+    case {'HOGG','YOUNG','OHM'}
         trace_path = [];
         fig_num = fig_num-1;
     otherwise
@@ -402,7 +412,7 @@ indAxes = indAxes+1; allAxes(indAxes) = gca;
 %----------------------------------------------------------
 trace_name  = sprintf('%s: %s',siteID,' Flow Drive');
 switch siteID
-    case {'HOGG','YOUNG'}
+    case {'HOGG','YOUNG','OHM'}
         trace_path = [];
         fig_num = fig_num-1;
     otherwise
@@ -423,7 +433,7 @@ indAxes = indAxes+1; allAxes(indAxes) = gca;
 %----------------------------------------------------------
 trace_name  = sprintf('%s: %s',siteID,'Head Pressure');
 switch siteID
-    case {'HOGG','YOUNG'}
+    case {'HOGG','YOUNG','OHM'}
         trace_path = [];
         fig_num = fig_num-1;
     otherwise
@@ -476,7 +486,7 @@ indAxes = indAxes+1; allAxes(indAxes) = gca;
 %----------------------------------------------------------
 trace_name  = sprintf('%s: %s',siteID,' Diagnostics');
 switch siteID
-    case {'HOGG','YOUNG'}
+    case {'HOGG','YOUNG','OHM'}
         trace_path  = char(fullfile(pthSite,'Flux','chopper_LI_7500'),...
                           fullfile(pthSite,'Flux','detector_LI_7500'),...
                           fullfile(pthSite,'Flux','pll_LI_7500'),...
@@ -534,6 +544,11 @@ switch siteID
                           fullfile(pthSite,'Flux','rssi_77_mean')...
                           );
         trace_legend = char('7500_{MO}','7700_{MO}','7500_{EP}','7700_{EP}');
+    case {'OHM'}
+        trace_path = char(fullfile(pthSite,'Flux','mean_value_LI_7500'),...
+                          fullfile(pthSite,'Flux','rssi_77_mean')...
+                          );
+        trace_legend = char('7500_{EP}','7700_{EP}');
     otherwise
         trace_path  = char(fullfile(pthSite,'monitorSites',sprintf('%s.signalStrength7200.avg',siteID)),...
                            fullfile(pthSite,'monitorSites',sprintf('%s.signalStrength7700.avg',siteID)),...

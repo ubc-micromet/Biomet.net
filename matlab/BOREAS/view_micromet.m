@@ -4,14 +4,15 @@ function view_micromet(dateRange,siteIDs,flgPause)
 % "view_sites" for Micromet sites
 %
 % Zoran Nesic           File created:       Jan 19, 2022
-%                       Last modification:  Jan 19, 2022
+%                       Last modification:  Aug 25, 2023
 
 % Revisions
 %
-%
+% Aug 25, 2023 (Zoran)
+%  - Added OHM to the list of the default sites
 
 arg_default('dateRange',now-10:now)
-arg_default('siteIDs',{'BB1','BB2','DSM','RBM','Hogg','Young'})
+arg_default('siteIDs',{'BB1','BB2','DSM','RBM','Hogg','Young','OHM'})
 arg_default('flgPause',1)
 
 % get the year and the index. The index is DOY+1 to match
