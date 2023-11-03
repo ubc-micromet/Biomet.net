@@ -13,62 +13,85 @@ function Biomet_Main_Scheduler
     % Start with the tasks that run most often
 
     fid = 1;  % for testing print logs on screen only
-
-    % at 2 minutes and 32
-    fprintf(fid,'================================\n');
-
+  
+    fprintf(fid,'============== Biomet_Main_Scheduler.m ==================\n');
+    fprintf(fid,'%s\n',datestr(now))
     if minuteX == 2 || minuteX == 32
+        % at 2 minutes and 32 minutes every hour
+        % Process CR21x files
         Process_Climate_Station(fid);
-        % If this is the first run in a new day then date-stamp the raw
-        % file from the previous day
-        if minuteX==2 && hourX == 0
-            ClimateStation_movefile;
+        % Proces CR1000 files
+        db_update_Totem(yearX)
+        % Do only if the first run in that hour
+        if minuteX==2 
+            % Clean Totem data once per hour
+            % clean last and the current year
+            fr_automated_cleaning(yearX-1:yearX,'UBC_Totem',[1 2 3 ]);
+            Export_Totem_One_Year;
+            Export_for_Tin;
+            % If this is the first run in a new day then date-stamp the raw
+            % file from the previous day
+            if hourX == 0
+                % Replaces a Task Scheduler task:
+                % ClimateStation_daily_file_rename
+                ClimateStation_movefile;
+            end
         end
-    else
+    elseif minuteX == 12 || minuteX == 42
+        % move files from d:\Sites\TEMP folder to database Raw folders
+        [status,result] = system('"c:\ubc_flux\Move_CSI_net_files.exe c:\ubc_flux\Move_CSI_net_files.ini"');
     end
 end
 
 %%
 function Process_Climate_Station(fid)
     fprintf(fid,'======= Climate Station ========\n');
-    try
+    try        
         % Copy files from Sync.com folder. Force overwriting.
-        [Success,Msg,MsgID] = copyfile('d:\Sites\Sync\Sync\ClimateStation_to_UBC\ubraw.dat',...
-                                       'D:\SITES\ubc\CSI_NET\ubraw.dat',...
+        % Replaces a Task Scheduler task: ClimateStation_Data_Copy
+        filePath = 'd:\Sites\Sync\Sync\ClimateStation_to_UBC';
+        destinationPath = 'D:\SITES\ubc\CSI_NET';
+        [Success,Msg,MsgID] = copyfile(fullfile(filePath,'ubraw.dat'),...
+                                       fullfile(destinationPath,'ubraw.dat'),...
                                        'f');
         if ~Success
             fprintf('%s\n',Msg);
         end
-        % Move CONFLICT files from Sync.com folder. Give them unique names
-        sConflictFiles = dir('d:\Sites\Sync\Sync\ClimateStation_to_UBC\ubraw-CONFLICT*.dat');
+        % Move CONFLICT files from csi_net to csi_net\old folder. Give them unique names
+        % using the file time stamp              
+        sConflictFiles = dir(fullfile(filePath,'ubraw-CONFLICT*.dat'));
         for cntFiles = 1:length(sConflictFiles)
-            fileName = sConflictFiles(cntFiles).name;
-            filePath = 'D:\Sites\ubc\CSI_NET';
-            destinationPath = 'D:\SITES\ubc\CSI_NET\OLD';
-            fileExt = datestr(now,30);
-            fileExt = fileExt(1:8);
-
+            fileName         = sConflictFiles(cntFiles).name;
             sourceFile       = fullfile(filePath,fileName);
+            fileExt          = datestr(sConflictFiles(cntFiles).datenum,30);
             destinationFile1 = fullfile(destinationPath,[fileName(1:end-3) fileExt]);
-            [Status1,Message1,MessageID1] = fr_movefile(sourceFile,destinationFile1);
+            %[Status1,Message1,MessageID1] = fr_movefile(sourceFile,destinationFile1);
         end
-         D:\SITES\ubc\CSI_NET\. 
-        
-        
-        
-
+        if ~Status1
+            fprintf('%s\n',Msg);
+        end        
+ 
     catch
         fprintf(fid,'Error while processing climate station data');
     end    
-    % Copy climate station data
+    % Process climate station data. 
+    % Replaces Task Scheduler event: dbase_update
+    % Use a dummy Task Scheduler event called by a batch link below
+    % C:\Windows\System32\schtasks.exe /RUN /TN "Biomet\Database_updates\Run dbase_update from Matlab"
+    % This task looks like this: C:\Ubc_flux\dbase_update\dbase_update.exe c:\ubc_flux\dbase_update.ini
+    % Running a Task Scheduler even is a workaround for Windows asking
+    % about admin permissions to run this program
+    fprintf(fid,'%s Climate station: converting csv to database... ',datestr(now));
+    [status,result] = system('"C:\Ubc_flux\dbase_update\UseMatlabToRunDbase_update-bat.lnk"');
+    
 end
 %%
 
 
-% 
-%     
-%     
-%     
+% Testing if dbase_update.exe is running:
+%     status1,result1] = system('tasklist /FI "imagename eq dbase_update.exe" /fo table /nh')
+% Return PID for the current Matlab session:
+%     feature('getpid')
 %     
 %     try
 % each system() run should call a batch file that"
