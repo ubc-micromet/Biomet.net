@@ -1,16 +1,19 @@
 function [Status1,Message1,MessageID1] = ClimateStation_movefile
 % ClimateStation_movefile - Moves ClimateStation data files from the DropBox folder
 %                           into the c:\sites\ubc\csi_net folder. Files are
-%                           date-stamped. It uses fr_movefile to make
+%                           date-stamped. It uses fr_movefile to
 %                           safely handle files with the same names.
 %                  
 %
 % (c) Zoran Nesic       File created:   Oct 6, 2014
-%                       Last modified:  Aug 7, 2023
+%                       Last modified:  Nov 2, 2023
 
 
 % Revisions
 %
+% Nov 2, 2023 (Zoran)
+%   - Removed modal messages that could lock the Matlab when running in the
+%     Task Scheduler.
 % Aug 7, 2023 (Zoran)
 %   - Added renaming of the CR1000 files.
 % Jan 4, 2022 (Zoran)
@@ -29,10 +32,10 @@ try
     sourceFile       = fullfile(filePath,fileName);
     destinationFile1 = fullfile(destinationPath,[fileName(1:end-3) fileExt]);
     [Status1,Message1,MessageID1] = fr_movefile(sourceFile,destinationFile1);
-    if Status1 ~= 1
-        uiwait(warndlg(sprintf('Message: %s\nSource path: %s\nDestination path: %s',...
-            Message1,sourceFile,destinationFile1),'Moving DropBox files to d:\Sites failed','modal'))
-    end %if
+%     if Status1 ~= 1
+%         uiwait(warndlg(sprintf('Message: %s\nSource path: %s\nDestination path: %s',...
+%             Message1,sourceFile,destinationFile1),'Moving DropBox files to d:\Sites failed','modal'))
+%     end %if
 catch
     fprintf('*** Error in: %s ***\n',mfilename);
 end
@@ -46,10 +49,10 @@ try
     sourceFile       = fullfile(filePath,fileName);
     destinationFile1 = fullfile(destinationPath,[fileName(1:end-3) fileExt]);
     [Status1,Message1,MessageID1] = fr_movefile(sourceFile,destinationFile1);
-    if Status1 ~= 1
-        uiwait(warndlg(sprintf('Message: %s\nSource path: %s\nDestination path: %s',...
-            Message1,sourceFile,destinationFile1),'Moving CR1000 files to d:\Sites failed','modal'))
-    end %if
+%     if Status1 ~= 1
+%         uiwait(warndlg(sprintf('Message: %s\nSource path: %s\nDestination path: %s',...
+%             Message1,sourceFile,destinationFile1),'Moving CR1000 files to d:\Sites failed','modal'))
+%     end %if
 catch
     fprintf('*** Error in: %s ***\n',mfilename);
 end
