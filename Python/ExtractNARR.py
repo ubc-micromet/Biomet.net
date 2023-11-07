@@ -16,7 +16,7 @@ import DatabaseFunctions
 
 class PointSample():
     
-    def __init__(self,Years,Write_to_Database='ini_files/templates/WriteTraces_NARR.ini',verbose=0,Update_On_Day=3):
+    def __init__(self,Years,Write_to_Database='ini_files/templates/WriteTraces_NARR.ini',verbose=0,Update_On_Day=3,Limit_to_Sites = []):
         Today = datetime.datetime.now()
         self.ini = configparser.ConfigParser()
         self.ini.read('ini_files/BiometPy.ini')
@@ -25,7 +25,7 @@ class PointSample():
         self.writer = configparser.ConfigParser()
         self.writer.read(Write_to_Database)
 
-        self.parseSpatial()
+        self.parseSpatial(Limit_to_Sites)
         Vars = self.ini['Downloads']['NARR_var_names'].split(',')
         for self.var_name in Vars:
             for self.year in Years:
@@ -37,7 +37,7 @@ class PointSample():
                     self.check(Update)
                     self.extractBySite()      
 
-    def parseSpatial(self):
+    def parseSpatial(self,Limit_to_Sites):
         # WKT description of the NARR LCC projection
         # Source: https://spatialreference.org/ref/sr-org/8214/
         NARR_LCC = '+proj=lcc +lat_1=50 +lat_0=50 +lon_0=-107 +k_0=1 +x_0=5632642.22547 +y_0=4612545.65137 +a=6371200 +b=6371200 +units=m +no_defs'
@@ -45,13 +45,14 @@ class PointSample():
         for file in os.listdir('ini_files/site_configurations/'):
             self.ini.read('ini_files/site_configurations/'+file)
             Site_code = file.split('.ini')[0]
-            df = pd.DataFrame(data=dict(self.ini[Site_code]),index=[Site_code])
-            for c in df.columns:
-                try:
-                    df[c]=df[c].astype('float64')
-                except:
-                    pass
-            All_Sites = pd.concat([All_Sites,df])
+            if len(Limit_to_Sites) == 0 or Site_code in Limit_to_Sites:
+                df = pd.DataFrame(data=dict(self.ini[Site_code]),index=[Site_code])
+                for c in df.columns:
+                    try:
+                        df[c]=df[c].astype('float64')
+                    except:
+                        pass
+                All_Sites = pd.concat([All_Sites,df])
         self.All_Sites = gpd.GeoDataFrame(All_Sites, geometry=gpd.points_from_xy(All_Sites.longitude, All_Sites.latitude), crs="EPSG:4326")
         self.All_Sites = self.All_Sites.to_crs(NARR_LCC)
 
@@ -122,8 +123,8 @@ class PointSample():
         
         bbox = self.Site.total_bounds
         
-        self.x_bounds = [np.where(self.x<bbox[0])[0][-(1+pad)],np.where(self.x>bbox[2])[0][pad]]
-        self.y_bounds = [np.where(self.y<bbox[1])[0][-(1+pad)],np.where(self.y>bbox[3])[0][pad]]
+        self.x_bounds = [np.where(self.x<bbox[0])[0][-(pad)],np.where(self.x>bbox[2])[0][pad]]
+        self.y_bounds = [np.where(self.y<bbox[1])[0][-(pad)],np.where(self.y>bbox[3])[0][pad]]
 
         lon_box = self.lon[self.y_bounds[0]:self.y_bounds[1],self.x_bounds[0]:self.x_bounds[1]]
         lat_box = self.lat[self.y_bounds[0]:self.y_bounds[1],self.x_bounds[0]:self.x_bounds[1]]

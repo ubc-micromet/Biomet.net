@@ -8,9 +8,12 @@ import shutil
 import pathlib
 import sys
 import TzFuncs
+import time
 
 class DatabaseFunctions():
-    def __init__(self,ini):
+
+    def __init__(self,ini=''):
+        # Parse the ini files then find all site-years in the database
         self.ini = configparser.ConfigParser()
         self.ini.read('ini_files/BiometPy.ini')
         self.ini.read(ini)
@@ -21,7 +24,7 @@ class DatabaseFunctions():
         start = 2014
         end = self.Year+1
 
-        Root = self.ini['Paths']['database'].split('SITE')[0]
+        Root = self.ini['Paths']['database_read'].split('SITE')[0]
         self.years_by_site = {}
         for year in range(start,end):
             if os.path.isdir(Root.replace('YEAR',str(year))):
@@ -113,7 +116,7 @@ class DatabaseFunctions():
             self.Write_Trace()
 
     def Write_Trace(self):
-        self.write_dir = self.ini['Paths']['database'].replace('YEAR',str(self.y)).replace('SITE',self.site_name)+self.ini[self.batch]['subfolder']
+        self.write_dir = self.ini['Paths']['database_write'].replace('YEAR',str(self.y)).replace('SITE',self.site_name)+self.ini[self.batch]['subfolder']
         if os.path.isdir(self.write_dir)==False:
             print('Creating new directory at:\n', self.write_dir)
             os.makedirs(self.write_dir)
@@ -161,25 +164,27 @@ class DatabaseFunctions():
 
 class MakeTraces(DatabaseFunctions):
     # Accepts an ini file that prompt a search of the datadump folder - or a pandas dataframe with a datetime index
-    def __init__(self,ini='ini_files/WriteTraces_BBS.ini',DataTable=None):
-        super().__init__(ini)
-        
-        if DataTable is None:
-            for self.batch in self.ini['Input']['file_batches'].split(','):
-                self.site_name = self.ini[self.batch]['Site']
-                self.findFiles()
+    def __init__(self,ini=None,DataTable=None):
+        if ini is None:
+            print('Provide ini file to continue')
         else:
-            self.batch = self.ini['Input']['file_batches'].split(',')[0]
-            self.site_name = self.ini[self.batch]['Site']
-            self.Data = DataTable
+            super().__init__(ini)        
+            if DataTable is None:
+                for self.batch in self.ini['Input']['file_batches'].split(','):
+                    self.site_name = self.ini[self.batch]['Site']
+                    self.findFiles()
+            else:
+                self.batch = self.ini['Input']['file_batches'].split(',')[0]
+                self.site_name = self.ini[self.batch]['Site']
+                self.Data = DataTable
 
-        self.dateIndex()
-        if self.ini[self.batch]['Exclude'] != '':
-            colFilter = self.Metadata.filter(self.ini[self.batch]['Exclude'].split(','))
-            self.Metadata.drop(colFilter,inplace=True,axis=1)  
-            colFilter = self.Data.filter(self.ini[self.batch]['Exclude'].split(','))
-            self.Data.drop(colFilter,inplace=True,axis=1)
-        self.padFullYear()
+            self.dateIndex()
+            if self.ini[self.batch]['Exclude'] != '':
+                colFilter = self.Metadata.filter(self.ini[self.batch]['Exclude'].split(','))
+                self.Metadata.drop(colFilter,inplace=True,axis=1)  
+                colFilter = self.Data.filter(self.ini[self.batch]['Exclude'].split(','))
+                self.Data.drop(colFilter,inplace=True,axis=1)
+            self.padFullYear()
 
 
     def findFiles(self):
@@ -279,8 +284,8 @@ class MakeCSV(DatabaseFunctions):
                     self.years_by_site[self.site_name] = Years
                 print(f'Creating .csv files for {self.site_name}: {self.Request}')
                 self.AllData = pd.DataFrame()
-                for self.Year in Years:
-                    self.dpath = self.sub(self.ini['Paths']['database'])+self.ini[self.Request]['stage']+'/'
+                for self.Year in self.years_by_site[self.site_name]:
+                    self.dpath = self.sub(self.ini['Paths']['database_read'])+self.ini[self.Request]['stage']+'/'
                     if os.path.exists(self.dpath):
                         self.readYear()
                 self.write_csv()
@@ -310,7 +315,7 @@ class MakeCSV(DatabaseFunctions):
             output_path = self.sub(self.ini[self.Request]['output_paths'])
             if os.path.exists(output_path)==False:
                 os.makedirs(output_path)
-            output_path = output_path+self.Request+'.csv'
+            output_path = output_path+self.Request+'_'+self.site_name+'.csv'
             self.addUnits()
             self.AllData.set_index(self.ini[self.Request]['timestamp'],inplace=True)
             self.AllData.to_csv(output_path)
@@ -324,22 +329,64 @@ class MakeCSV(DatabaseFunctions):
             
 
 if __name__ == '__main__':
+    T1 = time.time()
     file_path = os.path.split(__file__)[0]
     os.chdir(file_path)
 
     CLI=argparse.ArgumentParser()
 
     CLI.add_argument(
-        "--func",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1,  # 0 or more values expected => creates a list
+        "--task",
+        nargs='*',
         type=str,
-        default='Read',  # default if nothing is provided
+        default=['Help'],
+        )
+    
+    CLI.add_argument(
+        "--Sites",
+        nargs='*',
+        type=str,
+        default=None,
+        )
+    
+    CLI.add_argument(
+        "--Years",
+        nargs='*',
+        type=str,
+        default=None,
+        )
+    
+    CLI.add_argument(
+        "--ini",
+        nargs='*',
+        type=str,
+        default=None,
         )
         
     args = CLI.parse_args()
-    if args.func == 'Read':
-        MakeCSV()
-    elif args.func == 'Write':
-        MakeTraces()
-    elif args.func == 'GSheetDump':
-        GSheetDump()
+    # if args.task == 'Help' or 'Help' in args.task:
+    
+    ini_defaults = {
+        'Help':'N\A',
+        'Read':'ini_files/ReadTraces.ini',
+        'Write':'ini_files/WriteTraces.ini',
+        'GSheetDump':'ini_files/WriteTraces_Gsheets.ini'
+    }
+    
+    for i,task in enumerate(args.task):
+        if args.ini is None:
+            ini = ini_defaults[task]
+
+        if task == 'Read':
+            MakeCSV(args.Sites,args.Years)
+        elif task == 'Write':
+            MakeTraces()
+        elif task == 'GSheetDump':
+            GSheetDump()
+        elif task == 'Help':
+            print('Help: \n')
+            print("--task: options ('Read', 'Write', or 'GSheetDump')")
+            print("--Sites: Leave blank to run all sites or give a list of sites delimited by spaces, e.g., --Sites BB BB2 BBS )\n Only applies if task == Read")
+            print("--Years: Leave blank to run all years or give a list of years delimited by spaces, e.g., --Years 2020 2021 )\n Only applies if task == Read")
+            print("--ini: Leave blank to run default or give a list of ini files corresponding to each task")
+    print('Request completed.  Time elapsed: ',np.round(time.time()-T1,2),' seconds')

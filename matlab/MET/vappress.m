@@ -1,5 +1,9 @@
 function [e_H,ea_H] = vappress(T, RH)
 %vappress.m Program to convert RH to vapour pressure (kPa)
+% Calculates vapor pressure using the August-Roche-Magnus Equation
+% Would we want to conider switching to the "Buck Equation" instead?
+% https://en.wikipedia.org/wiki/Vapour_pressure_of_water#Accuracy_of_different_formulations
+% https://en.wikipedia.org/wiki/Arden_Buck_equation
 
 %
 % Inputs:  T - HMP thermistor temperature output (deg C)
