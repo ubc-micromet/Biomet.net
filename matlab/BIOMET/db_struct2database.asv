@@ -35,7 +35,7 @@ function [structIn,dbFileNames, dbFieldNames,errCode] = db_struct2database(struc
 % Nov 10, 2023 (Zoran)
 %  - Fixed a bug that crashed the processing if a new chamber was added
 %    to the set. In that case the missing data (the data for that chamber
-%    before it was introduced to the set) was not initiated properly. The fix assures
+%    before it was introduced) was not initiated properly. The fix assures
 %    that the missing values are initiated as NaNs.
 % Oct 4, 2023 (Zoran)
 %  - added errCode as an output
@@ -207,13 +207,13 @@ for i=1:length(fileNamesIn)
                     % after the database was already initated. Find where the new data fits
                     % and initiate this database file properly
                     dataOut = missingPointValue * ones(size(newTv));
-                    if ~isempty(newDataInd)
-                        dataOut(newDataInd) = dataIn;
-                    end                    
+                if ~isempty(newDataInd)
+                    dataOut(newDataInd) = dataIn;
+                end                    
                     if contains(fileName,'RecalcTime')  || contains(fileName,'sample_tv')
-                        save_bor(fileName,8,dataOut);
+                        save_bor(fileName,8,[NaN(size(currentTv)) ; dataIn]);
                     else
-                        save_bor(fileName,1,dataOut);
+                        save_bor(fileName,1,[NaN(size(currentTv)) ; dataIn]);
                     end
                 end
             else
