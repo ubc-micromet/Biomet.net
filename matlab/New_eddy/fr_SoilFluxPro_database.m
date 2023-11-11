@@ -64,7 +64,8 @@ hnd_wait = waitbar(0,'Updating site database...');
 
 for i=1:length(h)
     try 
-        waitbar(i/length(h),hnd_wait,{'Processing: %s ', ['...' pth(end-50:end)], h(i).name})
+        stPth = 1;if length(pth)>30,stPth=length(pth)-30;end
+        waitbar(i/length(h),hnd_wait,{'Processing: %s ', ['...' pth(stPth:end) ], h(i).name})
     catch 
         waitbar(i/length(h),hnd_wait)
     end
@@ -102,19 +103,17 @@ for i=1:length(h)
             yearVector = datevec(tv);
             yearVector = yearVector(:,1);
             years = unique(yearVector)';
-            if ~isempty(strfind(databasePath,'\yyyy\')) %#ok<STREMP>
-                ind_yyyy = strfind(databasePath,'\yyyy\');
+            ind_yyyy = strfind(databasePath,'\yyyy\');
+            if ~isempty(ind_yyyy)                 
                 databasePathNew = databasePath;
                 for year_ind = years
                     one_year_ind = find(tv > datenum(year_ind,1,1) & tv <= datenum(year_ind+1,1,1)); %#ok<*DATNM>
+                    databasePathNew(ind_yyyy+1:ind_yyyy+4) = num2str(year_ind);
                     if ~isempty(one_year_ind)
-                        databasePathNew(ind_yyyy+1:ind_yyyy+4) = num2str(year_ind);
-                        for cntSamples = 1:length(one_year_ind)
-                            %[k] = db_new_eddy(ClimateStats(one_year_ind(cntSamples)),[],databasePathNew,0,[],timeUnit,missingPointValue); %#ok<*NASGU>
-                            [~,~, ~,errCode] = db_struct2database(ClimateStats(one_year_ind),...
-                                               databasePathNew,[],[],...
-                                               timeUnit,missingPointValue);
-                        end
+                        %[k] = db_new_eddy(ClimateStats(one_year_ind(cntSamples)),[],databasePathNew,0,[],timeUnit,missingPointValue); %#ok<*NASGU>
+                        [~,~, ~,errCode] = db_struct2database(ClimateStats(one_year_ind),...
+                                           databasePathNew,[],[],...
+                                           timeUnit,missingPointValue);
                     end
                 end
             else
