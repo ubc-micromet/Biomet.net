@@ -28,13 +28,10 @@ function [structIn,dbFileNames, dbFieldNames,errCode] = db_struct2database(struc
 %       k           -   number of files processed
 %
 % (c) Zoran Nesic               File created:       Sep 28, 2023
-%                               Last modification:  Nov 16, 2023
+%                               Last modification:  Nov 10, 2023
 
 % Revisions:
-% Nov 16, 2023 (Zoran)
-%  - The previous bug "fix" wasn't complete. There were multiple issues
-%    but the main one was that the program didn't properly handle 
-%    cases with 8 byte storage (tv vectors) and 4 byte storage (data)
+%
 % Nov 10, 2023 (Zoran)
 %  - Fixed a bug that crashed the processing if a new chamber was added
 %    to the set. In that case the missing data (the data for that chamber
@@ -303,7 +300,8 @@ function errCode = saveAll(statsNew,fileNamesIn,fieldNamesIn,currentTv,inputTv,m
                 if ~foundFile
                     % if the fileName wasn't found in fileNamesIn
                     % it needs to be updated by adding missingPointValue to it.
-                    % Start by loading the file up                  
+                    % Start by loading the file up
+                    
                     if contains(fileName,'RecalcTime') ...
                             || contains(fileName,'TimeVector') ...
                             || contains(fileName,'sample_tv')
@@ -328,8 +326,8 @@ function errCode = saveAll(statsNew,fileNamesIn,fieldNamesIn,currentTv,inputTv,m
             end
         end
     catch ME
-        disp(ME);
-        error('\n\nUnhandled error in db_struct2database.m\n')
+        error('Unhandled error in db_struct2database.m')
+        
     end
       
 
