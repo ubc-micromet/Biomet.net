@@ -1,11 +1,11 @@
 function [x, tv] = get_stats_field_fast(Stats,fieldIn)
-%get_stats_field_fast
-%Function to loop through Stats structure to retrieve data (x) from specified fields.  
-%Data may be scalars or vectors but not matrices.
-%For tv (timevector) to be output correctly, Stats must have the field, "Stats.TimeVector".  
-%Note field names are case sensitive.
+%   get_stats_field_fast
+%   Function to loop through Stats structure to retrieve data (x) from specified fields.  
 %
-%Example:  [x, tv] = get_stats_field(Stats,'MainEddy.Three_Rotations.AvgDtr.Fluxes.Hs');
+%   For tv (timevector) to be output correctly, Stats must have the field, "Stats.TimeVector".  
+%   Note field names are case sensitive.
+%
+%   Example:  [x, tv] = get_stats_field_fast(Stats,'MainEddy.Three_Rotations.AvgDtr.Fluxes.Hs');
 
 
 % Revisions:
@@ -13,48 +13,52 @@ function [x, tv] = get_stats_field_fast(Stats,fieldIn)
 %   - wrote a new function based on get_stats_field. Working on making it
 %     fully compatible with the original and faster.
 
-
-% Old function get_stats_field
-% Mar 4, 2020 (Zoran)
-%   - The fix from Nov 4, 2019 worked only when "field" contained one field
-%   only (like 'Fc' not with "MainEddy.Three_Rotations.AvgDtr.Fluxes.Fc")
-%     Returned to eval version.
-% Nov 4, 2019 (Zoran)
-%   - Removed some eval statements that seemed to slow down the program.
-%
-
-% E. Humphreys  Sept 30, 2003
-% Revisions: Oct  3, 2003 - Now works on vector data with missing hhours
-%            Apr 27, 2004 kai* - Added error notification
-%            June 11, 2005
-%               - fixed a bug that prevented plotting of some data (see
-%               below) (Zoran)
-
 err_flag = 1;
-L  = length(Stats);
 x  = [];
+tv = [];
 
+% Split fieldIn and pre-process matDim and mainField
+% fieldIn = 'Instrument(1).Cov(1,3)' =>  fieldParts ={'Instrument(1)','Cov(1,3)'} 
+% prt(1).currentPart = 'Instrument';    prt(1).matDim = 1
+% prt(2).currentPart = 'Cov';           prt(2).matDim = [1 3]
 fieldParts = split(fieldIn,'.');
+for cntParts = 1:length(fieldParts)
+    prt(cntParts).currentPart = char(fieldParts(cntParts)); 
+    [prt(cntParts).matDim,prt(cntParts).mainField] = getArrayDimensions(prt(cntParts).currentPart);  
+end
 
-for i = 1:L
+for cntStats = 1:length(Stats)
+    % For each element of Stats
     try
-        newStats = Stats(i);
-        nFieldParts = length(fieldParts);
-        for cntParts = 1:nFieldParts
-            currentPart = char(fieldParts(cntParts)); 
-            [matDim,mainField] = getArrayDimensions(currentPart);              
+        newStats = Stats(cntStats);
+        for cntParts = 1:length(fieldParts)
+            currentPart = prt(cntParts).currentPart; 
+            matDim      = prt(cntParts).matDim;
+            mainField   = prt(cntParts).mainField;
+           % dig through Stats one level at the time
+           % until the newStats = the final number
+           % newStats = Cov(1,3)
            if ~isempty(matDim)
+               try                    
+                   newStats = newStats.(mainField);
+               catch
+                   fprintf('Field "%s" does not exist in the structure. (Input field: "%s")\n',mainField,fieldIn);
+                   error('')
+               end               
                if length(matDim) == 1
-                    newStats = newStats.(mainField);
                     newStats = newStats(matDim);
                elseif length(matDim) == 2
-                    newStats = newStats.(mainField);
                     newStats = newStats(matDim(1),matDim(2));
                else
                    fprintf('get_stats_field_Fast: Matrix can be only N x 1 or N x M\n');
                end
            else 
-                newStats = newStats.(currentPart);
+               try                    
+                   newStats = newStats.(currentPart);
+               catch
+                   fprintf('Field "%s" does not exist in the structure. (Input field: "%s")\n',currentPart,fieldIn);
+                   error('')
+               end               
            end
         end
         if isempty(newStats)
@@ -80,23 +84,28 @@ for i = 1:L
             end
             
         end
-        x(i,1:size(newStats,2)) = newStats;       % changed from x(i,:) = newStats; to prevent errors (Zoran June 11, 2005)
+        x(cntStats,1:size(newStats,2)) = newStats;       % changed from x(i,:) = newStats; to prevent errors (Zoran June 11, 2005)
         err_flag = 0;
     catch %#ok<*CTCH>
-        x(i,:) = NaN; 
+        x(cntStats,:) = NaN; 
     end
     try
         %eval(['tv(i,:) = Stats(i).TimeVector;']);
-        tv(i,:) = Stats(i).TimeVector; %#ok<*AGROW>
+        tv(cntStats,:) = Stats(cntStats).TimeVector; %#ok<*AGROW>
     catch
-        tv(i) = NaN; 
+        tv(cntStats) = NaN; 
     end
  end
  
  if err_flag
     disp(['Could not read ' fieldIn]);
  end
- 
+
+% Check if fieldParts is an array, a matrix or a variable
+% examples:
+%  fieldPart = 'TimeVector'         =>  matDim=[], mainField = 'TimeVector'
+%  fieldPart = 'Instrument(1)'      =>  matDim = [1], mainField = 'Instrument'
+%  fieldPart = 'cov(1,3)'           =>  matDim = [1 3], mainField = 'cov'
 function [matDim,mainField] = getArrayDimensions(fieldPart)
     % find if this is a matrix by searching for ()
     lastFieldPart = char(fieldPart);
@@ -108,7 +117,7 @@ function [matDim,mainField] = getArrayDimensions(fieldPart)
         if ~isempty(indBrc2)
             tmpStr = lastFieldPart(indBrc1(1)+1:indBrc2(1)-1);
             tmpStr = split(tmpStr);
-            matDim = str2num(cell2mat(split(tmpStr)));
+            matDim = str2num(cell2mat(split(tmpStr))); %#ok<ST2NM>
         end
         mainField = lastFieldPart(1:indBrc1(1)-1);        
     end
