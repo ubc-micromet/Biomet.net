@@ -16,6 +16,9 @@ function Biomet_Main_Scheduler
   
     fprintf(fid,'============== Biomet_Main_Scheduler.m ==================\n');
     fprintf(fid,'%s\n',datestr(now))
+    
+    %----------------------------------
+    % Climate station data processing
     if minuteX == 2 || minuteX == 32
         % at 2 minutes and 32 minutes every hour
         % Process CR21x files
@@ -39,13 +42,50 @@ function Biomet_Main_Scheduler
         end
     elseif minuteX == 12 || minuteX == 42
         % move files from d:\Sites\TEMP folder to database Raw folders
+        fprintf(fid,'======= Moving Sites\TEMP data to RAW (%s)========\n',datestr(now));
         [status,result] = system('"c:\ubc_flux\Move_CSI_net_files.exe c:\ubc_flux\Move_CSI_net_files.ini"');
+        fprintf(fid,'======= End of Moving Sites\TEMP data (%s)========\n',datestr(now));
+    end
+    
+    %------------------------
+    % File unzipping for YF site
+    if ismember(hourX,14:17) && minuteX == 2
+        fprintf(fid,'======= Moving and Unzipping YF DailyZip files (%s) ========\n', datestr(now));
+        [status,result] = system('"C:\Ubc_flux\Move_DailyZipFiles_from_Public_to_Sites.bat"');
+        fprintf(fid,'------- Unzipping ... (%s) -------\n', datestr(now));
+        % *** Note: UBC_ZIP.exe has a one minute wait period before it returns control to 
+        %           Matlab. Use "&" to avoid waiting for it to return
+        %           control to Matlab but be aware that the unzipping may
+        %           not be finshed yet. Alternatively, bypass this program
+        %           by writing a Matlab native version of UBC_ZIP.
+        % ***           
+        [status,result] = system('C:\Ubc_flux\UBC_ZIP.exe C:\Ubc_flux\ubc_unzip.ini &');
+        fprintf(fid,'======= End of Moving and Unzipping (%s)    ========\n', datestr(now));
+    end
+    
+    %--------------------------
+    % Picarro data processing
+    if hhourX == 1 && ismember(minuteX,[22 52]) ...
+            || hhourX == 2 && ismember(minuteX,[22])
+        fprintf(fid,'======= Picarro processing ========\n');
+        [status,result] = system('"C:\Ubc_flux\Move_DailyZipFiles_from_Public_to_Sites.bat"');
+        % *** Note: UBC_ZIP.exe has a one minute wait period before it returns control to 
+        %           Matlab. Use "&" to avoid waiting for it to return
+        %           control to Matlab but be aware that the unzipping may
+        %           not be finshed yet. 
+        %           In this case the proper thing to do is to wait for
+        %           UBC_ZIP to finish 60s wait.
+        % ***           
+        [status,result] = system('C:\Ubc_flux\UBC_ZIP.exe C:\Ubc_flux\ubc_unzip.ini');        
+        [status,result] = system('"C:\Ubc_flux\PicarroMove.bat"');
+        process_Picarro_AGGP_data;
+        fprintf(fid,'======= End of Picarro processing (%s) ========\n',datestr(now));
     end
 end
 
 %%
 function Process_Climate_Station(fid)
-    fprintf(fid,'======= Climate Station ========\n');
+    fprintf(fid,'======= Climate Station (%s) ========\n',datestr(now));
     try        
         % Copy files from Sync.com folder. Force overwriting.
         % Replaces a Task Scheduler task: ClimateStation_Data_Copy
@@ -83,7 +123,7 @@ function Process_Climate_Station(fid)
     % about admin permissions to run this program
     fprintf(fid,'%s Climate station: converting csv to database... ',datestr(now));
     [status,result] = system('"C:\Ubc_flux\dbase_update\UseMatlabToRunDbase_update-bat.lnk"');
-    
+    fprintf(fid,'======= End of Climate Station processing (%s) ========\n',datestr(now));
 end
 %%
 
