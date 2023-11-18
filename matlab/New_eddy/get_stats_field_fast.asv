@@ -43,7 +43,6 @@ for cntStats = 1:length(Stats)
                    newStats = newStats.(mainField);
                catch
                    fprintf('Field "%s" does not exist in the structure. (Input field: "%s")\n',mainField,fieldIn);
-                   return
                end               
                if length(matDim) == 1
                     newStats = newStats(matDim);
@@ -51,26 +50,18 @@ for cntStats = 1:length(Stats)
                     newStats = newStats(matDim(1),matDim(2));
                else
                    fprintf('get_stats_field_Fast: Matrix can be only N x 1 or N x M\n');
-                   return
                end
            else 
                try                    
                    newStats = newStats.(currentPart);
                catch
-                   fprintf('Field "%s" does not exist in the structure. (Input field: "%s")\n',currentPart,fieldIn);
-                   return
+                   fprintf('Field "%s" does not exist in the structure. (Input field: "%s")\n',mainField,fieldIn);
                end               
            end
         end
         if isempty(newStats)
             newStats = NaN;
         end
-        %------------------------------------------------
-        % This part of code could be just 
-        % some legacy mess but I didn't have time to
-        % fully troubleshoot it and to see what the possible
-        % consenquencies of removing it could be. So it stays as is.
-        % Zoran 20231116
         if length(size(newStats)) > 2
             newStats = squeeze(newStats);
         else         
@@ -88,10 +79,10 @@ for cntStats = 1:length(Stats)
             % if all data sor far has been nan, blow it up.
             if length(find(isnan(x))) == m1*n1
                 x = NaN .* ones(m1,m);
-            end       
-            %-----------------------------------------------
+            end
+            
         end
-        x(cntStats,1:size(newStats,2)) = newStats;       
+        x(cntStats,1:size(newStats,2)) = newStats;       % changed from x(i,:) = newStats; to prevent errors (Zoran June 11, 2005)
         err_flag = 0;
     catch %#ok<*CTCH>
         x(cntStats,:) = NaN; 
