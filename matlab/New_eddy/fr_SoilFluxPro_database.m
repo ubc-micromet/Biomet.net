@@ -28,11 +28,13 @@ function [numOfFilesProcessed,numOfDataPointsProcessed] = fr_SoilFluxPro_databas
 %       missingPointValue   - default 0 (Biomet legacy), all new non-Biomet sites should be NaN
 %
 % Zoran Nesic           File Created:      Sep  6, 2023
-%                       Last modification: Sep 29, 2023  
+%                       Last modification: Oct  4, 2023  
 
 %
 % Revisions:
 %
+% Oct 4, 2023 (Zoran)
+%   - used errCode to limit when progress list gets updated
 % Sep 29, 2023 (Zoran)
 %   - replaced db_new_eddy with db_struct2database (using sparse instead of complete data base files)
 %
@@ -62,7 +64,8 @@ hnd_wait = waitbar(0,'Updating site database...');
 
 for i=1:length(h)
     try 
-        waitbar(i/length(h),hnd_wait,{'Processing: %s ', ['...' pth(end-50:end)], h(i).name})
+        stPth = 1;if length(pth)>30,stPth=length(pth)-30;end
+        waitbar(i/length(h),hnd_wait,{'Processing: %s ', ['...' pth(stPth:end) ], h(i).name})
     catch 
         waitbar(i/length(h),hnd_wait)
     end
@@ -100,31 +103,31 @@ for i=1:length(h)
             yearVector = datevec(tv);
             yearVector = yearVector(:,1);
             years = unique(yearVector)';
-            if ~isempty(strfind(databasePath,'\yyyy\')) %#ok<STREMP>
-                ind_yyyy = strfind(databasePath,'\yyyy\');
+            ind_yyyy = strfind(databasePath,'\yyyy\');
+            if ~isempty(ind_yyyy)                 
                 databasePathNew = databasePath;
                 for year_ind = years
                     one_year_ind = find(tv > datenum(year_ind,1,1) & tv <= datenum(year_ind+1,1,1)); %#ok<*DATNM>
+                    databasePathNew(ind_yyyy+1:ind_yyyy+4) = num2str(year_ind);
                     if ~isempty(one_year_ind)
-                        databasePathNew(ind_yyyy+1:ind_yyyy+4) = num2str(year_ind);
-                        for cntSamples = 1:length(one_year_ind)
-                            %[k] = db_new_eddy(ClimateStats(one_year_ind(cntSamples)),[],databasePathNew,0,[],timeUnit,missingPointValue); %#ok<*NASGU>
-                            db_struct2database(ClimateStats(one_year_ind(cntSamples)),...
-                                               databasePathNew,[],[],...
-                                               timeUnit,missingPointValue);
-                        end
+                        %[k] = db_new_eddy(ClimateStats(one_year_ind(cntSamples)),[],databasePathNew,0,[],timeUnit,missingPointValue); %#ok<*NASGU>
+                        [~,~, ~,errCode] = db_struct2database(ClimateStats(one_year_ind),...
+                                           databasePathNew,[],[],...
+                                           timeUnit,missingPointValue);
                     end
                 end
             else
                 %[k] = db_new_eddy(ClimateStats,[],databasePath,0,[],timeUnit,missingPointValue);
-                db_struct2database(ClimateStats,...
+                [~,~, ~,errCode] = db_struct2database(ClimateStats,...
                                    databasePath,[],[],...
                                    timeUnit,missingPointValue);
             end
             % if there is no errors update records
             numOfFilesProcessed = numOfFilesProcessed + 1;
             numOfDataPointsProcessed = numOfDataPointsProcessed + length(tv);
-            filesProcessProgressList(j).Modified = datenum(h(i).date);
+            if errCode == 0
+                filesProcessProgressList(j).Modified = datenum(h(i).date);
+            end
         catch
             fprintf('Error in processing of: %s\n',fullfile(pth,h(i).name));
         end % of try

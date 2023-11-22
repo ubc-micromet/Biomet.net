@@ -4,11 +4,18 @@ function db_Young_climate_station(fileName,stationName)
 % fileName = 'C:\Users\zoran\Downloads\Newdale-Hamiota-Oakburn-Data.xls';
 %
 % Zoran Nesic               File created:       Sep  7, 2022
-%                           Last modification:  Sep 13, 2022
+%                           Last modification:  Oct 17, 2023
 
 %
 % Revisions
 %
+% Oct 17, 2023 (Zoran)
+%  - Changed:
+%      siteData = origData(strcmp(origData.StationName,stationName),:);
+%    to
+%      siteData = origData(strcmpi(origData.StationName,stationName),:);
+%    bacause the Manitoba group uses interchangebly Newdale and newdale in
+%    their source data files.
 % Sep 13, 2022 (Zoran)
 %  - converted units for SolarRad from MJ/m^2/hour to W/m^2
 %  - added default arguments for the function inputs fileName and stationName
@@ -27,7 +34,7 @@ dbPath = fullfile(biomet_database_default,['yyyy\Young\Met\' stationName]);
 origData = readtable(fileName);
 
 % Extract data for stationName
-siteData = origData(strcmp(origData.StationName,stationName),:);
+siteData = origData(strcmpi(origData.StationName,stationName),:);
 
 % Unit conversion: convert not-micromet-standard field units
 siteData.SolarRad = siteData.SolarRad * (1e6/3600); % MJ/m^2/hour -> W/m^2

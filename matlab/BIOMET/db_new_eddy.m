@@ -1,4 +1,4 @@
-function [k,StatsAll,dbFileNames, dbFieldNames] = db_new_eddy(arg1,wildcard,pthOut,verbose_flag,excludeSubStructures,timeUnit,missingPointValue)
+function [k,StatsAll,dbFileNames, dbFieldNames,errCode] = db_new_eddy(arg1,wildcard,pthOut,verbose_flag,excludeSubStructures,timeUnit,missingPointValue)
 %
 % eg. k = db_new_eddy('\\annex001\database\2000\cr\flux\raw\',
 %                             '0001*.hp.mat','\\annex001\database\2000\cr\flux\');
@@ -29,10 +29,14 @@ function [k,StatsAll,dbFileNames, dbFieldNames] = db_new_eddy(arg1,wildcard,pthO
 %       k           -   number of files processed
 %
 % (c) Zoran Nesic               File created:       Apr  1, 2004
-%                               Last modification:  Sep  6, 2023
+%                               Last modification:  Oct  4, 2023
 
 % Revisions:
 %
+%   Oct 4, 2023 (Zoran)
+%    - added errCode to the output parameters. It can then be used to verify
+%      if the progress list should be updated (everything went OK) or not 
+%      (there were errors in data saving).
 %   Sep 6, 2023 (Zoran)
 %    - It's now possible to create database with any time resolution in minutes.
 %      If timeUnit == 3, data base will have resolution of 3 minutes. (search for 20230906)

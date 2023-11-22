@@ -10,13 +10,15 @@ function db_update_BB_site(yearIn,sites,skipWebUpdates)
 % files
 
 % file created:  June 24, 2019        
-% last modified: June  2, 2021 (Zoran)
+% last modified: Oct   5, 2023 (Zoran)
 %
 
 % function based on db_update_HH_sites
 
 % Revisions:
 %
+% Oct 5, 2023 (Zoran)
+%  - added BBS manual chamber data processing
 % June 2, 2021 (Zoran and Nick)
 %   - modifications to make the program work for Manitoba sites.
 % Nov 12, 2019 (Zoran)
@@ -148,7 +150,7 @@ for k=1:length(yearIn)
                 % Paths for Chamber processing
                 outputPath = fullfile(pth_db,'yyyy',siteID,'Chambers');
                 inputPath = fullfile('p:\sites',siteID,'Chambers','*.csv');
-                progressListPath = fullfile(pth_db,[siteID '_Chambers_progressList_' num2str(yearIn(k)) '.mat'');']);
+                progressListPath = fullfile(pth_db,num2str(yearIn(k)),siteID,'Chambers','ProgressList.mat');
                 % Synchronize csv files created by SoilFluxPro software
                 csvSourceFolder = fullfile('\\137.82.55.154\data-dump',siteID,'Chamberdata\Fluxesdata\Fluxesdata_recomputed\csv_file');
                 csvOutputFolder = fullfile('P:\Sites', siteID, 'Chambers');
