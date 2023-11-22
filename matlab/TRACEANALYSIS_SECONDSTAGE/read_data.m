@@ -67,6 +67,9 @@ function trace_str = read_data(yearIn, SiteID, ini_file, sourceDB, options)
 bgc = [0 0.36 0.532];
 
 [yearNow,~,~] = datevec(now);
+
+% 'year' is a method e.g., year(datetime("today")) will give you the
+% current year.  Overwriting it here might not be the best thing to do?
 arg_default('year',yearNow)
 ini_file_default = biomet_path('Calculation_Procedures\TraceAnalysis_ini',SiteID);
 ini_file_default = setFolderSeparator(fullfile(ini_file_default,[SiteID '_FirstStage.ini']));

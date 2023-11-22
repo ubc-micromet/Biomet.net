@@ -164,27 +164,28 @@ class DatabaseFunctions():
 
 class MakeTraces(DatabaseFunctions):
     # Accepts an ini file that prompt a search of the datadump folder - or a pandas dataframe with a datetime index
-    def __init__(self,ini=None,DataTable=None):
-        if ini is None:
-            print('Provide ini file to continue')
-        else:
-            super().__init__(ini)        
-            if DataTable is None:
-                for self.batch in self.ini['Input']['file_batches'].split(','):
-                    self.site_name = self.ini[self.batch]['Site']
-                    self.findFiles()
-            else:
-                self.batch = self.ini['Input']['file_batches'].split(',')[0]
+    def __init__(self,ini='ini_files/WriteTraces.ini',DataTable=None):
+        super().__init__(ini)        
+        if DataTable is None:
+            for self.batch in self.ini['Input']['file_batches'].split(','):
+                print('Processing: ',self.batch)
                 self.site_name = self.ini[self.batch]['Site']
-                self.Data = DataTable
-
-            self.dateIndex()
-            if self.ini[self.batch]['Exclude'] != '':
-                colFilter = self.Metadata.filter(self.ini[self.batch]['Exclude'].split(','))
-                self.Metadata.drop(colFilter,inplace=True,axis=1)  
-                colFilter = self.Data.filter(self.ini[self.batch]['Exclude'].split(','))
-                self.Data.drop(colFilter,inplace=True,axis=1)
-            self.padFullYear()
+                self.findFiles()
+                self.Process()
+        else:
+            self.batch = self.ini['Input']['file_batches'].split(',')[0]
+            self.site_name = self.ini[self.batch]['Site']
+            self.Data = DataTable
+            self.Process()
+    
+    def Process(self):
+        self.dateIndex()
+        if self.ini[self.batch]['Exclude'] != '':
+            colFilter = self.Metadata.filter(self.ini[self.batch]['Exclude'].split(','))
+            self.Metadata.drop(colFilter,inplace=True,axis=1)  
+            colFilter = self.Data.filter(self.ini[self.batch]['Exclude'].split(','))
+            self.Data.drop(colFilter,inplace=True,axis=1)
+        self.padFullYear()
 
 
     def findFiles(self):
@@ -336,7 +337,7 @@ if __name__ == '__main__':
     CLI=argparse.ArgumentParser()
 
     CLI.add_argument(
-        "--task",
+        "--Task",
         nargs='*',
         type=str,
         default=['Help'],
@@ -364,7 +365,7 @@ if __name__ == '__main__':
         )
         
     args = CLI.parse_args()
-    # if args.task == 'Help' or 'Help' in args.task:
+    # if args.Task == 'Help' or 'Help' in args.Task:
     
     ini_defaults = {
         'Help':'N\A',
@@ -373,20 +374,22 @@ if __name__ == '__main__':
         'GSheetDump':'ini_files/WriteTraces_Gsheets.ini'
     }
     
-    for i,task in enumerate(args.task):
+    for i,Task in enumerate(args.Task):
         if args.ini is None:
-            ini = ini_defaults[task]
+            ini = ini_defaults[Task]
+        else:
+            ini = args.ini
 
-        if task == 'Read':
-            MakeCSV(args.Sites,args.Years)
-        elif task == 'Write':
-            MakeTraces()
-        elif task == 'GSheetDump':
-            GSheetDump()
-        elif task == 'Help':
+        if Task == 'Read':
+            MakeCSV(args.Sites,args.Years,ini=ini)
+        elif Task == 'Write':
+            MakeTraces(ini=ini)
+        elif Task == 'GSheetDump':
+            GSheetDump(ini=ini)
+        elif Task == 'Help':
             print('Help: \n')
-            print("--task: options ('Read', 'Write', or 'GSheetDump')")
-            print("--Sites: Leave blank to run all sites or give a list of sites delimited by spaces, e.g., --Sites BB BB2 BBS )\n Only applies if task == Read")
-            print("--Years: Leave blank to run all years or give a list of years delimited by spaces, e.g., --Years 2020 2021 )\n Only applies if task == Read")
-            print("--ini: Leave blank to run default or give a list of ini files corresponding to each task")
+            print("--Task: options ('Read', 'Write', or 'GSheetDump')")
+            print("--Sites: Leave blank to run all sites or give a list of sites delimited by spaces, e.g., --Sites BB BB2 BBS )\n Only applies if Task == Read")
+            print("--Years: Leave blank to run all years or give a list of years delimited by spaces, e.g., --Years 2020 2021 )\n Only applies if Task == Read")
+            print("--ini: Leave blank to run default or give a list of ini files corresponding to each Task")
     print('Request completed.  Time elapsed: ',np.round(time.time()-T1,2),' seconds')
