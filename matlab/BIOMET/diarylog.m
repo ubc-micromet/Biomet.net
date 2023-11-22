@@ -12,6 +12,8 @@
 
 % Revisions:
 %
+% Nov 22, 2023 (Zoran)
+%   - added Matlab proces PID to the output.
 % Feb 28, 2022
 %   - added userData.instance. This variable will be used to 
 %     indicate when a particular instance of Matlab has closed.
@@ -54,6 +56,7 @@ matlabInstance = datestr(now,30);
 disp('********************************************************************************');
 fprintf('Start at: %s\n', datestr(now));
 fprintf('Matlab instance: %s v%s\n',matlabInstance,v);
+fprintf('PID: %d\n',feature('getpid'));
 disp('********************************************************************************');
 
 % Auto-save diary file 5 minutes
