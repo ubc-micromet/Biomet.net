@@ -132,8 +132,12 @@ ThirdStage_REddyProc <- function(pathSetIni) {
       for (i in 2:length(names.data.storage)) {
         ind <- grep(paste("^",names.data.storage[i],"$",sep = ''), names.data)
         
-        # Add on storage term
-        data[,ind] <- data[,ind]+data.storage[,i]
+        # Add on storage term (if not all NaN)
+        if (sum(!is.nan(data.storage[,i])) > 0) {
+          data[,ind] <- data[,ind]+data.storage[,i]
+        } else {
+          data[,ind] <- data[,ind] # This will not include a storage term since all storage terms are NaN
+          }
       }
     }
     
@@ -161,11 +165,11 @@ ThirdStage_REddyProc <- function(pathSetIni) {
     # Rename column names to variable names in REddyProc
     colnames(data_REddyProc)<-var_names  
     
-    # Only use existing data up until storage terms are calculated
+    # Only use existing data up until storage terms are calculated (if not all storage terms are NaN)
     #DT <- data.table(data_REddyProc[,-which(names(data_REddyProc) %in% c("Year","DoY","Hour","NEE","FC","H","LE","FCH4","Ustar"))])
     #last_ind <- max(DT[,lapply(.SD,function(x) which(x == tail(x[!is.na(x)],1)))])
     
-    if (exists("vars_storage") == TRUE) {
+    if (exists("data.storage") && sum(!is.nan(data.storage[,i])) > 0) {
       DT <- data.table(data.storage[,-which(names(data.storage) %in% c("datetime"))])
       last_ind <- max(DT[,lapply(.SD,function(x) which(x == tail(x[!is.na(x)],1)))])
       
@@ -236,7 +240,7 @@ ThirdStage_REddyProc <- function(pathSetIni) {
     # Create data frame for REddyProc output
     FilledEddyData <- EProc$sExportResults()
     
-    if (exists("vars_storage") == TRUE) {
+    if (exists("data.storage") && sum(!is.nan(data.storage[,i])) > 0) {
       # Fill back in the NA values
       FilledEddyData_full <- data.frame(matrix(NA, nrow = nrow(data), ncol = ncol(FilledEddyData)))
       FilledEddyData_full[c(1:last_ind),] <- FilledEddyData 
