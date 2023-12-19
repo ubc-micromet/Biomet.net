@@ -10,15 +10,13 @@ function db_update_BB_site(yearIn,sites,skipWebUpdates)
 % files
 
 % file created:  June 24, 2019        
-% last modified: Dec 19, 2023 (Zoran)
+% last modified: Oct   5, 2023 (Zoran)
 %
 
 % function based on db_update_HH_sites
 
 % Revisions:
 %
-% Dec 19, 2023 (Zoran)
-%  - added synchronization of BBS Manual chamber data.
 % Oct 5, 2023 (Zoran)
 %  - added BBS manual chamber data processing
 % June 2, 2021 (Zoran and Nick)
@@ -164,9 +162,9 @@ for k=1:length(yearIn)
                 fprintf('%s  Manual chambers:  Number of files processed = %d, Number of HHours = %d\n',siteID,numOfFilesProcessed,numOfDataPointsProcessed);
                 % Process manual water measurements
                 % Synchronize manualy edited xlsx file 
-                csvSourceFolder = fullfile('\\137.82.55.154\data-dump',siteID,'Chamberdata\Manualdata');
-                csvOutputFolder = fullfile('P:\Sites', siteID, 'Chambers\Manualdata');
-                cmdTMP = ['robocopy ' csvSourceFolder ' ' csvOutputFolder ' /S /R:3 /W:10 /REG /NDL /NFL /NJH /log+:P:\Sites\Log_files\' siteID '_chambers_sync.log' ];
+                csvSourceFolder = fullfile('\\137.82.55.154\data-dump',siteID,'Chamberdata\Manualdata\WL_for_each_collar.xlsx');
+                csvOutputFolder = fullfile('P:\Sites', siteID, 'Chambers');
+                cmdTMP = ['robocopy ' csvSourceFolder ' ' csvOutputFolder ' /R:3 /W:10 /REG /NDL /NFL /NJH /log+:P:\Sites\Log_files\' siteID '_chambers_sync.log' ];
                 dos(cmdTMP);
                 % Run chamber data processing
                 [numOfFilesProcessed,numOfDataPointsProcessed]= ...
