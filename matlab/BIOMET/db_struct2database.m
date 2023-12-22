@@ -28,9 +28,12 @@ function [structIn,dbFileNames, dbFieldNames,errCode] = db_struct2database(struc
 %       k           -   number of files processed
 %
 % (c) Zoran Nesic               File created:       Sep 28, 2023
-%                               Last modification:  Nov 16, 2023
+%                               Last modification:  Dec 21, 2023
 
 % Revisions:
+% 
+% Dec 21, 2023 (Zoran)
+%  - minor edits (changed 30 to '30min')
 % Nov 16, 2023 (Zoran)
 %  - The previous bug "fix" wasn't complete. There were multiple issues
 %    but the main one was that the program didn't properly handle 
@@ -46,7 +49,7 @@ function [structIn,dbFileNames, dbFieldNames,errCode] = db_struct2database(struc
     
     arg_default('verbose_flag',1);              % default 1 (ON)
     arg_default('excludeSubStructures',[]);     % default exclude none
-    arg_default('timeUnit',30);                 % default is 30 minutes
+    arg_default('timeUnit','30min');            % default is 30 minutes
     arg_default('missingPointValue',0);         % default is 0 (legacy Biomet value). Newer setups should use NaN
     
     pth_tmp = fr_valid_path_name(pthOut);          % check the path and create
