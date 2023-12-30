@@ -38,7 +38,7 @@
   </picture>
 </div>
 
-##### Use the username and password from the [Access to Servers and Remote Desktop](https://docs.google.com/document/u/0/d/1UNIsZXyM3PwA2SvhkySWy7I_0TsdyddG2C9QvfnCSik/) doc on the Micromet site, and choose “Projects” for the volume to mount
+##### Use the username and password from the 'Access to Servers and Remote Desktop' doc on the Micromet site, and choose “Projects” for the volume to mount
 
 <br>
 
