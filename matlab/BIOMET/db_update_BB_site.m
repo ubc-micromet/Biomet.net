@@ -162,19 +162,16 @@ for k=1:length(yearIn)
                 [numOfFilesProcessed,numOfDataPointsProcessed]= ...
                           fr_SoilFluxPro_database(inputPath,progressListPath,outputPath,'1min',[],missingPointValue);                                                            
                 fprintf('%s  Manual chambers:  Number of files processed = %d, Number of HHours = %d\n',siteID,numOfFilesProcessed,numOfDataPointsProcessed);
-                % Process manual water measurements
+                % Process manual Water Level measurements
                 % Synchronize manualy edited xlsx file 
                 csvSourceFolder = fullfile('\\137.82.55.154\data-dump',siteID,'Chamberdata\Manualdata');
                 csvOutputFolder = fullfile('P:\Sites', siteID, 'Chambers\Manualdata');
                 cmdTMP = ['robocopy ' csvSourceFolder ' ' csvOutputFolder ' /S /R:3 /W:10 /REG /NDL /NFL /NJH /log+:P:\Sites\Log_files\' siteID '_chambers_sync.log' ];
                 dos(cmdTMP);
-                % Run chamber data processing
-                [numOfFilesProcessed,numOfDataPointsProcessed]= ...
-                          fr_SoilFluxPro_database(inputPath,progressListPath,outputPath,'1min',[],missingPointValue);                                                            
-                fprintf('%s  Manual chambers:  Number of files processed = %d, Number of HHours = %d\n',siteID,numOfFilesProcessed,numOfDataPointsProcessed);
-  
-                
-                
+                % Run Water Level data processing
+                [~,~,~] = fr_read_generic_data_file(fullfile(csvOutputFolder,'WL_for_each_collar.xlsx'),'caller',[],1,[],[2 Inf]);
+                db_struct2database(Stats,fullfile(outputPath,'WaterLevel'),[],[],[],NaN);
+                                
                 % Backup all data
                 csvSourceFolder = fullfile('\\137.82.55.154\data-dump',siteID,'Chamberdata\Fluxesdata\Fluxesdata_originalcopy');
                 csvOutputFolder = fullfile('P:\Sites', siteID, 'Chambers','HF_data','Original');
