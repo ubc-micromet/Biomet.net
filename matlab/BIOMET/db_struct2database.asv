@@ -24,13 +24,6 @@ function [structIn,dbFileNames, dbFieldNames,errCode] = db_struct2database(struc
 %       dbFieldNames            - structIn field names
 %       errCode                 - error code
 %
-%
-% NOTE: Update this function by adding a flag that forces a full (non-spares) database
-%       creation. Hint: if the target path contains a TimeVector with all elements,
-%       then the new database will have all elements. So, if the "force flag" is true
-%       create and write a full TimeVector
-%
-%
 % (c) Zoran Nesic               File created:       Sep 28, 2023
 %                               Last modification:  Jan  2, 2024
 
@@ -61,8 +54,6 @@ function [structIn,dbFileNames, dbFieldNames,errCode] = db_struct2database(struc
     arg_default('timeUnit','30min');            % default is 30 minutes
     arg_default('missingPointValue',0);         % default is 0 (legacy Biomet value). Newer setups should use NaN
     
-    if verbose_flag == 1; fprintf('\n------ db_struct2database processing ---------\n');end
-
     % Initiate default outputs
     dbFileNames = [];
     dbFieldNames = [];
@@ -201,14 +192,14 @@ function [structIn,dbFileNames, dbFieldNames,errCode] = db_struct2database(struc
             dbFieldNames{i} = fieldName; %#ok<*AGROW>
         end
         % Save the data for the currentYear only. 
-        indCurrentYear = find(new_tv > datenum(currentYear,1,1,1,0,0.1) & new_tv <= datenum(currentYear+1,1,1)); %#ok<*DATNM>
-        errCode = saveAll(structIn(indCurrentYear),dbFileNames,dbFieldNames,currentTv,new_tv(indCurrentYear),missingPointValue);
+        indCurrentYear = find(new_tv > datenum(currentYear,1,1,1,0,0.1)) & 
+        errCode = saveAll(structIn,dbFileNames,dbFieldNames,currentTv,new_tv,missingPointValue);
         % report time
         tm = toc;
         if errCode ~= 0
             fprintf('     ***  %d errors during processing. ***\n',errCode);
         else
-            if verbose_flag,fprintf('     %i database entries for %d generated in %4.1f seconds.\n',length(indCurrentYear),currentYear,tm);end
+            if verbose_flag,fprintf('     %i database entries for %d generated in %4.1f seconds.\n',length(structIn),currentYear,tm);end
         end
         
     end % currentYear
