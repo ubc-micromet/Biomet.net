@@ -6,12 +6,16 @@ function [t,x] = BB_pl(ind, year, siteID, select, fig_num_inc,flgPause)
 %   the UBC data-base formated files.
 %
 % (c) c) Nesic Zoran         File created:       May 11, 2021      
-%                            Last modification:  Oct 15, 2023
+%                            Last modification:  Jan  5, 2024
 %           
 %
 
 % Revisions:
 %
+% Jan 5, 2024 (Zoran)
+%   - tried to find a proper 24V battery voltage measurement for Manitoba sites but, given
+%     the specifics of that system, there isn't a good way to do this. EddyPro does not
+%     capture the LI-7500 Vin and LI-7700 doesn't even has that measurements.
 % Oct 15, 2023 (Zoran)
 %   - Changed the plotting of OHM site signal strengths. OHM is currently not supported 
 %     by "monitorSites" app so I had to remove those traces so the legend does not get confused.
@@ -176,10 +180,12 @@ trace_name  = sprintf('%s: %s',siteID,' Battery Voltage');
 switch siteID
     case {'HOGG','YOUNG','OHM'}
         trace_path  = char(fullfile(pthSite,'flux','DRM_V_MAIN_1_1_1'));
+        trace_legend = [];
     otherwise
         trace_path  = char(fullfile(pthSite,'MET','SYS_PBox_Batt_Volt_Avg'));
+        trace_legend = [];
 end
-trace_legend = [];
+
 trace_units = '24V Battery Voltage (V)';
 y_axis      = [];
 fig_num = fig_num + fig_num_inc;
