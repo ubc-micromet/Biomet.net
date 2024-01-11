@@ -24,9 +24,7 @@ function [dataOut, cError,allData] = fr_read_TCP_LI7x00_data(addressIP,portNum,t
 % Revisions:
 %
 % Jan 10, 2024 (Zoran)
-%  - returned to pulling VolFlowRate  instead of MeasFlowRate. For 5 days
-%    we pulled MeasFlowRate which is more constant (matches set flow more closely)
-%    but that's not what EddyPro outputs so it is confusing when comparing app traces to EP traces.
+%  - 
 % Jan 5, 2024 (Zoran)
 %  - added fields: 'SFVin' and 'DSIVin'
 % Mar 19, 2022 (Zoran)
