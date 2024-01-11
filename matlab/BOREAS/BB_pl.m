@@ -179,8 +179,9 @@ indAxes = indAxes+1; allAxes(indAxes) = gca;
 trace_name  = sprintf('%s: %s',siteID,' Battery Voltage');
 switch siteID
     case {'HOGG','YOUNG','OHM'}
-        trace_path  = char(fullfile(pthSite,'flux','DRM_V_MAIN_1_1_1'));
-        trace_legend = [];
+        trace_path  = char(fullfile(pthSite,'flux','DRM_V_MAIN_1_1_1'), ...
+                           fullfile(pthSite,'monitorSites',sprintf('%s.DSIVin.avg',siteID)));
+        trace_legend = char('DRM_V_MAIN_1_1_1','DSIVin.avg');
     otherwise
         trace_path  = char(fullfile(pthSite,'MET','SYS_PBox_Batt_Volt_Avg'));
         trace_legend = [];
