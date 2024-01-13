@@ -1,4 +1,4 @@
-function [EngUnits,Header,tv,outStruct] = fr_read_generic_data_file(fileName,assign_in,varName, dateColumnNum, timeInputFormat,colToKeep,structType)
+function [EngUnits,Header,tv] = fr_read_generic_data_file(fileName,assign_in,varName, dateColumnNum, timeInputFormat,colToKeep,structType)
 %  fr_read_generic_data_file - reads csv and xlsx data files for Biomet/Micromet projects 
 %
 % Note: This function should replace a set of similar functions written for
@@ -11,13 +11,15 @@ function [EngUnits,Header,tv,outStruct] = fr_read_generic_data_file(fileName,ass
 %   Zoe's water level data:
 %       [EngUnits,Header,tv] = fr_read_generic_data_file('V:\Sites\BBS\Chambers\Manualdata\WL_for_each_collar.xlsx','caller',[],1,[],[2 Inf]);
 %   Manitoba ORG Field sites:
-%       [EngUnits,Header,tv,outStruct] = fr_read_generic_data_file(wildCardPath);
+%       [EngUnits,Header,tv] = fr_read_generic_data_file(wildCardPath,'caller');
 % 
 % Inputs:
 %   fileName            - data file
 %   assign_in           - 'caller', 'base' - assignes the data to the
 %                         actual column header names (logger variables)
 %                         either in callers space or in the base space.
+%                         If empty or 0 no
+%                         assignments are made
 %   varName             - Used with 'caller'. Sets the name of the structure
 %                         for the output variables. If
 %                         empty the default name will be 'LGR' (LGR.tv,
@@ -28,13 +30,10 @@ function [EngUnits,Header,tv,outStruct] = fr_read_generic_data_file(fileName,ass
 %                         option [x y z] would only export columns x,y,x.
 %   structType          - 0 [default] - Struct(ind).Variable, 1 - Struct.Variable(ind).
 %                         The default is to index the structure using the old style: Struct(:).TimeVector,...
-%                         This works well with the UBC Biomet EC calculation program outputs which are large
-%                         nested trees of outputs: "Stats(:).MainEddy.Three_Rotations.AvgDtr.Fluxes.Hs"
+%                         This works well with the UBC Biomet EC calculation programs.
 %                         For most of the simple input files like the ones from EddyPro, Ameriflux, SmartFluxPro
 %                         it's much faster to load the data into the new style: Stats.TimeVector(:).
-%                         Use structType = 1 for the non-legacy simple stuff.
-%                         Note: There is a matching parameter for the database creation program: db_struct2database.
-%                               Use the same value for structType!
+%                         Use structType = 1 for the non-legacy stuff.
 %                          
 %
 % (c) Zoran Nesic                   File created:       Dec 20, 2023
@@ -45,7 +44,7 @@ function [EngUnits,Header,tv,outStruct] = fr_read_generic_data_file(fileName,ass
 %
 % Jan 12, 2024 (Zoran)
 %   - added structType input option (see the header for more info).
-%       - speed improvement for an Ameriflux file with 52,600 lines was 4.5s vs 170s
+%   - 
 %  Dec 21, 2023 (Zoran)
 %   - added more input parameters and comments.
 
@@ -89,14 +88,10 @@ Header = [];  % just a place holder to keep the same output parameters
         numOfVars = length(f1.Properties.VariableNames);
         numOfRows = length(tv);
         
-        if structType == 0
-            % store each tv(j) -> outStruct(j).TimeVector
-            for cntRows=1:numOfRows                
-                outStruct(cntRows,1).TimeVector = tv(cntRows);     %#ok<*AGROW>
-            end   
-        else
-            outStruct.TimeVector = tv;
-        end
+        % store each tv(j) -> outStruct(j).TimeVector
+        for cntRows=1:numOfRows                
+            outStruct(cntRows,1).TimeVector = tv(cntRows);     %#ok<*AGROW>
+        end        
 
         % Convert EngUnits to Struc
         for cntVars=1:numOfVars

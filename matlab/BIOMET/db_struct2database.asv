@@ -163,10 +163,6 @@ function [structIn,dbFileNames, dbFieldNames,errCode] = db_struct2database(struc
     allYears = unique(year(new_tv));
     allYears = allYears(:)';   % make sure that allYears is "horizontal" vector
     for currentYear = allYears
-        indCurrentYear = find(new_tv > datenum(currentYear,1,1,0,0,0.1) & new_tv <= datenum(currentYear+1,1,1)); %#ok<*DATNM>
-        if isempty(indCurrentYear)
-            continue
-        end
         currentPath = pthOut;
         % Test the path name in case it's given as a generic \yyyy\ or /yyyy/ path
         ind_yyyy = strfind(currentPath,[filesep 'yyyy' filesep]);
@@ -259,7 +255,8 @@ function [structIn,dbFileNames, dbFieldNames,errCode] = db_struct2database(struc
             dbFieldNames{i} = fieldName; %#ok<*AGROW>
         end
         % Save the data for the currentYear only. 
-        errCode = saveAll(structIn,dbFileNames,dbFieldNames,currentTv,new_tv,missingPointValue,structType,indCurrentYear);
+        indCurrentYear = find(new_tv > datenum(currentYear,1,1,0,0,0.1) & new_tv <= datenum(currentYear+1,1,1)); %#ok<*DATNM>
+        errCode = saveAll(structIn,dbFileNames,dbFieldNames,currentTv,new_tv,missingPointValue,structType);
         % report time
         tm = toc;
         if errCode ~= 0
@@ -285,9 +282,9 @@ function errCode = saveAll(statsNew,fileNamesIn,fieldNamesIn,currentTv,inputTv,m
         pathOut = strTemp(1:indSep(end)-1); 
     
         % extract the valid time vector range
-        inputTv = inputTv(indCurrentYear);
+        inputTv(indCurrentYear) = inputTv(indCurrentYear);
         % combine the two time vectors
-        newTv = union(currentTv,inputTv);
+        newTv = union(currentTv,);
         % find where new data (newDataInd) and old data (oldDataInd) fits in the newTv
         [~,newDataInd] = intersect(newTv,inputTv);
         [~,oldDataInd] = intersect(newTv,currentTv);
@@ -304,9 +301,9 @@ function errCode = saveAll(statsNew,fileNamesIn,fieldNamesIn,currentTv,inputTv,m
             fieldName = char(fieldNamesIn(i));
             try
                 if structType == 0
-                    dataIn = get_stats_field_fast(statsNew(indCurrentYear),fieldName);
+                    dataIn = get_stats_field_fast(statsNew,fieldName);
                 else
-                    dataIn = statsNew.(fieldName)(indCurrentYear);
+                    dataIn = statsNew.(fieldName);
                 end
                 if ~isempty(dataIn)
                     if ~exist(fileName,'file')
