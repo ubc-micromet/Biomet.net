@@ -197,6 +197,7 @@ class MakeTraces(DatabaseFunctions):
             for file in (files):
                 fn = f"{dir}/{file}"
                 if len([p for p in file_patterns if p not in fn])==0:
+                    print(fn)
                     if self.ini['Input']['copy_to_sites'] == 'True':
                         self.copy_raw_data_files(dir=dir,file=file)
                     if self.ini[self.batch]['subtable_id'] == '':
