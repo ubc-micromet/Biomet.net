@@ -1,4 +1,4 @@
-function [structIn,dbFileNames, dbFieldNames,errCode] = db_struct2database(structIn,pthOut,verbose_flag,excludeSubStructures,timeUnit,missingPointValue,structType)
+function [structIn,dbFileNames, dbFieldNames,errCode] = db_struct2database(structIn,pthOut,verbose_flag,excludeSubStructures,timeUnit,missingPointValue,structType,forceFullDB)
 % db_struct2database - creates a sparse database (database that does not contain all hhour values)
 %
 % eg. [structIn,dbFileNames, dbFieldNames,errCode] = ...
@@ -26,6 +26,8 @@ function [structIn,dbFileNames, dbFieldNames,errCode] = db_struct2database(struc
 %                                 Use structType = 1 for the non-legacy simple stuff.
 %                                 Note: There is a matching parameter for the database creation program: fr_read_generic_data.
 %                                       Use the same value for structType!
+%       forceFullDB             - 0 - creates sparse (non-complete) database, 
+%                                 1 [default] - creates standard Biomet database (all points in a year) 
 %
 % Outputs:
 %       structIn                - filtered and sorted input structIn
@@ -41,10 +43,12 @@ function [structIn,dbFileNames, dbFieldNames,errCode] = db_struct2database(struc
 %
 %
 % (c) Zoran Nesic               File created:       Sep 28, 2023
-%                               Last modification:  Jan 12, 2024
+%                               Last modification:  Jan 17, 2024
 
 % Revisions:
 % 
+% Jan 17, 2024 (Zoran)
+%  - added forceFullDB flag. The program now defaults to a full data base (for 30min data that means 17520 points)
 % Jan 12, 2024 (Zoran)
 %  - added an option to deal with structIn that are not in the old format: "structIn(:).Field1.Field1_1"
 %    but in a much simpler, one level, "structIn.Field1(:)", "structIn.Field2(:)" format.
@@ -76,7 +80,8 @@ function [structIn,dbFileNames, dbFieldNames,errCode] = db_struct2database(struc
     arg_default('excludeSubStructures',[]);     % default exclude none
     arg_default('timeUnit','30min');            % default is 30 minutes
     arg_default('missingPointValue',0);         % default is 0 (legacy Biomet value). Newer setups should use NaN
-    arg_default('structType',0)
+    arg_default('structType',0);
+    arg_default('forceFullDB',1);
 
     if verbose_flag == 1; fprintf('\n------ db_struct2database processing ---------\n');end
 
@@ -204,12 +209,28 @@ function [structIn,dbFileNames, dbFieldNames,errCode] = db_struct2database(struc
         end
         % proceed with the database updates
 
-        % Load up the current timeVector if it exists
+        
         tvFileName= fullfile(currentPath,'TimeVector');
+        % Load up the current timeVector if it exists
         if exist(tvFileName,"file")
-            currentTv = read_bor(tvFileName,8);
+            currentTvfile = read_bor(tvFileName,8);
         else
-            currentTv = [];
+            currentTvfile = [];
+        end   
+
+        % First check if working with a full data base (17,520 samples for 365 day in case of 30-min sampling)
+        if forceFullDB == 1
+            currentTv = fr_round_time(datetime(currentYear,1,1,0,30,0):fr_timestep(timeUnit):datetime(currentYear+1,1,1,0,0,0))';
+            % to prevent mistakently overwriting a sparse database, check if TimeVector already exists and it's of
+            % different size that currentTv
+            if ~(isempty(currentTvfile) | ...
+                    (~isempty(currentTvfile) && (length(currentTvfile)== length(currentTv)))) 
+                    % |...
+                    % ((length(currentTvfile)== length(currentTv)) && all(currentTv==currentTvfile)))
+                error('The output folder (%s) already contains TimeVector and it is not of the same size.\nYou might be attempting to overwrite a sparse database!\n',currentPath);
+            end
+        else
+            currentTv =  currentTvfile;
         end
      
         %--------------------------------------------------------------------------------
@@ -267,7 +288,7 @@ function [structIn,dbFileNames, dbFieldNames,errCode] = db_struct2database(struc
         else
             if verbose_flag,fprintf('     %i database entries for %d generated in %4.1f seconds.\n',length(indCurrentYear),currentYear,tm);end
         end
-        
+        tic
     end % currentYear
 
 
@@ -548,4 +569,25 @@ for i = 1:length(statsFieldNames)
     end % fName ~= 'Configuration'
 end % for i =
 
-
+function timeStep = fr_timestep(unitsIn)
+    if strcmpi(unitsIn(end-2:end),'MIN')
+        if length(unitsIn)==3
+            numOfMin = 1;
+        else
+            numOfMin = str2double(unitsIn(1:end-3));
+        end
+    else
+        numOfMin = [];
+    end
+    
+    if strcmpi(unitsIn,'SEC')
+        timeStep = 1/24/60/60; %#ok<*FVAL>
+    elseif ~isempty(numOfMin)
+        timeStep = 1/24/60*numOfMin;
+    elseif strcmpi(unitsIn,'HOUR')
+        timeStep = 1/24;    
+    elseif strcmpi(unitsIn,'DAY')
+        timeStep = 1;   
+    else
+        error 'Wrong units!'
+    end    
