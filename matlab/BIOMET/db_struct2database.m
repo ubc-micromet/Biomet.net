@@ -227,7 +227,7 @@ function [structIn,dbFileNames, dbFieldNames,errCode] = db_struct2database(struc
                     (~isempty(currentTvfile) && (length(currentTvfile)== length(currentTv)))) 
                     % |...
                     % ((length(currentTvfile)== length(currentTv)) && all(currentTv==currentTvfile)))
-                error('The output folder (%s) already contains TimeVector and it is not of the same size.\nYou might be attempting to overwrite a sparse database!\n',currentPath);
+                error('\n*******\n  Folder: %s \n  already contains TimeVector and it is not of the same size.\n  You might be attempting to overwrite a sparse database!\n',currentPath);
             end
         else
             currentTv =  currentTvfile;
@@ -262,7 +262,7 @@ function [structIn,dbFileNames, dbFieldNames,errCode] = db_struct2database(struc
                 end
             end
             % Erase selected names
-            if cntFields > 0
+            if cntDelFields > 0
                 dbFileNamesTmp(delFields) = [];
             end            
         else

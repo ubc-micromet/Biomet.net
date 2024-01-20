@@ -10,13 +10,16 @@ function db_update_BB_site(yearIn,sites,skipWebUpdates)
 % files
 
 % file created:  June 24, 2019        
-% last modified: Dec 19, 2023 (Zoran)
+% last modified: Jan  18, 2024 (Zoran)
 %
 
 % function based on db_update_HH_sites
 
 % Revisions:
 %
+% Jan 18, 2024 (Zoran)
+%  - Updated for the new syntax of db_struct2database and fr_read_generic_data_file
+%    structType=1, forceFullDB = 0
 % Dec 19, 2023 (Zoran)
 %  - added synchronization of BBS Manual chamber data.
 % Oct 5, 2023 (Zoran)
@@ -169,8 +172,8 @@ for k=1:length(yearIn)
                 cmdTMP = ['robocopy ' csvSourceFolder ' ' csvOutputFolder ' /S /R:3 /W:10 /REG /NDL /NFL /NJH /log+:P:\Sites\Log_files\' siteID '_chambers_sync.log' ];
                 dos(cmdTMP);
                 % Run Water Level data processing
-                [~,~,~] = fr_read_generic_data_file(fullfile(csvOutputFolder,'WL_for_each_collar.xlsx'),'caller',[],1,[],[2 Inf]);
-                db_struct2database(Stats,fullfile(outputPath,'WaterLevel'),[],[],[],NaN);
+                [~,~,~] = fr_read_generic_data_file(fullfile(csvOutputFolder,'WL_for_each_collar.xlsx'),'caller',[],1,[],[2 Inf],1);
+                db_struct2database(Stats,fullfile(outputPath,'WaterLevel'),[],[],[],NaN,1,0);
                                 
                 % Backup all data
                 csvSourceFolder = fullfile('\\137.82.55.154\data-dump',siteID,'Chamberdata\Fluxesdata\Fluxesdata_originalcopy');

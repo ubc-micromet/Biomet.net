@@ -28,18 +28,22 @@ function [numOfFilesProcessed,numOfDataPointsProcessed] = fr_SoilFluxPro_databas
 %       missingPointValue   - default 0 (Biomet legacy), all new non-Biomet sites should be NaN
 %
 % Zoran Nesic           File Created:      Sep  6, 2023
-%                       Last modification: Oct  4, 2023  
+%                       Last modification: Jan 18, 2024  
 
 %
 % Revisions:
 %
+% Jan 18, 2024 (Zoran)
+%  - updated calls to db_struct2database to account for the new input parameters:
+%      structType = 0,forceFullDB = 0 (this maintained the previous way of functioning)
+%  - changed default timeUnit from 5 to 1 min (5 min was too low res, some measurements were missed)
 % Oct 4, 2023 (Zoran)
 %   - used errCode to limit when progress list gets updated
 % Sep 29, 2023 (Zoran)
 %   - replaced db_new_eddy with db_struct2database (using sparse instead of complete data base files)
 %
 
-arg_default('timeUnit',5);              % default is 5 minutes
+arg_default('timeUnit','1min');         % default is 1 minutes
 arg_default('structPrefix',[]);         % default is that there is no prefix to database file names
 arg_default('missingPointValue',0);     % default is 0, legacy issue. Use NaN for all non-Biomet-UBC databases 
 
@@ -113,14 +117,14 @@ for i=1:length(h)
                         %[k] = db_new_eddy(ClimateStats(one_year_ind(cntSamples)),[],databasePathNew,0,[],timeUnit,missingPointValue); %#ok<*NASGU>
                         [~,~, ~,errCode] = db_struct2database(ClimateStats(one_year_ind),...
                                            databasePathNew,[],[],...
-                                           timeUnit,missingPointValue);
+                                           timeUnit,missingPointValue,0,0);
                     end
                 end
             else
                 %[k] = db_new_eddy(ClimateStats,[],databasePath,0,[],timeUnit,missingPointValue);
                 [~,~, ~,errCode] = db_struct2database(ClimateStats,...
                                    databasePath,[],[],...
-                                   timeUnit,missingPointValue);
+                                   timeUnit,missingPointValue,0,0);
             end
             % if there is no errors update records
             numOfFilesProcessed = numOfFilesProcessed + 1;

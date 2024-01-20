@@ -6,16 +6,9 @@ function [x, tv] = get_stats_field_fast(Stats,fieldIn)
 %   Note field names are case sensitive.
 %
 %   Example:  [x, tv] = get_stats_field_fast(Stats,'MainEddy.Three_Rotations.AvgDtr.Fluxes.Hs');
-%
-%
-% Zoran Nesic               File created:              2023
-%                           Last modification: Jan 19, 2024
 
 
 % Revisions:
-%
-% Jan 18, 2024 (Zoran)
-%   - bug fixes
 %  Nov 16, 2023 (Zoran)
 %   - wrote a new function based on get_stats_field. Working on making it
 %     fully compatible with the original and faster.
@@ -40,35 +33,35 @@ for cntStats = 1:length(Stats)
         newStats = Stats(cntStats);
         for cntParts = 1:length(fieldParts)
             if ~isempty(newStats)
-                currentPart = prt(cntParts).currentPart; 
-                matDim      = prt(cntParts).matDim;
-                mainField   = prt(cntParts).mainField;
-               % dig through Stats one level at the time
-               % until the newStats = the final number
-               % newStats = Cov(1,3)
-               if ~isempty(matDim)
-                   try                    
-                       newStats = newStats.(mainField);
-                   catch
-                       fprintf('Field "%s" does not exist in the structure. (Input field: "%s")\n',mainField,fieldIn);
-                       return
-                   end               
-                   if length(matDim) == 1
-                        newStats = newStats(matDim);
-                   elseif length(matDim) == 2
-                        newStats = newStats(matDim(1),matDim(2));
-                   else
-                       fprintf('get_stats_field_Fast: Matrix can be only N x 1 or N x M\n');
-                       return
-                   end
-               else 
-                   try                    
-                       newStats = newStats.(currentPart);
-                   catch ME
-                       fprintf('Field "%s" does not exist in the structure. (Input field: "%s")\n',currentPart,fieldIn);
-                       return
-                   end               
+            currentPart = prt(cntParts).currentPart; 
+            matDim      = prt(cntParts).matDim;
+            mainField   = prt(cntParts).mainField;
+           % dig through Stats one level at the time
+           % until the newStats = the final number
+           % newStats = Cov(1,3)
+           if ~isempty(matDim)
+               try                    
+                   newStats = newStats.(mainField);
+               catch
+                   fprintf('Field "%s" does not exist in the structure. (Input field: "%s")\n',mainField,fieldIn);
+                   return
+               end               
+               if length(matDim) == 1
+                    newStats = newStats(matDim);
+               elseif length(matDim) == 2
+                    newStats = newStats(matDim(1),matDim(2));
+               else
+                   fprintf('get_stats_field_Fast: Matrix can be only N x 1 or N x M\n');
+                   return
                end
+           else 
+               try                    
+                   newStats = newStats.(currentPart);
+               catch ME
+                   fprintf('Field "%s" does not exist in the structure. (Input field: "%s")\n',currentPart,fieldIn);
+                   return
+               end               
+           end
             end
         end
         if isempty(newStats)
