@@ -33,10 +33,20 @@ if ~exist(pathToHF,'dir')
     mkdir(pathToHF);
 end
 
-% create filePath that points to the extraced *.data file
-pathToGHGfile = fullfile(pathToGHGfile);                    % make sure the file separator is set properly
+% folderName = [datestr(dateIn,'yyyy-mm-ddTHHMMSS') '_' instrumentSN];
+% folderPath = pathToHF;   %fullfile(pathToHF,folderName);
+% fileName = sprintf('%s.data',folderName);
+% filePath = fullfile(folderPath,fileName);
+% to make it compatible with Unix 
+pathToGHGfile = fullfile(pathToGHGfile);      % make sure the file separator is set properly
 [folderPath,fileName,fileExt] = fileparts(pathToGHGfile);
-filePath = fullfile(pathToHF,[fileName '.data']);
+filePath = fullfile(folderPath,[fileName '.data'])
+
+indStart = strfind(pathToGHGfile,'\');
+indEnd = strfind(pathToGHGfile,'.');
+folderName = pathToGHGfile(indStart(end)+1:indEnd(end)-1);
+fileName = sprintf('%s.data',folderName);
+filePath = fullfile(pathToHF,fileName);
 
 % Extract GHG data from the compressed files
 % Note 7z.exe has to be visible to Matlab (Biomet.net?)
