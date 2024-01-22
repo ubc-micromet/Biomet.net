@@ -38,11 +38,13 @@ function [EngUnits,Header,tv,outStruct] = fr_read_generic_data_file(fileName,ass
 %                          
 %
 % (c) Zoran Nesic                   File created:       Dec 20, 2023
-%                                   Last modification:  Jan 19, 2024
+%                                   Last modification:  Jan 22, 2024
 %
 
 % Revisions (last one first):
 %
+% Jan 22, 2024 (Zoran)
+%   - arg_default for timeInputFormat was missing {}. Fixed.
 % Jan 19, 2024 (Zoran)
 %   - added parameter inputFileType. It is used when calling readtable to set the "FileType" property. 
 %     The function used to assume the delimeter="," and use that. This is more generic and it should work
@@ -56,7 +58,7 @@ function [EngUnits,Header,tv,outStruct] = fr_read_generic_data_file(fileName,ass
 %  Dec 21, 2023 (Zoran)
 %   - added more input parameters and comments.
 
-arg_default('timeInputFormat','uuuuMMddHHmm')   % Matches time format for ORG Manitoba files.
+arg_default('timeInputFormat',{'uuuuMMddHHmm'})   % Matches time format for ORG Manitoba files.
 arg_default('dateColumnNum',1)                  % table column with dates
 arg_default('colToKeep', [1 Inf])                   % keep all table columns in EngUnits (not a good idea if there are string columns)
 arg_default('inputFileType','delimitedtext');
