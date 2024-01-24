@@ -35,30 +35,40 @@ function [EngUnits,Header,tv,outStruct] = fr_read_generic_data_file(fileName,ass
 %                         Use structType = 1 for the non-legacy simple stuff.
 %                         Note: There is a matching parameter for the database creation program: db_struct2database.
 %                               Use the same value for structType!
+%   inputFileType       - default 'delimitedtext', see readtable for more options
 %                          
 %
 % (c) Zoran Nesic                   File created:       Dec 20, 2023
-%                                   Last modification:  Jan 19, 2024
+%                                   Last modification:  Jan 23, 2024
 %
 
 % Revisions (last one first):
 %
+% Jan 23, 2024 (Zoran)
+%   - added options to modify field names using Micromet strategy (replaceString) to keep this output compatible with the old
+%     EddyPro conversion programs.
+% Jan 22, 2024 (Zoran)
+%   - arg_default for timeInputFormat was missing {}. Fixed.
 % Jan 19, 2024 (Zoran)
 %   - added parameter inputFileType. It is used when calling readtable to set the "FileType" property. 
 %     The function used to assume the delimeter="," and use that. This is more generic and it should work
 %     with *.data files from Licor (fro the .ghg files).
+%   - gave dateColumnNum option to be a vector of 2. First number refers to the DATE column 
+%     and the second to the TIME column for the tables that read DATE and TIME as two separate columns  
+%     If dateColumnNum is a vector of two, then the timeInputFormat has to be also a cell vector of two!
 % Jan 12, 2024 (Zoran)
 %   - added structType input option (see the header for more info).
 %       - speed improvement for an Ameriflux file with 52,600 lines was 4.5s vs 170s
 %  Dec 21, 2023 (Zoran)
 %   - added more input parameters and comments.
 
-arg_default('timeInputFormat','uuuuMMddHHmm')   % Matches time format for ORG Manitoba files.
-arg_default('dateColumnNum',2)                  % table column with dates
+arg_default('timeInputFormat',{'uuuuMMddHHmm'})   % Matches time format for ORG Manitoba files.
+arg_default('dateColumnNum',1)                  % table column with dates
 arg_default('colToKeep', [1 Inf])                   % keep all table columns in EngUnits (not a good idea if there are string columns)
 arg_default('inputFileType','delimitedtext');
 arg_default('VariableNamesLine',1)
 arg_default('structType',0)
+arg_default('modifyVarNames',false);
 
 Header = [];  % just a place holder to keep the same output parameters 
               % as for all the other fr_read* functions.
@@ -68,21 +78,43 @@ Header = [];  % just a place holder to keep the same output parameters
         arg_default('varName','Stats');
 
         % Read the file using readtable function
-        opts = detectImportOptions(fileName,'FileType',inputFileType);
+        if modifyVarNames
+            opts = detectImportOptions(fileName,'FileType',inputFileType,'');
+        else
+            opts = detectImportOptions(fileName,'FileType',inputFileType,'VariableNamingRule','preserve');
+            opts.VariableNames = renameFields(opts.VariableNames);
+            % Now re-enable renaming of the variables
+            %opts.VariableNamingRule = 'modify';
+        end
         if length(dateColumnNum)==2
+            timeVariable = opts.VariableNames(dateColumnNum(2));
+            opts=setvartype(opts,timeVariable,'datetime');
+            opts.VariableOptions(dateColumnNum(2)).InputFormat = char(timeInputFormat{2});
+        end
         if isfield(opts,'VariableNamesLine')
             opts.VariableNamesLine = VariableNamesLine;
         end
         % if isfield(opts,'Delimiter')
         %     opts.Delimiter = delimiter;
         % end
+
         f_tmp = readtable(fileName,opts);
+        f_tmp = renamevars(f_tmp,f_tmp.Properties.VariableNames,renameFields(f_tmp.Properties.VariableNames));
         tv_tmp = table2array(f_tmp(:,dateColumnNum));      % Load end-time in the format yyyymmddHHMM
         if ~isdatetime(tv_tmp)
-            tv_dt=datetime(num2str(tv_tmp),'inputformat',timeInputFormat);
+            tv_dt=datetime(num2str(tv_tmp),'inputformat',char(timeInputFormat{1}));
         else
-            tv_dt = tv_tmp;
+            tv_dt = tv_tmp(:,1);
+            if size(tv_tmp,2)==2
+                tv_dt = tv_dt+timeofday(tv_tmp(:,2));
+            end
         end
+        
+        % All rows where the time vector is NaN should be removed. Those are usually
+        % part of the file header that got misinterperted as data
+        f_tmp = f_tmp(~isnat(tv_dt),:);
+        tv_dt = tv_dt(~isnat(tv_dt));
+
         tv = datenum(tv_dt); %#ok<*DATNM>
         if isinf(colToKeep(2))
             f1 = f_tmp(:,colToKeep(1):end);
@@ -147,4 +179,45 @@ Header = [];  % just a place holder to keep the same output parameters
         tv = [];
         error 'Exiting function...'
     end       
+end
+
+function renFields = renameFields(fieldsIn)
+        for cntFields = 1:length(fieldsIn)
+            newString  = fieldsIn{cntFields};
+            newString  = replace_string(newString,'-','_');
+            newString  = replace_string(newString,'u*','us');
+            newString  = strtrim(replace_string(newString,'(z_d)/L','zdL'));
+            newString  = replace_string(newString,'T*','ts');
+            newString  = replace_string(newString,'%','p');
+            newString  = replace_string(newString,'/','_');
+            renFields{cntFields} = newString;
+        end
+end
+
+%-------------------------------------------------------------------
+% function replace_string
+% replaces string findX with the string replaceX and padds
+% the replaceX string with spaces in the front to match the
+% length of findX.
+% Note: this will not work if the replacement string is shorter than
+%       the findX.
+function strOut = replace_string(strIn,findX,replaceX)
+    % find all occurances of findX string
+    ind=strfind(strIn,findX);
+    strOut = strIn;
+    N = length(findX);
+    M = length(replaceX);
+    if ~isempty(ind)
+        %create a matrix of indexes ind21 that point to where the replacement values
+        % should go
+        x=0:N-1;
+        ind1=x(ones(length(ind),1),:);
+        ind2=ind(ones(N,1),:)';
+        ind21=ind1+ind2;
+
+        % create a replacement string of the same length as the strIN 
+        % (Manual procedure - count the characters!)
+        strReplace = [char(ones(1,N-M)*' ') replaceX];
+        strOut(ind21)=strReplace(ones(length(ind),1),:);
+    end    
 end

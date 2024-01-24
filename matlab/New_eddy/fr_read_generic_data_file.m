@@ -35,14 +35,18 @@ function [EngUnits,Header,tv,outStruct] = fr_read_generic_data_file(fileName,ass
 %                         Use structType = 1 for the non-legacy simple stuff.
 %                         Note: There is a matching parameter for the database creation program: db_struct2database.
 %                               Use the same value for structType!
+%   inputFileType       - default 'delimitedtext', see readtable for more options
 %                          
 %
 % (c) Zoran Nesic                   File created:       Dec 20, 2023
-%                                   Last modification:  Jan 22, 2024
+%                                   Last modification:  Jan 23, 2024
 %
 
 % Revisions (last one first):
 %
+% Jan 23, 2024 (Zoran)
+%   - added options to modify field names using Micromet strategy (replaceString) to keep this output compatible with the old
+%     EddyPro conversion programs.
 % Jan 22, 2024 (Zoran)
 %   - arg_default for timeInputFormat was missing {}. Fixed.
 % Jan 19, 2024 (Zoran)
@@ -64,6 +68,7 @@ arg_default('colToKeep', [1 Inf])                   % keep all table columns in 
 arg_default('inputFileType','delimitedtext');
 arg_default('VariableNamesLine',1)
 arg_default('structType',0)
+arg_default('modifyVarNames',false);             % let readtable modify variable names
 
 Header = [];  % just a place holder to keep the same output parameters 
               % as for all the other fr_read* functions.
@@ -73,7 +78,14 @@ Header = [];  % just a place holder to keep the same output parameters
         arg_default('varName','Stats');
 
         % Read the file using readtable function
-        opts = detectImportOptions(fileName,'FileType',inputFileType);
+        if modifyVarNames
+            opts = detectImportOptions(fileName,'FileType',inputFileType);
+        else
+            opts = detectImportOptions(fileName,'FileType',inputFileType,'VariableNamingRule','preserve');
+            %opts.VariableNames = renameFields(opts.VariableNames);
+            % Now re-enable renaming of the variables
+            %opts.VariableNamingRule = 'modify';
+        end
         if length(dateColumnNum)==2
             timeVariable = opts.VariableNames(dateColumnNum(2));
             opts=setvartype(opts,timeVariable,'datetime');
@@ -82,10 +94,13 @@ Header = [];  % just a place holder to keep the same output parameters
         if isfield(opts,'VariableNamesLine')
             opts.VariableNamesLine = VariableNamesLine;
         end
-        % if isfield(opts,'Delimiter')
-        %     opts.Delimiter = delimiter;
-        % end
+
+        % Read the file with the preset options
         f_tmp = readtable(fileName,opts);
+        % if we want to modify the file name using our own rules (see renameFields local function for the list of rules)
+        if ~modifyVarNames
+            f_tmp = renamevars(f_tmp,f_tmp.Properties.VariableNames,renameFields(f_tmp.Properties.VariableNames));
+        end
         tv_tmp = table2array(f_tmp(:,dateColumnNum));      % Load end-time in the format yyyymmddHHMM
         if ~isdatetime(tv_tmp)
             tv_dt=datetime(num2str(tv_tmp),'inputformat',char(timeInputFormat{1}));
@@ -95,6 +110,12 @@ Header = [];  % just a place holder to keep the same output parameters
                 tv_dt = tv_dt+timeofday(tv_tmp(:,2));
             end
         end
+        
+        % All rows where the time vector is NaN should be removed. Those are usually
+        % part of the file header that got misinterperted as data
+        f_tmp = f_tmp(~isnat(tv_dt),:);
+        tv_dt = tv_dt(~isnat(tv_dt));
+
         tv = datenum(tv_dt); %#ok<*DATNM>
         if isinf(colToKeep(2))
             f1 = f_tmp(:,colToKeep(1):end);
@@ -159,4 +180,45 @@ Header = [];  % just a place holder to keep the same output parameters
         tv = [];
         error 'Exiting function...'
     end       
+end
+
+function renFields = renameFields(fieldsIn)
+        for cntFields = 1:length(fieldsIn)
+            newString  = fieldsIn{cntFields};
+            newString  = replace_string(newString,'-','_');
+            newString  = replace_string(newString,'u*','us');
+            newString  = strtrim(replace_string(newString,'(z_d)/L','zdL'));
+            newString  = replace_string(newString,'T*','ts');
+            newString  = replace_string(newString,'%','p');
+            newString  = replace_string(newString,'/','_');
+            renFields{cntFields} = newString;
+        end
+end
+
+%-------------------------------------------------------------------
+% function replace_string
+% replaces string findX with the string replaceX and padds
+% the replaceX string with spaces in the front to match the
+% length of findX.
+% Note: this will not work if the replacement string is shorter than
+%       the findX.
+function strOut = replace_string(strIn,findX,replaceX)
+    % find all occurances of findX string
+    ind=strfind(strIn,findX);
+    strOut = strIn;
+    N = length(findX);
+    M = length(replaceX);
+    if ~isempty(ind)
+        %create a matrix of indexes ind21 that point to where the replacement values
+        % should go
+        x=0:N-1;
+        ind1=x(ones(length(ind),1),:);
+        ind2=ind(ones(N,1),:)';
+        ind21=ind1+ind2;
+
+        % create a replacement string of the same length as the strIN 
+        % (Manual procedure - count the characters!)
+        strReplace = [char(ones(1,N-M)*' ') replaceX];
+        strOut(ind21)=strReplace(ones(length(ind),1),:);
+    end    
 end
