@@ -1,4 +1,8 @@
 function fr_automated_cleaning(Years,Sites,stages,db_out,db_ini)
+
+% Example call: run stages 1 & 2 for two sites (BB & BB2) for two years (2022 & 2023) 
+% fr_automated_cleaning([2022 2023],{'BB', 'BB2'},[1 2])
+
 % fr_automated_cleaning(Years,Sites,stages,db_out)
 %
 % Run first to third stage cleaning and FCRN data export

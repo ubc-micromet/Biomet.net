@@ -5,7 +5,7 @@ import argparse
 import zipfile
 import os
 
-def from_GHG(site_code,file,start_year):
+def from_GHG(site_code,file,start_year,output_path):
     GHG_metadata = configparser.ConfigParser()
     with zipfile.ZipFile(file, 'r') as ghgZip:
         # Read the metadata file
@@ -24,16 +24,14 @@ def from_GHG(site_code,file,start_year):
     template.read('ini_files/templates/site_configurations.ini')
     template.add_section(site_code)
     for key, val in template['Site'].items():
-        # try:
         template['Site'][key] = eval(val)
-        # except:
-        #     pass
     items = template.items('Site')
     for item in items:
         template.set(site_code,str(item[0]),str(item[1]))
     template.remove_section('Site')
 
-    with open(f'ini_files/site_configurations/{site_code}.ini','w+') as file:
+    # with open(f'ini_files/site_configurations/{site_code}.ini','w+') as file:
+    with open(f'{output_path}{site_code}.ini','w+') as file:
         template.write(file)
          
 if __name__ == '__main__':

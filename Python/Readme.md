@@ -1,5 +1,14 @@
 # Python Code for UBC Micromet
 
+## Example Call
+
+Read requests from all years for BB:
+
+```
+py .\DatabaseFunctions.py --Task Read --Sites BB
+
+```
+
 ## Contents
 
 1. DatabaseFunctions.py
