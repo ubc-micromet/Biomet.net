@@ -98,6 +98,7 @@ class DatabaseFunctions():
             self.Time_Trace = pd.to_datetime(clean_tv-base,unit=unit).round('T')
         else:
             print('Warning - time vector does not exist - generating anyway, double check the inputs / outputs')
+            print('Could not import: ',self.dpath,'/',self.ini['Database']['timestamp'])
             self.Time_Trace = pd.date_range(start='2022-01-01 00:30',end='2023-01-01',freq='30T')
     
     def padFullYear(self):
