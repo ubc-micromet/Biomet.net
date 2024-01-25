@@ -337,6 +337,25 @@ for i = 1:n
 end
 
 
+% Call a python script that writes .csv files for eddypro Biomet data and flux footprint calculations 
+% Added by June Skeeter 24/01/2024
+% Could have implemented this within matlab, but used as an opporotutinty
+% to sort out calling python scripts from matlab
+curScriptPath = matlab.desktop.editor.getActiveFilename;
+bioMetRoot = split(curScriptPath,'\matlab\');
+% setFolderSeparator(fullfile(db_pth_root,'Calculation_Procedures/TraceAnalysis_ini/',SiteID,'/Derived_Variables/'));
+bioMetPyRoot = setFolderSeparator(fullfile(string(bioMetRoot(1)),'/Python/'));
+pyenvPath = setFolderSeparator(fullfile(bioMetPyRoot,'.venv/Scripts/'));
+pyScript = setFolderSeparator(fullfile(bioMetPyRoot,'DatabaseFunctions.py'));
+if exist(pyenvPath,'dir') & isfile (pyScript) & hour(now)>23
+    CLI_args = "cd ..\Python\.venv\Scripts\ & .\activate.bat & python ..\..\DatabaseFunctions.py --Task GSheetDump & deactivate & cd ..\..\..\matlab\";
+    [status,cmdout] = system(CLI_args);
+    if status == 0
+        disp(fprintf('Read G Drive Files \n %s',cmdout))
+    else
+        disp('GSheetDump Failed')
+    end
+end
 % Notes for a curious reader.
 
 %============================================================

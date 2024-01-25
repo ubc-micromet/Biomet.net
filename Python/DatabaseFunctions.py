@@ -225,8 +225,11 @@ class MakeTraces(DatabaseFunctions):
         try:
             Data = pd.read_csv(fn,header=None,na_values=[-6999,6999])
         except:
-            Data = pd.read_csv(fn,header=None,na_values=[-6999,6999],skiprows=1)
-            First = pd.read_csv(fn,header=None,na_values=[-6999,6999],nrows=1)
+            try:
+                Data = pd.read_csv(fn,header=None,na_values=[-6999,6999],skiprows=1)
+                First = pd.read_csv(fn,header=None,na_values=[-6999,6999],nrows=1)
+            except:
+                print(f'\n\nWarinng: Could not read {fn} Check for errors.  It it is a cr10x file, make sure all columns are present.  Outputs from two programs in one file will cuase problems!\n\n')
             pass
         for subtable_id,headers,units in zip(self.ini[self.batch]['subtable_id'].split('|'),self.ini[self.batch]['Header_list'].split('|'),self.ini[self.batch]['Header_units'].split('|')):
             headers = headers.split(',')
