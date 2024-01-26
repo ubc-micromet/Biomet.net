@@ -1,4 +1,4 @@
-function [EngUnits,Header,tv,outStruct] = fr_read_generic_data_file(fileName,assign_in,varName, dateColumnNum, timeInputFormat,colToKeep,structType,inputFileType)
+function [EngUnits,Header,tv,outStruct] = fr_read_generic_data_file(fileName,assign_in,varName, dateColumnNum, timeInputFormat,colToKeep,structType,inputFileType,modifyVarNames)
 %  fr_read_generic_data_file - reads csv and xlsx data files for Biomet/Micromet projects 
 %
 % Note: This function should replace a set of similar functions written for
@@ -36,14 +36,18 @@ function [EngUnits,Header,tv,outStruct] = fr_read_generic_data_file(fileName,ass
 %                         Note: There is a matching parameter for the database creation program: db_struct2database.
 %                               Use the same value for structType!
 %   inputFileType       - default 'delimitedtext', see readtable for more options
+%   modifyVarNames      - 0 [default] - don't table column names or use Biomet strategy for renaming them
+%                         1 - let Matlab modify col names to proper Matlab variable names
 %                          
 %
 % (c) Zoran Nesic                   File created:       Dec 20, 2023
-%                                   Last modification:  Jan 23, 2024
+%                                   Last modification:  Jan 26, 2024
 %
 
 % Revisions (last one first):
 %
+% Jan 26, 2024 (Zoran)
+%   - added modifyVarNames as the function input
 % Jan 23, 2024 (Zoran)
 %   - added options to modify field names using Micromet strategy (replaceString) to keep this output compatible with the old
 %     EddyPro conversion programs.
@@ -185,6 +189,7 @@ end
 function renFields = renameFields(fieldsIn)
         for cntFields = 1:length(fieldsIn)
             newString  = fieldsIn{cntFields};
+            newString  = replace_string(newString,' ','_');
             newString  = replace_string(newString,'-','_');
             newString  = replace_string(newString,'u*','us');
             newString  = strtrim(replace_string(newString,'(z_d)/L','zdL'));

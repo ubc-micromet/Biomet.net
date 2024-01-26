@@ -12,11 +12,13 @@ function [EngUnits,Header,tv,dataOut] = fr_read_GHG_file(pathToGHGfile)
 %
 %
 % (c) Zoran Nesic                   File created:       Jan 20, 2022
-%                                   Last modification:  Jan 20, 2024
+%                                   Last modification:  Jan 26, 2024
 %
 
 % Revisions (last one first):
 %
+% Jan 26, 2024 (Zoran)
+%   - added modifyVarNames = 1 in the call to fr_read_generic_data_file
 % Jan 20, 2024 (Zoran)
 %   - changed file loading from a custom program to using readtable
 % Feb 14, 2023 (Zoran)
@@ -55,7 +57,7 @@ else
     % This is the output from SmartFlux3
     dateColNum = [8 9];
 end
-[EngUnits,Header,tv,dataOut] = fr_read_generic_data_file(filePath,'caller',[], dateColNum,timeInputFormat,[2 Inf],1,'delimitedtext');
+[EngUnits,Header,tv,dataOut] = fr_read_generic_data_file(filePath,'caller',[], dateColNum,timeInputFormat,[2 Inf],1,'delimitedtext',1);
 
 if exist(pathToHF,'dir')
     rmdir(pathToHF,'s');
