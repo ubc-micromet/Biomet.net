@@ -100,6 +100,7 @@ Header = [];  % just a place holder to keep the same output parameters
         end
 
         % Read the file with the preset options
+        warning('off','MATLAB:table:ModifiedAndSavedVarnames');
         f_tmp = readtable(fileName,opts);
         % if we want to modify the file name using our own rules (see renameFields local function for the list of rules)
         if ~modifyVarNames
