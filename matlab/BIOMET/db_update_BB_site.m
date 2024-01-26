@@ -172,7 +172,7 @@ for k=1:length(yearIn)
                 cmdTMP = ['robocopy ' csvSourceFolder ' ' csvOutputFolder ' /S /R:3 /W:10 /REG /NDL /NFL /NJH /log+:P:\Sites\Log_files\' siteID '_chambers_sync.log' ];
                 dos(cmdTMP);
                 % Run Water Level data processing
-                [~,~,~] = fr_read_generic_data_file(fullfile(csvOutputFolder,'WL_for_each_collar.xlsx'),'caller',[],1,[],[2 Inf],1);
+                [~,~,~] = fr_read_generic_data_file(fullfile(csvOutputFolder,'WL_for_each_collar.xlsx'),'caller',[],1,[],[2 Inf],1,'spreadsheet');
                 db_struct2database(Stats,fullfile(outputPath,'WaterLevel'),[],[],[],NaN,1,0);
                                 
                 % Backup all data

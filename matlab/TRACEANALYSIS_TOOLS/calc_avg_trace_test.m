@@ -7,7 +7,7 @@ fprintf('\n\n=========================\n\n');
 
 cntErr = 0;
 % Case 1
-for cnt = 1:length(x)
+for cnt = 1:length(x_target)
     x = x_target;
     x(cnt) = NaN;
     x(5) = NaN;
