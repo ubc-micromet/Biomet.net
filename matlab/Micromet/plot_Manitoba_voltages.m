@@ -4,18 +4,18 @@
 % Zoran Nesic       File created:       Feb 8, 2024
 
 siteID = 'HOGG';
-dateRange = [now-10 now];
+dateRange = [now-8 now];
 yearIn = year(dateRange(2));
-pthSite = fullfile('v:\database\' ,num2str(yearIn),siteID);
+pthSite = biomet_path(year(now),siteID,'');
 tv=fr_round_time(read_bor(fullfile(pthSite,'flux','Clean_tv'),8));
 V_HOGG1 = read_bor(fullfile(pthSite,'monitorSites',sprintf('%s.DSIVin.avg',siteID)));
 
 siteID = 'YOUNG';
-pthSite = fullfile('v:\database\' ,num2str(yearIn),siteID);
+pthSite = biomet_path(year(now),siteID,'');
 V_YOUNG1 = read_bor(fullfile(pthSite,'monitorSites',sprintf('%s.DSIVin.avg',siteID)));
 
 siteID = 'OHM';
-pthSite = fullfile('v:\database\' ,num2str(yearIn),siteID);
+pthSite = biomet_path(year(now),siteID,'');
 V_OHM1 = read_bor(fullfile(pthSite,'monitorSites',sprintf('%s.DSIVin.avg',siteID)));
 
 ind = find(tv>=dateRange(1) & tv<= dateRange(end));
