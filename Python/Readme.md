@@ -2,6 +2,22 @@
 
 ## Example Call
 
+**Note** depending on how your computer is setup, you can call python in different ways (py, py3, python).  On vinimet for example, you use python instead of py
+
+Read data from all goolge sheets listed in '\ini_files\WriteTraces_GSheets.ini' and write the th database
+
+```
+py .\DatabaseFunctions.py --Task GSheetDump
+
+```
+
+Will search through specified folders
+
+```
+py .\DatabaseFunctions.py --Task GSheetDump
+
+```
+
 Read requests from all years for BB:
 
 ```
