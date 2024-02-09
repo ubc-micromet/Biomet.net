@@ -26,6 +26,8 @@ function Biomet_Main_Scheduler
     %----------------------------------
     % Climate station data processing
     if minuteX == 2 || minuteX == 32
+        fprintf(fid,'======= Climate station data processing ========\n');
+        fprintf(fid,'%s\n',datetime)
         % at 2 minutes and 32 minutes every hour
         % Process CR21x files
         Process_Climate_Station(fid);
@@ -46,10 +48,14 @@ function Biomet_Main_Scheduler
                 ClimateStation_movefile;
             end
         end
+        fprintf(fid,'%s\n',datetime)
+        fprintf(fid,'======= End of Climate station data processing ========\n');
     elseif minuteX == 12 || minuteX == 42
         % move files from d:\Sites\TEMP folder to database Raw folders
         fprintf(fid,'======= Moving Sites\TEMP data to RAW (%s)========\n',datestr(now));
+        fprintf(fid,'%s\n',datetime)
         [status,result] = system('"c:\ubc_flux\Move_CSI_net_files.exe c:\ubc_flux\Move_CSI_net_files.ini"');
+        fprintf(fid,'%s\n',datetime)
         fprintf(fid,'======= End of Moving Sites\TEMP data (%s)========\n',datestr(now));
     end
     
@@ -57,6 +63,7 @@ function Biomet_Main_Scheduler
     % File unzipping for YF site
     if ismember(hourX,14:17) && minuteX == 2
         fprintf(fid,'======= Moving and Unzipping YF DailyZip files (%s) ========\n', datestr(now));
+        fprintf(fid,'%s\n',datetime)
         [status,result] = system('"C:\Ubc_flux\Move_DailyZipFiles_from_Public_to_Sites.bat"');
         fprintf(fid,'------- Unzipping ... (%s) -------\n', datestr(now));
         % *** Note: UBC_ZIP.exe has a one minute wait period before it returns control to 
@@ -66,6 +73,7 @@ function Biomet_Main_Scheduler
         %           by writing a Matlab native version of UBC_ZIP.
         % ***           
         [status,result] = system('C:\Ubc_flux\UBC_ZIP.exe C:\Ubc_flux\ubc_unzip.ini &');
+        fprintf(fid,'%s\n',datetime)
         fprintf(fid,'======= End of Moving and Unzipping (%s)    ========\n', datestr(now));
     end
     
@@ -74,6 +82,7 @@ function Biomet_Main_Scheduler
     if hhourX == 1 && ismember(minuteX,[22 52]) ...
             || hhourX == 2 && ismember(minuteX,[22])
         fprintf(fid,'======= Picarro processing ========\n');
+        fprintf(fid,'%s\n',datetime)
         [status,result] = system('"C:\Ubc_flux\Move_DailyZipFiles_from_Public_to_Sites.bat"');
         % *** Note: UBC_ZIP.exe has a one minute wait period before it returns control to 
         %           Matlab. Use "&" to avoid waiting for it to return
@@ -85,15 +94,19 @@ function Biomet_Main_Scheduler
         [status,result] = system('C:\Ubc_flux\UBC_ZIP.exe C:\Ubc_flux\ubc_unzip.ini');        
         [status,result] = system('"C:\Ubc_flux\PicarroMove.bat"');
         process_Picarro_AGGP_data;
+        fprintf(fid,'%s\n',datetime)
         fprintf(fid,'======= End of Picarro processing (%s) ========\n',datestr(now));
     end
     
     % ---------------------------
     % Morning db_update_all
     % 4:02am GMT
+    % Replaces Task Scheduler task: update_annex001_db_and_clean
     if hhourX == 4 && ismember(minuteX,[2])
         fprintf(fid,'======= Morning db_update_all ========\n');
+        fprintf(fid,'%s\n',datetime)
         db_update_all(1,0);
+        fprintf(fid,'%s\n',datetime)
         fprintf(fid,'======= End of db_update_all processing (%s) ========\n',datestr(now));
     end
     
