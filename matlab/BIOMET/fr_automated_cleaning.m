@@ -341,19 +341,20 @@ end
 % Added by June Skeeter 24/01/2024
 % Could have implemented this within matlab, but used as an opporotutinty
 % to sort out calling python scripts from matlab
-curScriptPath = matlab.desktop.editor.getActiveFilename;
-bioMetRoot = split(curScriptPath,'\matlab\');
-% setFolderSeparator(fullfile(db_pth_root,'Calculation_Procedures/TraceAnalysis_ini/',SiteID,'/Derived_Variables/'));
-bioMetPyRoot = setFolderSeparator(fullfile(string(bioMetRoot(1)),'/Python/'));
+bioMetRoot = split(matlab.desktop.editor.getActiveFilename,'matlab');
+bioMetRoot = string(bioMetRoot(1));
+bioMetMatRoot = setFolderSeparator(fullfile(string(bioMetRoot(1)),'/matlab/'));
+bioMetPyRoot = setFolderSeparator(fullfile(bioMetRoot,'/Python/'));
 pyenvPath = setFolderSeparator(fullfile(bioMetPyRoot,'.venv/Scripts/'));
 pyScript = setFolderSeparator(fullfile(bioMetPyRoot,'DatabaseFunctions.py'));
-if exist(pyenvPath,'dir') & isfile (pyScript) & hour(now)>23
-    CLI_args = "cd ..\Python\.venv\Scripts\ & .\activate.bat & python ..\..\DatabaseFunctions.py --Task GSheetDump & deactivate & cd ..\..\..\matlab\";
+activate = '.\activate.bat';
+if exist(pyenvPath,'dir') & isfile (pyScript) & hour(now)==23
+    CLI_args = sprintf("cd %s & %s & python %s --Task GSheetDump & deactivate & cd %s",pyenvPath,activate,pyScript,bioMetMatRoot);
     [status,cmdout] = system(CLI_args);
     if status == 0
         disp(fprintf('Read G Drive Files \n %s',cmdout))
     else
-        disp('GSheetDump Failed')
+        disp(fprintf('GSheetDump Failed \n %s',cmdout))
     end
 end
 % Notes for a curious reader.
