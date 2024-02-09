@@ -52,11 +52,6 @@ function [data_out, flag] = calc_avg_trace(tv, data_in, data_fill, avg_period)
 %     to ensure similarity of results (E. Humphreys)
 
 
-
-
-
-
-
 data_out = NaN * zeros(length(tv),1);		
 n_out    = zeros(length(tv),1);	
 

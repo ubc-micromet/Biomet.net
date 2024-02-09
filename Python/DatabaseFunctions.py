@@ -289,13 +289,22 @@ class MakeCSV(DatabaseFunctions):
                 if Years is not None:
                     self.years_by_site[self.site_name] = Years
                 print(f'Creating .csv files for {self.site_name}: {self.Request}')
-                self.AllData = pd.DataFrame()
-                for self.Year in self.years_by_site[self.site_name]:
-                    self.dpath = self.sub(self.ini['Paths']['database_read'])+self.ini[self.Request]['stage']+'/'
-                    if os.path.exists(self.dpath):
-                        self.readYear()
-                self.write_csv()
-                    
+                if self.ini[self.Request]['by_year']=='True':
+                    for self.Year in self.years_by_site[self.site_name]:
+                        self.AllData = pd.DataFrame()
+                        self.dpath = self.sub(self.ini['Paths']['database_read'])+self.ini[self.Request]['stage']+'/'
+                        if os.path.exists(self.dpath):
+                            self.readYear()
+                        self.write_csv()
+
+                else:
+                    self.AllData = pd.DataFrame()
+                    for self.Year in self.years_by_site[self.site_name]:
+                        self.dpath = self.sub(self.ini['Paths']['database_read'])+self.ini[self.Request]['stage']+'/'
+                        if os.path.exists(self.dpath):
+                            self.readYear()
+                    self.write_csv()
+                        
     def readYear(self):
         self.readTimeVector()
         self.Data = pd.DataFrame(index=self.Time_Trace,data=self.readTraces())
@@ -305,13 +314,18 @@ class MakeCSV(DatabaseFunctions):
             if len(r)>1:
                 self.Data = self.Data.rename(columns={r[0]:r[1]})
         self.AllData = pd.concat([self.AllData,self.Data])
+        self.AllData = self.AllData.loc[self.AllData.index<=pd.to_datetime('today')]
 
     def readTraces(self):
         D_traces = {}
-        for Trace_Name in self.ini[self.Request]['traces'].split(','):
+        self.unitDict = {}
+        for Trace_Name,unit in zip(self.ini[self.Request]['traces'].split(','),self.ini[self.Request]['units'].split(',')):
             trace = self.readBinary(Trace_Name,self.ini['Database']['trace_dtype'])
             if trace is not None:
                 D_traces[Trace_Name]=trace
+                self.unitDict[Trace_Name]=unit
+            # else:
+            #     print(f'{Trace_Name} is missing')
         return (D_traces)
     
     def write_csv(self):
@@ -321,17 +335,17 @@ class MakeCSV(DatabaseFunctions):
             output_path = self.sub(self.ini[self.Request]['output_paths'])
             if os.path.exists(output_path)==False:
                 os.makedirs(output_path)
-            output_path = output_path+self.Request+'_'+self.site_name+'.csv'
+            output_path = self.sub(output_path+self.Request+'.csv')
             self.addUnits()
             self.AllData.set_index(self.ini[self.Request]['timestamp'],inplace=True)
             self.AllData.to_csv(output_path)
         
     def addUnits(self):
         if self.ini[self.Request]['units_in_header'].lower() == 'true':
-            units = self.ini[self.Request]['units'].split(',')
-            units.append(self.ini[self.Request]['timestamp_units'])
-            unit_dic = {t:u for t,u in zip(self.AllData.columns,units)}
-            self.AllData = pd.concat([pd.DataFrame(index=[-1],data=unit_dic),self.AllData])
+            self.unitDict['TIMESTAMP'] = self.ini[self.Request]['timestamp_units']
+
+            # unit_dic = {t:u for t,u in zip(self.AllData.columns,units)}
+            self.AllData = pd.concat([pd.DataFrame(index=[-1],data=self.unitDict),self.AllData])
             
 
 if __name__ == '__main__':
