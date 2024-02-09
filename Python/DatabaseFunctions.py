@@ -313,6 +313,8 @@ class MakeCSV(DatabaseFunctions):
             r = renames.split('|')
             if len(r)>1:
                 self.Data = self.Data.rename(columns={r[0]:r[1]})
+                if r[0] in self.unitDict:
+                    self.unitDict[r[1]]=self.unitDict.pop(r[0])
         self.AllData = pd.concat([self.AllData,self.Data])
         self.AllData = self.AllData.loc[self.AllData.index<=pd.to_datetime('today')]
 
@@ -324,8 +326,6 @@ class MakeCSV(DatabaseFunctions):
             if trace is not None:
                 D_traces[Trace_Name]=trace
                 self.unitDict[Trace_Name]=unit
-            # else:
-            #     print(f'{Trace_Name} is missing')
         return (D_traces)
     
     def write_csv(self):
