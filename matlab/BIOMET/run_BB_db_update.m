@@ -3,11 +3,13 @@ function run_BB_db_update(yearIn,sites)
 %
 %
 % Zoran Nesic           File created:               2019
-%                       Last modification:  JUl 27, 2023
+%                       Last modification:  Feb  8, 2024
 
 %
 % Revisions:
 %
+% Feb 8, 2024 (Zoran)
+%   - Added plot_Manitoba_voltages
 % Jul 27, 2023 (Zoran, June)
 %   - added OHM and BBS
 % Nov 18, 2022 (Zoran)
@@ -93,6 +95,12 @@ fprintf(' Finished in: %5.1f seconds.\n',toc);
 
 % Upload CSV files to the web server
 system('start /MIN C:\Ubc_flux\BiometFTPsite\BB_Web_Update.bat');
+
+% Plot Manitoba voltages
+try
+    plot_Manitoba_voltages
+catch
+end
 
 
 

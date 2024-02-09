@@ -22,18 +22,13 @@ function [numOfFilesProcessed,numOfDataPointsProcessed] = fr_SmartFlux_database(
 %                     consecutive data points). Default 30 (hhour)
 %
 % Zoran Nesic           File Created:      July 14, 2018
-%                       Last modification: Feb   5, 2024
+%                       Last modification: July, 2024
 
 % Created based on fr_site_met_database
 
 %
 % Revisions:
 %
-% Feb 5, 2024 (Zoran)
-%   - added "if ~isempty(one_year_ind)" to prevent the program from sending
-%     trying to process the last point in the current year twice and
-%     failing. The last point has a year = year_in+1 (Jan 1, 2024 belongs
-%     to 2023 not to 2024).
 %  July 26, 2023 (Zoran)
 %      - replaced "\" with "filesep" to make it compatible with MacOS.
 %  July 22, 2023 (Zoran)
