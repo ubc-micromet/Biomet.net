@@ -4,21 +4,21 @@
 
 **Note** depending on how your computer is setup, you can call python in different ways (py, py3, python).  On vinimet for example, you use python instead of py
 
-Read data from all goolge sheets listed in '\ini_files\WriteTraces_GSheets.ini' and write the th database
+Read data from all google sheets listed in '\ini_files\WriteTraces_GSheets.ini' and write to the database
 
 ```
 py .\DatabaseFunctions.py --Task GSheetDump
 
 ```
 
-Will search through specified folders
+Create biomet.csv files for sites for 2024:
 
 ```
-py .\DatabaseFunctions.py --Task GSheetDump
+py .\DatabaseFunctions.py --Task Read --ini ini_files/ReadTraces_Biomet_Dump.ini --Years 2024
 
 ```
 
-Read requests from all years for BB:
+Submit all Read requests from all years for BB:
 
 ```
 py .\DatabaseFunctions.py --Task Read --Sites BB

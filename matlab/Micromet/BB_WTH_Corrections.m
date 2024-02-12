@@ -306,6 +306,11 @@ for i = 1:length(Sites)
         WTH(:,w,4) = fillmissing(WTH(:,w,3),"linear",'SamplePoints',tv,"MaxGap",14);
         fill = isnan(WTH(:,w,4));
         WTH(fill,w,4)=X_fill(fill,:)*b;
+
+        Mask = logical(zeros(size(tv)));
+        Mask(tv>now) = 1;
+        WTH(Mask)=NaN;
+        
     
         if inspect == 1
             
@@ -446,7 +451,7 @@ function [Bog_Height,tv] = Bog_Height_Correction(WTH,PH,TA,db_pth_root,inspect);
     Bog_Height_Survey = 345.2094;
     BH_raw = BH_raw + Bog_Height_Survey-BH_raw(s);
     
-    
+
     [SW_IN,tv] = read_db([FirstYear:current_year],'BB','Met/Clean','SW_IN_1_1_1');
     [SW_OUT,~] = read_db([FirstYear:current_year],'BB','Met/Clean','SW_OUT_1_1_1');
     
@@ -544,6 +549,10 @@ function [Bog_Height,tv] = Bog_Height_Correction(WTH,PH,TA,db_pth_root,inspect);
     Bog_Height(HH_ix+23)=Daily_Median_Bog_Height;
     Bog_Height=fillmissing(Bog_Height,"linear","MaxGap",48);
     
+    Mask = logical(zeros(size(tv)));
+    Mask(tv>now) = 1;
+    Bog_Height(Mask)=NaN;
+    
     Snow_Groups = Map_from_Group;
     Snow_Groups(~Snow_Day)=NaN;
     Snow_flag = ismember(Map_to_Group,Snow_Groups);
@@ -553,6 +562,7 @@ function [Bog_Height,tv] = Bog_Height_Correction(WTH,PH,TA,db_pth_root,inspect);
     Snow_Depth = Snow_Depth-Bog_Height;
     Snow_Depth(~Snow_flag)=0;
     Snow_Depth(Snow_Depth<0)=0;
+    Snow_Depth(Mask)=NaN;
     
     if inspect == 1   
     
@@ -586,8 +596,7 @@ function [Bog_Height,tv] = Bog_Height_Correction(WTH,PH,TA,db_pth_root,inspect);
         xlabel('Date')
         legend('Snow Depth')
     end
-    
-    
+
     Derived_Variables = setFolderSeparator(fullfile(db_pth_root,'Calculation_Procedures/TraceAnalysis_ini/BB/Derived_Variables/'));
     % BH_save = setFolderSeparator(fullfile(Derived_Variables,'Bog_Height'));
     fileID = fopen(setFolderSeparator(fullfile(Derived_Variables,'Bog_Height')),'w');
