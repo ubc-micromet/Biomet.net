@@ -345,24 +345,25 @@ end
 %   b. write Biomet Data to highfreq
 
 % 1)
-for i = 1:n
-    SiteId = upper(char(Sites(i)));
-    for i = 2014:year(now)
-        if exist(setFolderSeparator(fullfile(db_pth,string(i),SiteId))) == 7
-            FirstYear = i;
-            break
+if hour(now)==0
+    for i = 1:n
+        SiteId = upper(char(Sites(i)));
+        for i = 2014:year(now)
+            if exist(setFolderSeparator(fullfile(db_pth,string(i),SiteId))) == 7
+                FirstYear = i;
+                break
+            end
+        end
+        % A "default" set of met variables for gap filling (plus will calculate
+        % moving averages of the time series on daily, monthly, and seasonal
+        % timescales
+        DerivedVariablesForGapFilling(SiteId,FirstYear);
+        if strcmp(SiteId,'BBS')
+            % Interpolate canopy height from discrete observations
+            DerivedVariablesForGapFilling(SiteId,FirstYear,{'canopy_height_sample_mean'},1,1,0);
         end
     end
-    % A "default" set of met variables for gap filling (plus will calculate
-    % moving averages of the time series on daily, monthly, and seasonal
-    % timescales
-    DerivedVariablesForGapFilling(SiteId,FirstYear);
-    if strcmp(SiteId,'BBS')
-        % Interpolate canopy height from discrete observations
-        DerivedVariablesForGapFilling(SiteId,FirstYear,{'canopy_height_sample_mean'},1,1,0);
-    end
 end
-
 %2)
 bioMetRoot = split(matlab.desktop.editor.getActiveFilename,'matlab');
 bioMetRoot = string(bioMetRoot(1));
@@ -372,7 +373,7 @@ pyenvPath = setFolderSeparator(fullfile(bioMetPyRoot,'.venv/Scripts/'));
 pyScript = setFolderSeparator(fullfile(bioMetPyRoot,'DatabaseFunctions.py'));
 activate = '.\activate.bat';
 % a)
-if exist(pyenvPath,'dir') & isfile (pyScript) & hour(now)==23
+if exist(pyenvPath,'dir') & isfile (pyScript) & hour(now)==1
     CLI_args = sprintf("cd %s & %s & python %s --Task GSheetDump & deactivate & cd %s",pyenvPath,activate,pyScript,bioMetMatRoot);
     [status,cmdout] = system(CLI_args);
     if status == 0
@@ -381,7 +382,7 @@ if exist(pyenvPath,'dir') & isfile (pyScript) & hour(now)==23
         disp(fprintf('GSheetDump Failed \n %s',cmdout))
     end
 % b)
-elseif  exist(pyenvPath,'dir') & isfile (pyScript) & hour(now)==1
+elseif  exist(pyenvPath,'dir') & isfile (pyScript) & hour(now)==23
     ini_file = setFolderSeparator(fullfile(bioMetPyRoot,'ini_files/ReadTraces_Biomet_Dump.ini'));
     CLI_args = sprintf("cd %s & %s & python %s --Task Read --ini %s --Sites %s --Years %s & deactivate & cd %s",pyenvPath,activate,pyScript,ini_file,strjoin(Sites),strjoin(string(Years)),bioMetMatRoot);
     [status,cmdout] = system(CLI_args);
