@@ -334,28 +334,66 @@ for i = 1:n
             % sometimes the timer is already running and we get an error
         end
     end
+    
 end
 
+% Added by June Skeeter
+% Some functions to be run once processing is complete
+% 1) Dump some traces to derived variable for gap-filling
+% 2) Run some python scripts
+%   a. pull new manual data from G:drive
+%   b. write Biomet Data to highfreq
 
-% Call a python script that writes .csv files for eddypro Biomet data and flux footprint calculations 
-% Added by June Skeeter 24/01/2024
-% Could have implemented this within matlab, but used as an opporotutinty
-% to sort out calling python scripts from matlab
-curScriptPath = matlab.desktop.editor.getActiveFilename;
-bioMetRoot = split(curScriptPath,'\matlab\');
-% setFolderSeparator(fullfile(db_pth_root,'Calculation_Procedures/TraceAnalysis_ini/',SiteID,'/Derived_Variables/'));
-bioMetPyRoot = setFolderSeparator(fullfile(string(bioMetRoot(1)),'/Python/'));
+% 1)
+if hour(now)==0
+    for i = 1:n
+        SiteId = upper(char(Sites(i)));
+        for i = 2014:year(now)
+            if exist(setFolderSeparator(fullfile(db_pth,string(i),SiteId))) == 7
+                FirstYear = i;
+                break
+            end
+        end
+        % A "default" set of met variables for gap filling (plus will calculate
+        % moving averages of the time series on daily, monthly, and seasonal
+        % timescales
+        DerivedVariablesForGapFilling(SiteId,FirstYear);
+        if strcmp(SiteId,'BBS')
+            % Interpolate canopy height from discrete observations
+            DerivedVariablesForGapFilling(SiteId,FirstYear,{'canopy_height_sample_mean'},1,1,0);
+        end
+    end
+end
+%2)
+bioMetRoot = split(matlab.desktop.editor.getActiveFilename,'matlab');
+bioMetRoot = string(bioMetRoot(1));
+bioMetMatRoot = setFolderSeparator(fullfile(string(bioMetRoot(1)),'/matlab/'));
+bioMetPyRoot = setFolderSeparator(fullfile(bioMetRoot,'/Python/'));
 pyenvPath = setFolderSeparator(fullfile(bioMetPyRoot,'.venv/Scripts/'));
 pyScript = setFolderSeparator(fullfile(bioMetPyRoot,'DatabaseFunctions.py'));
-if exist(pyenvPath,'dir') & isfile (pyScript) & hour(now)>23
-    CLI_args = "cd ..\Python\.venv\Scripts\ & .\activate.bat & python ..\..\DatabaseFunctions.py --Task GSheetDump & deactivate & cd ..\..\..\matlab\";
+activate = '.\activate.bat';
+% a)
+if exist(pyenvPath,'dir') & isfile (pyScript) & hour(now)==1
+    CLI_args = sprintf("cd %s & %s & python %s --Task GSheetDump & deactivate & cd %s",pyenvPath,activate,pyScript,bioMetMatRoot);
     [status,cmdout] = system(CLI_args);
     if status == 0
         disp(fprintf('Read G Drive Files \n %s',cmdout))
     else
-        disp('GSheetDump Failed')
+        disp(fprintf('GSheetDump Failed \n %s',cmdout))
+    end
+% b)
+elseif  exist(pyenvPath,'dir') & isfile (pyScript) & hour(now)==23
+    ini_file = setFolderSeparator(fullfile(bioMetPyRoot,'ini_files/ReadTraces_Biomet_Dump.ini'));
+    CLI_args = sprintf("cd %s & %s & python %s --Task Read --ini %s --Sites %s --Years %s & deactivate & cd %s",pyenvPath,activate,pyScript,ini_file,strjoin(Sites),strjoin(string(Years)),bioMetMatRoot);
+    [status,cmdout] = system(CLI_args);
+    if status == 0
+        disp(fprintf('Writing Biomet Files \n %s',cmdout))
+    else
+        disp(fprintf('Writing Biomet Failed \n %s',cmdout))
     end
 end
+
+
 % Notes for a curious reader.
 
 %============================================================
