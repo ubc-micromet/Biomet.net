@@ -5,16 +5,16 @@ function mergeMicrometDumpAndHF_folders
 %
 %
 % Zoran Nesic               File created:       Sep 25, 2023
-%                           Last modification:  Sep 25, 2023
+%                           Last modification:  Feb 10, 2024
 
 % Revisions:
 %
 
 % BC sites
-mergeSmartFluxUSBdata('DSM','2023_Flux');
-mergeSmartFluxUSBdata('RBM','2023_Flux');
-mergeSmartFluxUSBdata('BB','2023_Flux')
-mergeSmartFluxUSBdata('BB2','2023_Flux')
+mergeSmartFluxUSBdata('DSM','2024_Flux');
+mergeSmartFluxUSBdata('RBM','2024_Flux');
+mergeSmartFluxUSBdata('BB','2024_Flux');
+mergeSmartFluxUSBdata('BB2','2024_Flux');
 
 % Manitoba sites
 ManitobaSites = {'HOGG','YOUNG','OHM'};
