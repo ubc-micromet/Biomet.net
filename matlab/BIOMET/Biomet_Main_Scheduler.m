@@ -9,7 +9,15 @@ function Biomet_Main_Scheduler
 %
 %
 % Zoran Nesic           File created:       Feb 12, 2024
-%                       Last modification:  Feb 12, 2024
+%                       Last modification:  Feb 13, 2024
+
+% Revisions:
+%
+% Feb 13, 2024
+%   - Added:
+%       cd('\\files.ubc.ca\team\LFS\Research_Groups\Sean_Smukler\SALdata\matlab\Zoran_Picarro');
+%     to make sure that Picarro processing can run properly.
+%
 
     [yearX,monthX,dayX,hourX,minuteX,secondX] = datevec(datetime); %#ok<*ASGLU>
 
@@ -89,7 +97,7 @@ function Biomet_Main_Scheduler
  
     %------------------------
     % YF site: MET data processing
-    if ismember(hourX,16:18) && minuteX == 12
+    if ismember(hourX,14:17) && minuteX == 12
         fprintf(fid,'======= YF MET data processing (%s) ========\n',datetime);
         fprintf(fid,'%s\n',datetime);
         run_YF_met_db_update;
@@ -124,9 +132,10 @@ function Biomet_Main_Scheduler
         % ***          
         fprintf(fid,'Unzipping files.\n');
         [status,result] = system('C:\Ubc_flux\UBC_ZIP.exe C:\Ubc_flux\ubc_unzip.ini');        
-        fprintf(fid,'Moving Picarro files to files.ubc.ca\team.\n');
+        fprintf(fid,'Moving Picarro files to files.ubc.ca\\team.\n');
         [status,result] = system('"C:\Ubc_flux\PicarroMove.bat"');
         fprintf(fid,'Processing Picarro data.\n');
+        cd('\\files.ubc.ca\team\LFS\Research_Groups\Sean_Smukler\SALdata\matlab\Zoran_Picarro');
         process_Picarro_AGGP_data;
         fprintf(fid,'%s\n',datetime);
         fprintf(fid,'======= End of Picarro processing (%s) ========\n',datetime);
