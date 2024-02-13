@@ -134,9 +134,9 @@ function Biomet_Main_Scheduler
     
     % ---------------------------
     % Morning db_update_all
-    % 4:02am GMT
+    % 4:02pm GMT
     % Replaces Task Scheduler task: update_annex001_db_and_clean
-    if hourX == 4 && ismember(minuteX,[2])
+    if hourX == 16 && ismember(minuteX,[2])
         fprintf(fid,'======= Morning db_update_all ========\n');
         fprintf(fid,'%s\n',datetime);
         db_update_all(1,0);
