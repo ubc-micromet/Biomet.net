@@ -50,7 +50,6 @@ function fr_automated_cleaning(Years,Sites,stages,db_out,db_ini)
 %     code.
 %   - added: && minute(datetime)< 30  to have DerivedVariablesForGapFilling
 %     executed only once when hour(datetime)==0 instead of twice.
-%   - added try-catch around that part of the code
 %   - small syntax changes to get the "green checkmark" from Matlab editor. 
 % Feb 12, 2023 (Zoran)
 %   - changed output path for AmeriFlux data to Clean/Ameriflux in stage 8.
@@ -348,7 +347,7 @@ end
 
 
 % Run the following if all Sites are Micromet sites only
-micrometSites = {'BB','BB2','BBS','DSM','RBM','YOUNG','HOGG','OHM'};
+micrometSites = {'BB','BB2','DSM','RBM','YOUNG','HOGG','OHM'};
 if all(ismember(Sites,micrometSites))
     try
         % Added by June Skeeter
@@ -378,11 +377,6 @@ if all(ismember(Sites,micrometSites))
                 end
             end
         end
-        
-    catch
-        fprintf('\n\n  ****** Error writing to derrived variables ***\n\n');
-    end
-    try
         %2)
         bioMetRoot = split(matlab.desktop.editor.getActiveFilename,'matlab');
         bioMetRoot = string(bioMetRoot(1));
@@ -412,7 +406,7 @@ if all(ismember(Sites,micrometSites))
             end
         end
     catch
-        fprintf('\n\n  ****** Error around Python code ***\n\n');
+        fprintf('  ****** Error during ')
     end
 end
 
