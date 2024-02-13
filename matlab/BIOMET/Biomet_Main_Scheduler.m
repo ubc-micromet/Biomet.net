@@ -35,20 +35,25 @@ function Biomet_Main_Scheduler
         db_update_Totem(yearX)
         % Do only if the first run in that hour
         if minuteX==2 
-            % Clean Totem data once per hourdb_
-            % clean last and the current year
-            fprintf(fid,'Cleaning of Totem Field data.\n');
-            fr_automated_cleaning(yearX-1:yearX,'UBC_Totem',[1 2 3 ]);
-            fprintf(fid,'Exporting of Totem Field data.\n');
-            Export_Totem_One_Year;
-            Export_for_Tin;
-            % If this is the first run in a new day then date-stamp the raw
-            % file from the previous day
-            if hourX == 0
-                % Replaces a Task Scheduler task:
-                % ClimateStation_daily_file_rename
-                fprintf(fid,'Renaming of Totem Field daily CSI files.\n');
-                ClimateStation_movefile;
+            try
+                % Clean Totem data once per hourdb_
+                % clean last and the current year
+                fprintf(fid,'Cleaning Totem Field data.\n');
+                fr_automated_cleaning(yearX-1:yearX,'UBC_Totem',[1 2 3 ]);
+                fprintf(fid,'Exporting Totem Field data.\n');
+                Export_Totem_One_Year;
+                Export_for_Tin;
+                % If this is the first run in a new day then date-stamp the raw
+                % file from the previous day
+                if hourX == 0
+                    % Replaces a Task Scheduler task:
+                    % ClimateStation_daily_file_rename
+                    fprintf(fid,'Renaming Totem Field daily CSI files.\n');
+                    ClimateStation_movefile;
+                end
+            catch myError
+                fprintf(fid,' Error while working on Totem Field data processing.\n');
+                fprintf(fid,'%s\n',myError.message);
             end
         end
         fprintf(fid,'%s\n',datetime);
