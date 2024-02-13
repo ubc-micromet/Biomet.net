@@ -349,7 +349,7 @@ end
 
 % Run the following if all Sites are Micromet sites only
 micrometSites = {'BB','BB2','DSM','RBM','YOUNG','HOGG','OHM'};
-if all(ismember(Sites,micrometSites))
+if any(ismember(Sites,micrometSites))
     try
         % Added by June Skeeter
         % Some functions to be run once processing is complete
@@ -396,7 +396,7 @@ if all(ismember(Sites,micrometSites))
                 disp(fprintf('GSheetDump Failed \n %s',cmdout))
             end
         % b)
-        elseif  exist(pyenvPath,'dir') & isfile (pyScript) & hour(datetime)==23
+        elseif  exist(pyenvPath,'dir') & isfile (pyScript) & hour(datetime)<=23
             ini_file = fullfile(bioMetPyRoot,'ini_files/ReadTraces_Biomet_Dump.ini');
             CLI_args = sprintf("cd %s & %s & python %s --Task Read --ini %s --Sites %s --Years %s & deactivate & cd %s",pyenvPath,activate,pyScript,ini_file,strjoin(Sites),strjoin(string(Years)),bioMetMatRoot);
             [status,cmdout] = system(CLI_args);
