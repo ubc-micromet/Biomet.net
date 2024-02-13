@@ -345,21 +345,25 @@ end
 %   b. write Biomet Data to highfreq
 
 % 1)
+Sites_to_Run = {'BB','BB2','BBS'};
 for i = 1:n
     SiteId = upper(char(Sites(i)));
-    for i = 2014:year(now)
-        if exist(setFolderSeparator(fullfile(db_pth,string(i),SiteId))) == 7
-            FirstYear = i;
-            break
+    if any(strcmp(Sites_to_Run,SiteId))
+        SiteId
+        for i = 2014:year(now)
+            if exist(setFolderSeparator(fullfile(db_pth,string(i),SiteId))) == 7
+                FirstYear = i;
+                break
+            end
         end
-    end
-    % A "default" set of met variables for gap filling (plus will calculate
-    % moving averages of the time series on daily, monthly, and seasonal
-    % timescales
-    DerivedVariablesForGapFilling(SiteId,FirstYear);
-    if strcmp(SiteId,'BBS')
-        % Interpolate canopy height from discrete observations
-        DerivedVariablesForGapFilling(SiteId,FirstYear,{'canopy_height_sample_mean'},1,1,0);
+        % A "default" set of met variables for gap filling (plus will calculate
+        % moving averages of the time series on daily, monthly, and seasonal
+        % timescales
+        DerivedVariablesForGapFilling(SiteId,FirstYear);
+        if strcmp(SiteId,'BBS')
+            % Interpolate canopy height from discrete observations
+            DerivedVariablesForGapFilling(SiteId,FirstYear,{'canopy_height_sample_mean'},1,1,0);
+        end
     end
 end
 
