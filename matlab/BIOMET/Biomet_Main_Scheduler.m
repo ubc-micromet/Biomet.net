@@ -16,31 +16,32 @@ function Biomet_Main_Scheduler
     % Start with the tasks that run most often
 
     %fid = 1;  % for testing print logs on screen only
-    fid = fopen('d:\Sites\Biomet_Main_Scheduler.log','a');
+    strDT = char(datetime,'yyyyMMdd');
+    fid = fopen(['d:\Sites\Log\Biomet_Main_Scheduler_' strDT '.log'],'a');
   
     fprintf(fid,'============== Biomet_Main_Scheduler.m ==================\n');
-    fprintf(fid,'%s\n',datetime);
+    fprintf(fid,' %s\n',datetime);
     
     %----------------------------------
     % Climate station data processing
     if minuteX == 2 || minuteX == 32
         fprintf(fid,'======= Climate station data processing ========\n');
-        fprintf(fid,'%s\n',datetime);
+        fprintf(fid, ' %s\n',datetime);
         % at 2 minutes and 32 minutes every hour
         % Process CR21x files
-        fprintf(fid,'Processing old CR21x/10x files.\n');
+        fprintf(fid,' Processing old CR21x/10x files.\n');
         Process_Climate_Station(fid);
         % Proces CR1000 files
-        fprintf(fid,'Processing Totem Field CR1000 files.\n');
+        fprintf(fid,' Processing Totem Field CR1000 files.\n');
         db_update_Totem(yearX)
         % Do only if the first run in that hour
         if minuteX==2 
             try
                 % Clean Totem data once per hourdb_
                 % clean last and the current year
-                fprintf(fid,'Cleaning Totem Field data.\n');
+                fprintf(fid,' Cleaning Totem Field data.\n');
                 fr_automated_cleaning(yearX-1:yearX,'UBC_Totem',[1 2 3 ]);
-                fprintf(fid,'Exporting Totem Field data.\n');
+                fprintf(fid,' Exporting Totem Field data.\n');
                 Export_Totem_One_Year;
                 Export_for_Tin;
                 % If this is the first run in a new day then date-stamp the raw
@@ -56,14 +57,14 @@ function Biomet_Main_Scheduler
                 fprintf(fid,'%s\n',myError.message);
             end
         end
-        fprintf(fid,'%s\n',datetime);
+        fprintf(fid,' %s\n',datetime);
         fprintf(fid,'======= End of Climate station data processing ========\n');
     elseif minuteX == 12 || minuteX == 42
         % move files from d:\Sites\TEMP folder to database Raw folders
         fprintf(fid,'======= Moving Sites\TEMP data to RAW (%s)========\n',datetime);
-        fprintf(fid,'%s\n',datetime);
+        fprintf(fid,' %s\n',datetime);
         [status,result] = system('"c:\ubc_flux\Move_CSI_net_files.exe c:\ubc_flux\Move_CSI_net_files.ini"');
-        fprintf(fid,'%s\n',datetime);
+        fprintf(fid,' %s\n',datetime);
         fprintf(fid,'======= End of Moving Sites\TEMP data (%s)========\n',datetime);
     end
     
@@ -142,7 +143,7 @@ function Biomet_Main_Scheduler
         fprintf(fid,'%s\n',datetime);
         fprintf(fid,'======= End of db_update_all processing (%s) ========\n',datetime);
     end
-    fprintf(fid,'%s\n',datetime);    
+    fprintf(fid,' %s\n',datetime);    
     fprintf(fid,'============== All done! ==================\n\n\n');    
    fclose(fid); 
 end
@@ -169,6 +170,9 @@ function Process_Climate_Station(fid)
             for cntFiles = 1:length(sConflictFiles)
                 fileName         = sConflictFiles(cntFiles).name;
                 sourceFile       = fullfile(filePath,fileName);
+                % dt =
+                % datetime(sConflictFiles(cntFiles).datenum,'convertfrom','datenum')
+                % string(dt,'yyyymmdd''T''HHMMSS')
                 fileExt          = datestr(sConflictFiles(cntFiles).datenum,30);
                 destinationFile1 = fullfile(destinationPath,[fileName(1:end-3) fileExt]);
                 [Status1,Message1,MessageID1] = fr_movefile(sourceFile,destinationFile1);
