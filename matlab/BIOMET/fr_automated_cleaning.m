@@ -348,8 +348,8 @@ end
 
 
 % Run the following if all Sites are Micromet sites only
-micrometSites = {'BB','BB2','DSM','RBM','YOUNG','HOGG','OHM'};
-if any(ismember(Sites,micrometSites))
+micrometSites = {'BB','BB2','BBS','DSM','RBM','YOUNG','HOGG','OHM'};
+if all(ismember(Sites,micrometSites))
     try
         % Added by June Skeeter
         % Some functions to be run once processing is complete
@@ -378,6 +378,11 @@ if any(ismember(Sites,micrometSites))
                 end
             end
         end
+        
+    catch
+        fprintf('\n\n  ****** Error writing to derrived variables ***\n\n');
+    end
+    try
         %2)
         bioMetRoot = split(matlab.desktop.editor.getActiveFilename,'matlab');
         bioMetRoot = string(bioMetRoot(1));
@@ -396,7 +401,7 @@ if any(ismember(Sites,micrometSites))
                 disp(fprintf('GSheetDump Failed \n %s',cmdout))
             end
         % b)
-        elseif  exist(pyenvPath,'dir') & isfile (pyScript) & hour(datetime)<=23
+        elseif  exist(pyenvPath,'dir') & isfile (pyScript) & hour(datetime)==23
             ini_file = fullfile(bioMetPyRoot,'ini_files/ReadTraces_Biomet_Dump.ini');
             CLI_args = sprintf("cd %s & %s & python %s --Task Read --ini %s --Sites %s --Years %s & deactivate & cd %s",pyenvPath,activate,pyScript,ini_file,strjoin(Sites),strjoin(string(Years)),bioMetMatRoot);
             [status,cmdout] = system(CLI_args);
