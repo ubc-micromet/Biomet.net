@@ -22,13 +22,18 @@ function [numOfFilesProcessed,numOfDataPointsProcessed] = fr_SmartFlux_database(
 %                     consecutive data points). Default 30 (hhour)
 %
 % Zoran Nesic           File Created:      July 14, 2018
-%                       Last modification: July, 2024
+%                       Last modification: Feb   5, 2024
 
 % Created based on fr_site_met_database
 
 %
 % Revisions:
 %
+% Feb 5, 2024 (Zoran)
+%   - added "if ~isempty(one_year_ind)" to prevent the program from sending
+%     trying to process the last point in the current year twice and
+%     failing. The last point has a year = year_in+1 (Jan 1, 2024 belongs
+%     to 2023 not to 2024).
 %  July 26, 2023 (Zoran)
 %      - replaced "\" with "filesep" to make it compatible with MacOS.
 %  July 22, 2023 (Zoran)
@@ -110,32 +115,41 @@ for i=1:length(h)
             end
             tv = tv + time_shift;
             
-            % if there were no errors try to update database
-            % Save data belonging to different years to different folders
-            % if databasePath contains "\yyyy\" string (replace it with
-            % \2005\ for year 2005)
-            yearVector = datevec(tv);
-            yearVector = yearVector(:,1);
-            years = unique(yearVector)';
-            ind_yyyy = strfind(databasePath,[filesep 'yyyy' filesep]);
-            if ~isempty(ind_yyyy)            
-                databasePathNew = databasePath;
-                for year_ind = years
-                    one_year_ind = find(tv > datenum(year_ind,1,1) & tv <= datenum(year_ind+1,1,1));
-                    if ~isempty(one_year_ind)
-                        databasePathNew(ind_yyyy+1:ind_yyyy+4) = num2str(year_ind);
-                        [k] = db_new_eddy(Stats(one_year_ind),[],databasePathNew,0,[],timeUnit,missingPointValue); %#ok<*FNDSB>
+            if length(Stats(1).TimeVector) == 1
+                % Old type Stats(:).TimeVector
+    
+                % if there were no errors try to update database
+                % Save data belonging to different years to different folders
+                % if databasePath contains "\yyyy\" string (replace it with
+                % \2005\ for year 2005)
+                yearVector = datevec(tv);
+                yearVector = yearVector(:,1);
+                years = unique(yearVector)';
+                ind_yyyy = strfind(databasePath,[filesep 'yyyy' filesep]);
+                if ~isempty(ind_yyyy)            
+                    databasePathNew = databasePath;
+                    for year_ind = years
+                        one_year_ind = find(tv > datenum(year_ind,1,1) & tv <= datenum(year_ind+1,1,1));
+                        if ~isempty(one_year_ind)
+                            databasePathNew(ind_yyyy+1:ind_yyyy+4) = num2str(year_ind);
+                            [k] = db_new_eddy(Stats(one_year_ind),[],databasePathNew,0,[],timeUnit,missingPointValue); %#ok<*FNDSB>
+                        end
                     end
+                else
+                    [k] = db_new_eddy(Stats,[],databasePath,0,[],timeUnit,missingPointValue);
                 end
+                % if there is no errors update records
+                numOfFilesProcessed = numOfFilesProcessed + 1;
+                numOfDataPointsProcessed = numOfDataPointsProcessed + length(tv);
+                filesProcessProgressList(j).Modified = datenum(h(i).date);
             else
-                [k] = db_new_eddy(Stats,[],databasePath,0,[],timeUnit,missingPointValue);
+                % New type Stats.TimeVector(:)
+                db_struct2database(Stats,pthOutRaw,verbose_flag,excludeSubStructures,timeUnit,missingPointValue,structType,1);
             end
-            % if there is no errors update records
-            numOfFilesProcessed = numOfFilesProcessed + 1;
-            numOfDataPointsProcessed = numOfDataPointsProcessed + length(tv);
-            filesProcessProgressList(j).Modified = datenum(h(i).date);
-        catch
-            fprintf('Error in processing of: %s\n',fullfile(pth,h(i).name))
+        catch ME
+            fprintf(2,'\nError processing file: %s. \n',fileName);
+            fprintf(2,'%s\n',ME.message);
+            fprintf(2,'Error on line: %d in %s\n\n',ME.stack(1).line,ME.stack(1).file);
         end % of try
     end %  if filesProcessProgressList(j).Modified < datenum(h(i).date)
 end % for i=1:length(h)
