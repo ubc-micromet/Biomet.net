@@ -9,11 +9,13 @@ function FireWeatherIndex_Report(dateIn, siteInfo)
 % Note: used MH_FireWeatherIndex_report as inspiration.
 %
 % (c) Zoran Nesic           File created:           Jun 23, 2008
-%                           Last modification:      Apr 14, 2010
+%                           Last modification:      Feb 15, 2024
 %
 
 % Revisions:
 %
+% Feb 15, 2024 (Z)
+%   - had to add check: if indRainStart24h<1,indRainStart24h = 1;end
 % Apr 14, 2010 (Z)
 %   - changed the 5 letter based ratings to number based ratings
 %     VL - 1, L - 2, M - 3, H - 4, E - 5
@@ -52,7 +54,10 @@ RH = RH(ind);
 WindSpeed = WindSpeed(ind);
 WindDir = WindDir(ind);
 
-Rain24h_tot = fastavg(RainFall(ind_start-48:ind_end),48)*48;        % find rain daily totals
+indRainStart24h = ind_start-48; 
+if indRainStart24h<1,ind_end = ind_end-indRainStart24h+1; indRainStart24h = 1;end
+
+Rain24h_tot = fastavg(RainFall(indRainStart24h:ind_end),48)*48;        % find rain daily totals
 %RainFall = RainFall(ind);
 [YearX, MonthX, DayX] = datevec(tv-GMT_shift/24);
 
