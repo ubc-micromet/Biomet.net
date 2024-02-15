@@ -139,8 +139,10 @@ for i=1:length(h)
             numOfFilesProcessed = numOfFilesProcessed + 1;
             numOfDataPointsProcessed = numOfDataPointsProcessed + length(tv);
             filesProcessProgressList(j).Modified = datenum(h(i).date);
-        catch
-            fprintf('Error in processing of: %s\n',fullfile(pth,h(i).name))
+        catch ME
+            fprintf(2,'\nError processing file: %s. \n',fileName);
+            fprintf(2,'%s\n',ME.message);
+            fprintf(2,'Error on line: %d in %s\n\n',ME.stack(1).line,ME.stack(1).file);
         end % of try
     end %  if filesProcessProgressList(j).Modified < datenum(h(i).date)
 end % for i=1:length(h)

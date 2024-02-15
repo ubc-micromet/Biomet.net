@@ -1,4 +1,4 @@
-function fr_compare_database_traces(siteID,yearX,path_old,path_new,dataType)
+function fr_compare_database_traces(siteID,yearX,path_old,path_new,dataType,flagPlotAll,flagIgnore9999)
 %  fr_compare_database_traces - compare two UBC database folder
 %
 % This function is used to compare two database folders containing the same
@@ -14,6 +14,12 @@ function fr_compare_database_traces(siteID,yearX,path_old,path_new,dataType)
 %  path_new - usually a local path ('D:/met-data/database/')
 %  data_type - subfolder for the data:
 %                       ('Clean/SecondStage','Climate/Clean',...)
+%  flagPlotAll - 1 [default] - plot traces as you go and wait
+%                0 - keep going without waiting for user input
+%  flagIgnore9999 - 0 [default] - treated as different from -9999
+%                   1 - NaN treated the same as -9999 (all -9999 converted to NaNs before comparison)
+%
+%
 %
 % Example:
 %   Start by cleaning MPB1 site for year 2015 and store the results locally (in d:\met-data\database\)
@@ -24,14 +30,22 @@ function fr_compare_database_traces(siteID,yearX,path_old,path_new,dataType)
 %                              'D:/met-data/database/','Clean/SecondStage')
 %     fr_compare_database_traces('MPB1',2019,'//annex001/database/',...
 %                              'D:/met-data/database/','Clean/ThirdStage')
+%   Treat all -9999 as NaNs and skip the plotting
+%     fr_compare_database_traces('MPB1',2019,'//annex001/database/',...
+%                              'D:/met-data/database/','Clean/ThirdStage',0,1)
+%      
 %
 %
 %
 % Zoran Nesic                   File created:       May 11, 2020
-%                               Last modifications: Aug 25, 2022
+%                               Last modifications: Feb 14, 2024
 
 % Revisions:
 %
+% Feb 14, 2024 (Zoran)
+%   - Added two new input options:
+%       - flagPlotAll
+%       - flagIgnore9999
 % Aug 25, 2022 (Zoran)
 %   - Increase the thicknes of the line for new data from 2 to 3
 % Jul 29, 2022 (Zoran)
@@ -52,6 +66,8 @@ function fr_compare_database_traces(siteID,yearX,path_old,path_new,dataType)
 %   - fixed a bug where the Nans in New didn't show up if they didn't exist
 %     in the Old data.
 %
+arg_default('flagPlotAll',1);
+arg_default('flagIgnore9999',0);
 
     fig = [];
     filePath_new = fullfile(path_new,...
@@ -90,6 +106,11 @@ function fr_compare_database_traces(siteID,yearX,path_old,path_new,dataType)
                 currentFile_old = fullfile(filePath_old,s_all_old_files(cntFiles).name);
                 x_old = [];
                 x_old = read_bor(currentFile_old);
+                if flagIgnore9999 == 1
+                    % if asked to ignore -9999 convert all of them to NaNs
+                    x_new(x_new==-9999) = NaN;
+                    x_old(x_old==-9999) = NaN;
+                end
                 nansInNew = isnan(x_new);
                 nansInOld = isnan(x_old);
                 indSameNans = nansInNew & nansInOld;
@@ -132,14 +153,6 @@ function fr_compare_database_traces(siteID,yearX,path_old,path_new,dataType)
                             'Text','<<',...
                             'Position',[20, 184,50, 40],...
                             'ButtonPushedFcn', @(hPreviousButton,event) previousButtonPushed(hPreviousButton,fig)); %#ok<NASGU>
-%                         axPos = get(gca,'position');
-%                         hYmax = uieditfield(fig,'numeric',...
-%                             'Position',[axPos(1)+axPos(3), axPos(2)+axPos(4),50, 40],...
-%                             'ValueChangedFcn', @(hYmax,event) hMaxChanged(hYmax,fig)); 
-                        
-%                         hDebugText = uitextarea(fig,...
-%                                         'Value','',...
-%                                         'Position',[20, 250,150, 220]);
                     else
                         % every time drop down is used the UserData.cnt goes to -1
                         % which in turn causes the same plot to be replotted
@@ -200,13 +213,8 @@ function fr_compare_database_traces(siteID,yearX,path_old,path_new,dataType)
                     if  oldCnt ~= cntFiles
                         fprintf('%6d differences exist in the file: %s \n',length(indDiff), s_all_old_files(cntFiles).name);
                         oldCnt = cntFiles;
-                    end
-%                     % Update debug screen before the loop
-%                     hDebugText.Value = ...
-%                         {sprintf('cntFiles = %d',cntFiles),...
-%                          sprintf('badN     = %d',badN),...
-%                          sprintf('%d ',badFileList)};                    
-                    while UserData.next==0
+                    end                  
+                    while UserData.next==0 && flagPlotAll==1
                         % loop here until user request re-plot by changing the
                         % plot type or by clicking on the "Next" button 
                         UserData = get(fig,'UserData');
@@ -217,13 +225,7 @@ function fr_compare_database_traces(siteID,yearX,path_old,path_new,dataType)
                         fprintf('User stopped program. Exiting...\n');
                         close(fig)
                         return
-                    end   
-%                     % Update debug screen after the loop
-%                     hDebugText.Value = ...
-%                         {sprintf('cntFiles = %d',cntFiles),...
-%                          sprintf('badN     = %d',badN),...
-%                          sprintf('%d ',badFileList)};
-                                 
+                    end                                    
                 end
             catch
                 if isempty(x_new)
@@ -235,7 +237,7 @@ function fr_compare_database_traces(siteID,yearX,path_old,path_new,dataType)
                 end
             end
         end
-        if flagDiffFound > 0
+        if flagDiffFound > 0 && flagPlotAll==1
             % if differences were found check if user 
             % requsted a change in plotting
             UserData = get(fig,'UserData');
