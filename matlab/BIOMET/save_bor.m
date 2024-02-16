@@ -1,4 +1,4 @@
-function f1 = save_bor(file_name, data_type, data, flagLen);
+function f1 = save_bor(file_name, data_type, data, flagLen)
 %******************************************************************************
 % THIS MATLAB FUNCTION SAVES DATA FROM MATLAB INTO THE BOREAS DATABASE
 %
@@ -24,11 +24,13 @@ function f1 = save_bor(file_name, data_type, data, flagLen);
 %
 %   Written by Zoran Nesic, July 24, 1995
 %
-%   Last Rev.:   Zoran Nesic, Sep 10, 1998
+%   Last Rev.:   Feb 15, 2024
 %******************************************************************************
 
 % Revisions:
 %
+%   Feb 15, 2024 (Zoran)
+%       - removed some eval statements that were not needed.
 %   Sep 10, 1998
 %       -   added option 8 for saving of double precision numbers (Matlab time vectors)
 %   Dec 28, 1997
@@ -45,42 +47,42 @@ elseif isempty(data_type)
     data_type = 1;
 end
 
-eval(['fid = fopen(''' file_name '''' ',''w'');'])
+fid = fopen(file_name ,'w');
 if fid == -1 
-    eval(['error ' '''File: (' file_name ') does not exist!'''])
+    error('*** Error! File: "%s" cannot be opened!\n',fileName);
 else
     if data_type == 1
-        eval(['f1 = fwrite(fid, data, ''float32'');']);
+        f1 = fwrite(fid, data, 'float32');
     elseif data_type == 2
         if nargin < 4
             error 'Required parameter is missing!'
         elseif ~isstr(data)
-            eval(['data = setstr(data);']);
+            data = setstr(data);
             [m,n] = size(data);
             if m > n 
                 data = data';
             end
-            eval(['f1 = fwrite(fid, data, ''char'');']);
+            f1 = fwrite(fid, data, 'char');
         else
             [m,n] = size(data);
             if m > n 
                 data = data';
             end
-            eval(['f1 = fwrite(fid, data, ''char'');']);
+            f1 = fwrite(fid, data, 'char');
         end
     elseif data_type == 3
         if ~isstr(data)
-            eval(['data = setstr(data);']);
-            eval(['f1 = fwrite(fid, data, ''char'');']);
+            data = setstr(data);
+            f1 = fwrite(fid, data, 'char');
         else
-            eval(['f1 = fwrite(fid, data, ''char'');']);
+            f1 = fwrite(fid, data, 'char');
         end
     elseif data_type == 6
-        eval(['f1 = fwrite(fid, data, ''int16'');']);    
+        f1 = fwrite(fid, data, 'int16');    
     elseif data_type == 7
-        eval(['f1 = fwrite(fid, data, ''int32'');']);
+        f1 = fwrite(fid, data, 'int32');
     elseif data_type == 8
-        eval(['f1 = fwrite(fid, data, ''float64'');']);
+        f1 = fwrite(fid, data, 'float64');
     else
         error 'Not supported data types';
     end

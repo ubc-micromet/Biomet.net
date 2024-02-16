@@ -1,10 +1,10 @@
-function y = read_bor(data,data_type, flagLen,year,indOut,override_1999);
+function y = read_bor(fileName,data_type, flagLen,yearIn,indOut,override_1999)
 %******************************************************************************
 % THIS MATLAB FUNCTION READS DATA FROM THE BOREAS DATABASE INTO MATLAB
 %
 %       function data = read_bor(data,data_type, flagLen,year,indOut)
 %
-%       data             the column file name representing the data you want
+%       fileName        the column file name representing the data you want
 %       data_type       1 - for single precision numbers (default)
 %                       2 - flag1
 %                       3 - flag2 
@@ -28,12 +28,16 @@ function y = read_bor(data,data_type, flagLen,year,indOut,override_1999);
 %
 %   Written by Peter Blanken, July 8, 1995
 %
-%   Last Rev.:   kai*, Nov 24, 2000
+%   Last Rev.:   Feb 15, 2024
 %******************************************************************************
 
 %
 % Revisions:
 %
+%   Feb 15, 2024 (Zoran)
+%       - profiled this function and improved a few bottlenecks.
+%         Mainly added arg_default instead of individual testion
+%       - updated some syntax
 %   Sep 14, 2001
 %       - fixed bug that prevented the function from using override_1999 = 1 option
 %         Changed:
@@ -54,49 +58,50 @@ function y = read_bor(data,data_type, flagLen,year,indOut,override_1999);
 %       -   changed type "char" to type "uchar" for data_type(s) 2 and 3
 %
 
-if exist('data_type')~= 1 | isempty(data_type) 
-        data_type = 1;
+if ~exist('data_type','var') || isempty(data_type)
+    data_type = 1;
 end
-if exist('year')~= 1 | isempty(year)  
-    year = datevec(now);
-    year = year(1);
+if ~exist('override_1999','var') || isempty(override_1999)
+    override_1999 = 0;
 end
-y = [];
-ind=findstr(lower(data),'yyyy');
-if isempty(ind) & length(year) > 1
+if ~exist('indOut','var') 
+    indOut = [];
+end
+
+if  ~exist('yearIn','var')  || isempty(yearIn)  
+    yearIn = datevec(now);
+    yearIn = yearIn(1);
+end
+
+ind=findstr(lower(fileName),'yyyy');
+if isempty(ind) & length(yearIn) > 1
     error 'Multiple years require a wildcard: yyyy!'
 end
-if exist('indOut')== 1 & ~isempty(indOut) 
+
+if ~isempty(indOut) 
     indSkip = indOut(1)-1;
 else
     indSkip = 0;
 end
 
-if ~exist('override_1999') | isempty(override_1999) 
-    override_1999 = 0;
-end
-
-%firstYear = year(1);
-%lastYear = year(end);
-
-if override_1999 == 0
+if any(yearIn>=1996 & yearIn <=1999) && override_1999 == 0
 	% if user has requested years 1996->1999
 	% convert them all to 1999
-   ind1 = find(year>=1996 & year <=1999);
-   year(ind1) = 1999;
+   ind1 = find(yearIn>=1996 & yearIn <=1999);
+   yearIn(ind1) = 1999;
    % keep only one of 1999s
-   year = unique(year);
+   yearIn = unique(yearIn);
 end
 
-for i = 1:length(year)    
-        fileName = data;
+y = [];
+for i = 1:length(yearIn)    
         if ~isempty(ind) & length(ind) == 1            
-            fileName(ind:ind+3) = num2str(year(i));
+            fileName(ind:ind+3) = num2str(yearIn(i));
         end
-        eval(['fid = fopen(''' fileName  ''');']);
+        fid = fopen(fileName);
 
         if fid == -1 
-            eval(['error ' '''File: (' fileName ') does not exist!'''])
+            error('*** Error! File: "%s" does not exist!\n',fileName);
         else
             if data_type == 1
                 if i == 1 
@@ -104,7 +109,7 @@ for i = 1:length(year)
                 end
                 x = fread(fid,'float32');
             elseif data_type == 2
-                if exist('flagLen')~= 1 | isempty(flagLen) 
+                if exist('flagLen','var')~= 1 | isempty(flagLen) 
                     error 'Required parameter is missing!'
                 else
                     if i == 1 
@@ -149,6 +154,6 @@ for i = 1:length(year)
         end 
         y = [y ;x ];
 end
-if exist('indOut')== 1 & ~isempty(indOut) 
+if ~isempty(indOut) 
     y = y(indOut-indOut(1)+1);
 end
