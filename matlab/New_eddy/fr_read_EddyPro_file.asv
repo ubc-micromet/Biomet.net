@@ -16,13 +16,11 @@ function [EngUnits, Header,tv,outStruct] = fr_read_EddyPro_file(fileName,assign_
 %
 %
 % (c) Zoran Nesic                   File created:       Aug 25, 2022
-%                                   Last modification:  Feb 16, 2024
+%                                   Last modification:  Feb 14, 2024
 %
 
 % Revisions (last one first):
 %
-% Feb 16, 2024 (Zoran)
-%   - Fixed handling of flags with NaN values. dec2base does not like NaNs.
 % Feb 14, 2024 (Zoran)
 %   - Big changes. Speed improvements in orders of magnitude.
 %       - Switched to using fr_read_generic_data_file.

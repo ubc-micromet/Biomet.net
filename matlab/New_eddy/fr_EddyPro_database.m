@@ -10,14 +10,19 @@ function [numOfFilesProcessed,numOfDataPointsProcessed] = fr_EddyPro_database(wi
 %
 %
 %
-% NOTE:
+% NOTE1:
 %       databasePath needs to include "\yyyy\" string if multiple years of
 %       data are going to be found in the wildCardPath folder!
+% NOTE2:
+%       To speed up reprocessing of multipe EddyPro files that are found in wildCardPath,
+%       see if it can be changed to load up all the data first and 
+%       only then run db_struct2database. Some careful error handling when appending Structures
+%       to each other will be needed. Some fields may appear or disapear,...
 %
 % Inputs:
 %       wildCardPath            - full SmartFlux summary file name, including path. Wild cards accepted
 %       processProgressListPath - path where the progress list is kept
-%       databasePath            - path to output location  (*** see the note above ***)
+%       databasePath            - path to output location  (*** see the note1 above ***)
 %       timeShift               - time offset to be added to the tv vector (in tv
 %                                 units, 0 if datebase is in GMT)
 %       timeUnit                -  minutes in the sample period (spacing between two
