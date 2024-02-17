@@ -38,10 +38,12 @@ function fr_compare_database_traces(siteID,yearX,path_old,path_new,dataType,flag
 %
 %
 % Zoran Nesic                   File created:       May 11, 2020
-%                               Last modifications: Feb 14, 2024
+%                               Last modifications: Feb 16, 2024
 
 % Revisions:
 %
+% Feb 16, 2024 (Zoran)
+%   - Added printing of file counters (cntFiles,N_files) to better see what is going on.
 % Feb 14, 2024 (Zoran)
 %   - Added two new input options:
 %       - flagPlotAll
@@ -95,7 +97,8 @@ arg_default('flagIgnore9999',0);
     cntFiles=1;
     oldCnt = 0;
     badFileList = [];
-    while cntFiles < length(s_all_old_files)
+    N_files = length(s_all_old_files);
+    while cntFiles < N_files
         flagDiffFound = 0;
         currentFile = fullfile(filePath_new,s_all_old_files(cntFiles).name);
         if ~exist(currentFile,'dir')
@@ -211,7 +214,7 @@ arg_default('flagIgnore9999',0);
                     end
                     % print only once 
                     if  oldCnt ~= cntFiles
-                        fprintf('%6d differences exist in the file: %s \n',length(indDiff), s_all_old_files(cntFiles).name);
+                        fprintf('%6d differences exist in the file (%d/%d): %s \n',length(indDiff),cntFiles,N_files, s_all_old_files(cntFiles).name);
                         oldCnt = cntFiles;
                     end                  
                     while UserData.next==0 && flagPlotAll==1
@@ -229,11 +232,11 @@ arg_default('flagIgnore9999',0);
                 end
             catch
                 if isempty(x_new)
-                    fprintf('File does not exist: %s.!\n',currentFile);
+                    fprintf('File does not exist: (%d/%d) %s.!\n',cntFiles,N_files,currentFile);
                 elseif isempty(x_old)
-                    fprintf('File does not exist: %s.!\n',currentFile_old);
+                    fprintf('File does not exist: (%d/%d) %s.!\n',cntFiles,N_files,currentFile_old);
                 else
-                    fprintf('Error while processing file: %s.!\n',currentFile);
+                    fprintf('Error while processing file: (%d/%d) %s.!\n',cntFiles,N_files,currentFile);
                 end
             end
         end
