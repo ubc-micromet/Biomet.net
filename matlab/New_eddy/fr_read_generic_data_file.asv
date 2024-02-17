@@ -1,4 +1,4 @@
-function [EngUnits,Header,tv,outStruct] = fr_read_generic_data_file(fileName,assign_in,varName, dateColumnNum, timeInputFormat,colToKeep,structType,inputFileType,modifyVarNames)
+function [EngUnits,Header,tv,outStruct] = fr_read_generic_data_file(fileName,assign_in,varName, dateColumnNum, timeInputFormat,colToKeep,structType,inputFileType,modifyVarNames,VariableNamesLine)
 %  fr_read_generic_data_file - reads csv and xlsx data files for Biomet/Micromet projects 
 %
 % Note: This function should replace a set of similar functions written for
@@ -38,14 +38,19 @@ function [EngUnits,Header,tv,outStruct] = fr_read_generic_data_file(fileName,ass
 %   inputFileType       - default 'delimitedtext', see readtable for more options
 %   modifyVarNames      - 0 [default] - don't table column names or use Biomet strategy for renaming them
 %                         1 - let Matlab modify col names to proper Matlab variable names
+%   VariableNamesLine   - 0 [default] let Matlab decide where column names are
+%                         n - the row numnner where the column names are
 %                          
 %
 % (c) Zoran Nesic                   File created:       Dec 20, 2023
-%                                   Last modification:  Jan 26, 2024
+%                                   Last modification:  Feb 14, 2024
 %
 
 % Revisions (last one first):
 %
+% Feb 14, 2024 (Zoran)
+%   - added new input parameter: VariableNamesLine. In some cases readtable cannot figure out which row 
+%     contains the column (variable) names. Use VariableNamesLine to point to that row. EddyPro data needs this set to 2)
 % Jan 26, 2024 (Zoran)
 %   - added modifyVarNames as the function input
 % Jan 23, 2024 (Zoran)
@@ -73,7 +78,7 @@ arg_default('inputFileType','delimitedtext');
 arg_default('VariableNamesLine',1)
 arg_default('structType',0)
 arg_default('modifyVarNames',false);             % let readtable modify variable names
-arg_default('VariableNamesLine',0);              % indicates which row contains names of 
+arg_default('VariableNamesLine',0);              % indicates which row contains names of columns
 
 Header = [];  % just a place holder to keep the same output parameters 
               % as for all the other fr_read* functions.
@@ -84,9 +89,9 @@ Header = [];  % just a place holder to keep the same output parameters
 
         % Read the file using readtable function
         if modifyVarNames
-            opts = detectImportOptions(fileName,'FileType',inputFileType);
+            opts = detectImportOptions(fileName,'FileType',inputFileType,'VariableNamesLine',VariableNamesLine);
         else
-            opts = detectImportOptions(fileName,'FileType',inputFileType,'VariableNamingRule','preserve');
+            opts = detectImportOptions(fileName,'FileType',inputFileType,'VariableNamingRule','preserve','VariableNamesLine',VariableNamesLine);
             %opts.VariableNames = renameFields(opts.VariableNames);
             % Now re-enable renaming of the variables
             %opts.VariableNamingRule = 'modify';
@@ -95,9 +100,6 @@ Header = [];  % just a place holder to keep the same output parameters
             timeVariable = opts.VariableNames(dateColumnNum(2));
             opts=setvartype(opts,timeVariable,'datetime');
             opts.VariableOptions(dateColumnNum(2)).InputFormat = char(timeInputFormat{2});
-        end
-        if isfield(opts,'VariableNamesLine')
-            opts.VariableNamesLine = VariableNamesLine;
         end
 
         % Read the file with the preset options
@@ -198,6 +200,8 @@ function renFields = renameFields(fieldsIn)
             newString  = replace_string(newString,'T*','ts');
             newString  = replace_string(newString,'%','p');
             newString  = replace_string(newString,'/','_');
+            newString  = replace_string(newString,'(','_');
+            newString  = replace_string(newString,')','');
             renFields{cntFields} = newString;
         end
 end
@@ -229,3 +233,34 @@ function strOut = replace_string(strIn,findX,replaceX)
         strOut(ind21)=strReplace(ones(length(ind),1),:);
     end    
 end
+
+
+%% OLD
+%-------------------------------------------------------------------
+% function replace_string
+% replaces string findX with the string replaceX and padds
+% the replaceX string with spaces in the front to match the
+% length of findX.
+% Note: this will not work if the replacement string is shorter than
+%       the findX.
+% function strOut = replace_string(strIn,findX,replaceX)
+%     % find all occurances of findX string
+%     ind=strfind(strIn,findX);
+%     strOut = strIn;
+%     N = length(findX);
+%     M = length(replaceX);
+%     if ~isempty(ind)
+%         %create a matrix of indexes ind21 that point to where the replacement values
+%         % should go
+%         x=0:N-1;
+%         ind1=x(ones(length(ind),1),:);
+%         ind2=ind(ones(N,1),:)';
+%         ind21=ind1+ind2;
+% 
+%         % create a replacement string of the same length as the strIN 
+%         % (Manual procedure - count the characters!)
+%         strReplace = [char(ones(1,N-M)*' ') replaceX];
+%         strOut(ind21)=strReplace(ones(length(ind),1),:);
+%     end    
+% end
+

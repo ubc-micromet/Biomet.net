@@ -43,11 +43,13 @@ function [EngUnits,Header,tv,outStruct] = fr_read_generic_data_file(fileName,ass
 %                          
 %
 % (c) Zoran Nesic                   File created:       Dec 20, 2023
-%                                   Last modification:  Feb 14, 2024
+%                                   Last modification:  Feb 16, 2024
 %
 
 % Revisions (last one first):
 %
+% Feb 16, 2024 (Zoran)
+%   - improved renameFields
 % Feb 14, 2024 (Zoran)
 %   - added new input parameter: VariableNamesLine. In some cases readtable cannot figure out which row 
 %     contains the column (variable) names. Use VariableNamesLine to point to that row. EddyPro data needs this set to 2)
@@ -190,20 +192,22 @@ Header = [];  % just a place holder to keep the same output parameters
     end       
 end
 
+% rename fields that are not proper Matlab or Windows names
+% using Biomet/Micromet renaming strategy
 function renFields = renameFields(fieldsIn)
-        for cntFields = 1:length(fieldsIn)
-            newString  = fieldsIn{cntFields};
-            newString  = replace_string(newString,' ','_');
-            newString  = replace_string(newString,'-','_');
-            newString  = replace_string(newString,'u*','us');
-            newString  = strtrim(replace_string(newString,'(z_d)/L','zdL'));
-            newString  = replace_string(newString,'T*','ts');
-            newString  = replace_string(newString,'%','p');
-            newString  = replace_string(newString,'/','_');
-            renFields{cntFields} = newString;
-        end
+    renFields  = strrep(fieldsIn,' ','_');
+    renFields  = strrep(renFields,'-','_');
+    renFields  = strrep(renFields,'u*','us');
+    renFields  = strrep(renFields,'(z_d)/L','zdL');
+    renFields  = strrep(renFields,'T*','ts');
+    renFields  = strrep(renFields,'%','p');
+    renFields  = strrep(renFields,'/','_');
+    renFields  = strrep(renFields,'(','_');
+    renFields  = strrep(renFields,')','');
 end
 
+
+%% OLD
 %-------------------------------------------------------------------
 % function replace_string
 % replaces string findX with the string replaceX and padds
@@ -211,23 +215,39 @@ end
 % length of findX.
 % Note: this will not work if the replacement string is shorter than
 %       the findX.
-function strOut = replace_string(strIn,findX,replaceX)
-    % find all occurances of findX string
-    ind=strfind(strIn,findX);
-    strOut = strIn;
-    N = length(findX);
-    M = length(replaceX);
-    if ~isempty(ind)
-        %create a matrix of indexes ind21 that point to where the replacement values
-        % should go
-        x=0:N-1;
-        ind1=x(ones(length(ind),1),:);
-        ind2=ind(ones(N,1),:)';
-        ind21=ind1+ind2;
+% function strOut = replace_string(strIn,findX,replaceX)
+%     % find all occurances of findX string
+%     ind=strfind(strIn,findX);
+%     strOut = strIn;
+%     N = length(findX);
+%     M = length(replaceX);
+%     if ~isempty(ind)
+%         %create a matrix of indexes ind21 that point to where the replacement values
+%         % should go
+%         x=0:N-1;
+%         ind1=x(ones(length(ind),1),:);
+%         ind2=ind(ones(N,1),:)';
+%         ind21=ind1+ind2;
+% 
+%         % create a replacement string of the same length as the strIN 
+%         % (Manual procedure - count the characters!)
+%         strReplace = [char(ones(1,N-M)*' ') replaceX];
+%         strOut(ind21)=strReplace(ones(length(ind),1),:);
+%     end    
+% end
+% function renFields = renameFields(fieldsIn)
+%         for cntFields = 1:length(fieldsIn)
+%             newString  = fieldsIn{cntFields};
+%             newString  = replace_string(newString,' ','_');
+%             newString  = replace_string(newString,'-','_');
+%             newString  = replace_string(newString,'u*','us');
+%             newString  = strtrim(replace_string(newString,'(z_d)/L','zdL'));
+%             newString  = replace_string(newString,'T*','ts');
+%             newString  = replace_string(newString,'%','p');
+%             newString  = replace_string(newString,'/','_');
+%             newString  = replace_string(newString,'(','_');
+%             newString  = replace_string(newString,')','');
+%             renFields{cntFields} = newString;
+%         end
+% end
 
-        % create a replacement string of the same length as the strIN 
-        % (Manual procedure - count the characters!)
-        strReplace = [char(ones(1,N-M)*' ') replaceX];
-        strOut(ind21)=strReplace(ones(length(ind),1),:);
-    end    
-end
