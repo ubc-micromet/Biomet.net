@@ -138,6 +138,7 @@ function Biomet_Main_Scheduler
     fprintf(fid,'%s\n',result);
         fprintf(fid,'Processing Picarro data.\n');
         cd('\\files.ubc.ca\team\LFS\Research_Groups\Sean_Smukler\SALdata\matlab\Zoran_Picarro');
+    fprintf(fid,'%s\n',pwd);
         process_Picarro_AGGP_data;
         fprintf(fid,'%s\n',datetime);
         fprintf(fid,'======= End of Picarro processing (%s) ========\n',datetime);
