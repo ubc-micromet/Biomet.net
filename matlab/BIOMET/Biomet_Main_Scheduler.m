@@ -117,12 +117,12 @@ function Biomet_Main_Scheduler
     
     %--------------------------
     % Picarro data processing
-    if hourX == 1 && ismember(minuteX,[22 52]) ...
-            || hourX == 2 && ismember(minuteX,[22]) %#ok<*NBRAK>
+    if hourX == 2 && ismember(minuteX,[22 52])  %#ok<*NBRAK>
         fprintf(fid,'======= Picarro processing ========\n');
         fprintf(fid,'Moving ZIP files from Sync.com to Sites.\n');
         fprintf(fid,'%s\n',datetime);
         [status,result] = system('"C:\Ubc_flux\Move_DailyZipFiles_from_Public_to_Sites.bat"');
+    fprintf(fid,'%s\n',result);
         % *** Note: UBC_ZIP.exe has a one minute wait period before it returns control to 
         %           Matlab. Use "&" to avoid waiting for it to return
         %           control to Matlab but be aware that the unzipping may
@@ -131,9 +131,11 @@ function Biomet_Main_Scheduler
         %           UBC_ZIP to finish 60s wait.
         % ***          
         fprintf(fid,'Unzipping files.\n');
-        [status,result] = system('C:\Ubc_flux\UBC_ZIP.exe C:\Ubc_flux\ubc_unzip.ini');        
+        [status,result] = system('C:\Ubc_flux\UBC_ZIP.exe C:\Ubc_flux\ubc_unzip.ini'); 
+    fprintf(fid,'%s\n',result);
         fprintf(fid,'Moving Picarro files to files.ubc.ca\\team.\n');
         [status,result] = system('"C:\Ubc_flux\PicarroMove.bat"');
+    fprintf(fid,'%s\n',result);
         fprintf(fid,'Processing Picarro data.\n');
         cd('\\files.ubc.ca\team\LFS\Research_Groups\Sean_Smukler\SALdata\matlab\Zoran_Picarro');
         process_Picarro_AGGP_data;
