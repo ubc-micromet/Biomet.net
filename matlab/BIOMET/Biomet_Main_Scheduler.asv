@@ -9,10 +9,15 @@ function Biomet_Main_Scheduler
 %
 %
 % Zoran Nesic           File created:       Feb 12, 2024
-%                       Last modification:  Feb 13, 2024
+%                       Last modification:  Feb 19, 2024
 
 % Revisions:
 %
+% Feb 19, 2024 (Zoran)
+%   - Reprogrammed robocopy and move options to work from Matlab directly
+%       not through the C:\Ubc_flux\PicarroMove.bat file. For some reason the robocopy could not see
+%       the target folder when used from the bat file. This is an attempt to
+%       fix it. Will see h
 % Feb 13, 2024
 %   - Added:
 %       cd('\\files.ubc.ca\team\LFS\Research_Groups\Sean_Smukler\SALdata\matlab\Zoran_Picarro');
@@ -29,7 +34,7 @@ function Biomet_Main_Scheduler
   
     fprintf(fid,'============== Biomet_Main_Scheduler.m ==================\n');
     fprintf(fid,' %s\n',datetime);
-    
+  
     %----------------------------------
     % Climate station data processing
     if minuteX == 2 || minuteX == 32
@@ -117,8 +122,11 @@ function Biomet_Main_Scheduler
     
     %--------------------------
     % Picarro data processing
-    if hourX == 1 && ismember(minuteX,[22 52]) ...
-            || hourX == 2 && ismember(minuteX,[22]) %#ok<*NBRAK>
+    % 
+    % I could also use:
+    %  [status,result] = system('"C:\Ubc_flux\dbase_update\Run_Picarro_from_Matlab_via_TaskManager.lnk"')
+    %
+    if hourX == 2 && ismember(minuteX,[22 52])  %#ok<*NBRAK>
         fprintf(fid,'======= Picarro processing ========\n');
         fprintf(fid,'Moving ZIP files from Sync.com to Sites.\n');
         fprintf(fid,'%s\n',datetime);
@@ -135,10 +143,24 @@ function Biomet_Main_Scheduler
         [status,result] = system('C:\Ubc_flux\UBC_ZIP.exe C:\Ubc_flux\ubc_unzip.ini'); 
     fprintf(fid,'%s\n',result);
         fprintf(fid,'Moving Picarro files to files.ubc.ca\\team.\n');
-        [status,result] = system('"C:\Ubc_flux\PicarroMove.bat"');
+[status,result] = system('robocopy D:\Sites\Picarro_AGGP\DataLog_User        "T:\Research_Groups\Sean_Smukler\SALdata\GHGdata\SAL Picarro All Data\UBC Farm Continous Data" /MOVE /E /NDL /NFL "');
+fprintf(fid,'%s\n',result);
+[status,result] = system('"rmdir D:\Sites\Picarro_AGGP\DataLog_User /S/Q "');
+fprintf(fid,'%s\n',result);
+[status,result] = system('robocopy D:\Sites\Picarro_AGGP\UBC_folder\csi_net  "T:\Research_Groups\Sean_Smukler\SALdata\GHGdata\SAL Picarro All Data\met-data\csi_net"                  /E /NDL /NFL         "');
+fprintf(fid,'%s\n',result);
+[status,result] = system('robocopy D:\Sites\Picarro_AGGP\UBC_folder          "T:\Research_Groups\Sean_Smukler\SALdata\GHGdata\SAL Picarro All Data\UBC Farm Continous Data\UBC_folder"  /MOVE /E /NDL /NFL "');
+fprintf(fid,'%s\n',result);
+[status,result] = system('rmdir D:\Sites\Picarro_AGGP\UBC_folder /S/Q ');
+fprintf(fid,'%s\n',result);
+
+        %[status,result] = system('"C:\Ubc_flux\PicarroMove.bat"');
     fprintf(fid,'%s\n',result);
+    [status,result] = system('dir \\files.ubc.ca\team\LFS\Research_Groups\');
+    fprintf(fid,'$s\n',result);
         fprintf(fid,'Processing Picarro data.\n');
         cd('\\files.ubc.ca\team\LFS\Research_Groups\Sean_Smukler\SALdata\matlab\Zoran_Picarro');
+    fprintf(fid,'%s\n',pwd);
         process_Picarro_AGGP_data;
         fprintf(fid,'%s\n',datetime);
         fprintf(fid,'======= End of Picarro processing (%s) ========\n',datetime);
