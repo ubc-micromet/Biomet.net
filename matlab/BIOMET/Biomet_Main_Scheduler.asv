@@ -9,10 +9,14 @@ function Biomet_Main_Scheduler
 %
 %
 % Zoran Nesic           File created:       Feb 12, 2024
-%                       Last modification:  Feb 19, 2024
+%                       Last modification:  Feb 20, 2024
 
 % Revisions:
 %
+% Feb 20, 2024 (Zoran)
+%   - Still refusing to work when started by Task Scheduler. 
+%     It doesn't want to see the files on drive T:
+%     Replace T: with \files.ubc.ca\Team based on my notes in OneNote.
 % Feb 19, 2024 (Zoran)
 %   - Reprogrammed robocopy and move options to work from Matlab directly
 %       not through the C:\Ubc_flux\PicarroMove.bat file. For some reason the robocopy could not see
@@ -145,13 +149,13 @@ function Biomet_Main_Scheduler
         [status,result] = system('C:\Ubc_flux\UBC_ZIP.exe C:\Ubc_flux\ubc_unzip.ini'); 
     fprintf(fid,'%s\n',result);
         fprintf(fid,'Moving Picarro files to files.ubc.ca\\team.\n');
-[status,result] = system('robocopy D:\Sites\Picarro_AGGP\DataLog_User        "\\files.ubc.ca\Team\Research_Groups\Sean_Smukler\SALdata\GHGdata\SAL Picarro All Data\UBC Farm Continous Data" /MOVE /E /NDL /NFL "');
+[status,result] = system('robocopy D:\Sites\Picarro_AGGP\DataLog_User        "\\files.ubc.ca\Team\LFS\Research_Groups\Sean_Smukler\SALdata\GHGdata\SAL Picarro All Data\UBC Farm Continous Data" /MOVE /E /NDL /NFL "');
 fprintf(fid,'%s\n',result);
 [status,result] = system('"rmdir D:\Sites\Picarro_AGGP\DataLog_User /S/Q "');
 fprintf(fid,'%s\n',result);
-[status,result] = system('robocopy D:\Sites\Picarro_AGGP\UBC_folder\csi_net  "\\files.ubc.ca\Team\Research_Groups\Sean_Smukler\SALdata\GHGdata\SAL Picarro All Data\met-data\csi_net"                  /E /NDL /NFL         "');
+[status,result] = system('robocopy D:\Sites\Picarro_AGGP\UBC_folder\csi_net  "\\files.ubc.ca\Team\LFS\Research_Groups\Sean_Smukler\SALdata\GHGdata\SAL Picarro All Data\met-data\csi_net"                  /E /NDL /NFL         "');
 fprintf(fid,'%s\n',result);
-[status,result] = system('robocopy D:\Sites\Picarro_AGGP\UBC_folder          "\\files.ubc.ca\Team\Research_Groups\Sean_Smukler\SALdata\GHGdata\SAL Picarro All Data\UBC Farm Continous Data\UBC_folder"  /MOVE /E /NDL /NFL "');
+[status,result] = system('robocopy D:\Sites\Picarro_AGGP\UBC_folder          "\\files.ubc.ca\Team\LFS\Research_Groups\Sean_Smukler\SALdata\GHGdata\SAL Picarro All Data\UBC Farm Continous Data\UBC_folder"  /MOVE /E /NDL /NFL "');
 fprintf(fid,'%s\n',result);
 [status,result] = system('rmdir D:\Sites\Picarro_AGGP\UBC_folder /S/Q ');
 fprintf(fid,'%s\n',result);
@@ -206,10 +210,9 @@ function Process_Climate_Station(fid)
             for cntFiles = 1:length(sConflictFiles)
                 fileName         = sConflictFiles(cntFiles).name;
                 sourceFile       = fullfile(filePath,fileName);
-                % dt =
-                % datetime(sConflictFiles(cntFiles).datenum,'convertfrom','datenum')
-                % string(dt,'yyyymmdd''T''HHMMSS')
-                fileExt          = datestr(sConflictFiles(cntFiles).datenum,30);
+                dt               = datetime(sConflictFiles(cntFiles).datenum,'convertfrom','datenum');
+                fileExt          = string(dt,'yyyyMMdd''T''HHmmSS');
+                %fileExt          = datestr(sConflictFiles(cntFiles).datenum,30);
                 destinationFile1 = fullfile(destinationPath,[fileName(1:end-3) fileExt]);
                 [Status1,Message1,MessageID1] = fr_movefile(sourceFile,destinationFile1);
             end
