@@ -147,21 +147,22 @@ function Biomet_Main_Scheduler
         % ***          
         fprintf(fid,'Unzipping files.\n');
         [status,result] = system('C:\Ubc_flux\UBC_ZIP.exe C:\Ubc_flux\ubc_unzip.ini'); 
-    fprintf(fid,'%s\n',result);
+        fprintf(fid,'%s\n',result);
         fprintf(fid,'Moving Picarro files to files.ubc.ca\\team.\n');
-[status,result] = system('robocopy D:\Sites\Picarro_AGGP\DataLog_User        "\\files.ubc.ca\Team\Research_Groups\Sean_Smukler\SALdata\GHGdata\SAL Picarro All Data\UBC Farm Continous Data" /MOVE /E /NDL /NFL "');
+[status,result] = system('robocopy D:\Sites\Picarro_AGGP\DataLog_User        "\\files.ubc.ca\Team\LFS\Research_Groups\Sean_Smukler\SALdata\GHGdata\SAL Picarro All Data\UBC Farm Continous Data" /MOVE /E /NDL /NFL "');
 fprintf(fid,'%s\n',result);
-[status,result] = system('"rmdir D:\Sites\Picarro_AGGP\DataLog_User /S/Q "');
+% [status,result] = system('"rmdir D:\Sites\Picarro_AGGP\DataLog_User /S/Q "');
+[success,result] = rmdir('D:\Sites\Picarro_AGGP\DataLog_User','s');
 fprintf(fid,'%s\n',result);
-[status,result] = system('robocopy D:\Sites\Picarro_AGGP\UBC_folder\csi_net  "\\files.ubc.ca\Team\Research_Groups\Sean_Smukler\SALdata\GHGdata\SAL Picarro All Data\met-data\csi_net"                  /E /NDL /NFL         "');
+[status,result] = system('robocopy D:\Sites\Picarro_AGGP\UBC_folder\csi_net  "\\files.ubc.ca\Team\LFS\Research_Groups\Sean_Smukler\SALdata\GHGdata\SAL Picarro All Data\met-data\csi_net"                  /E /NDL /NFL         "');
 fprintf(fid,'%s\n',result);
-[status,result] = system('robocopy D:\Sites\Picarro_AGGP\UBC_folder          "\\files.ubc.ca\Team\Research_Groups\Sean_Smukler\SALdata\GHGdata\SAL Picarro All Data\UBC Farm Continous Data\UBC_folder"  /MOVE /E /NDL /NFL "');
+[status,result] = system('robocopy D:\Sites\Picarro_AGGP\UBC_folder          "\\files.ubc.ca\Team\LFS\Research_Groups\Sean_Smukler\SALdata\GHGdata\SAL Picarro All Data\UBC Farm Continous Data\UBC_folder"  /MOVE /E /NDL /NFL "');
 fprintf(fid,'%s\n',result);
 [status,result] = system('rmdir D:\Sites\Picarro_AGGP\UBC_folder /S/Q ');
 fprintf(fid,'%s\n',result);
 
         %[status,result] = system('"C:\Ubc_flux\PicarroMove.bat"');
-    fprintf(fid,'%s\n',result);
+        % fprintf(fid,'%s\n',result);
     [status,result] = system('dir \\files.ubc.ca\team\LFS\Research_Groups\');
     fprintf(fid,'%s\n',result);
         fprintf(fid,'Processing Picarro data.\n');
