@@ -17,7 +17,7 @@ function Biomet_Main_Scheduler
 %   - Reprogrammed robocopy and move options to work from Matlab directly
 %       not through the C:\Ubc_flux\PicarroMove.bat file. For some reason the robocopy could not see
 %       the target folder when used from the bat file. This is an attempt to
-%       fix it. Will see h
+%       fix it. Will see how it goes.
 % Feb 13, 2024
 %   - Added:
 %       cd('\\files.ubc.ca\team\LFS\Research_Groups\Sean_Smukler\SALdata\matlab\Zoran_Picarro');
@@ -125,8 +125,10 @@ function Biomet_Main_Scheduler
     % 
     % I could also use:
     %  [status,result] = system('"C:\Ubc_flux\dbase_update\Run_Picarro_from_Matlab_via_TaskManager.lnk"')
+    % (I tested it and it works. Don't like using tasks for this
+    % so I'll try converting C:\Ubc_flux\PicarroMove.bat to Matlab code)
     %
-    if hourX == 2 && ismember(minuteX,[22 52])  %#ok<*NBRAK>
+    if (hourX == 1 && ismember(minuteX,[52]) ) || (hourX == 2 && ismember(minuteX,[22 52]))  %#ok<*NBRAK>
         fprintf(fid,'======= Picarro processing ========\n');
         fprintf(fid,'Moving ZIP files from Sync.com to Sites.\n');
         fprintf(fid,'%s\n',datetime);
@@ -143,13 +145,13 @@ function Biomet_Main_Scheduler
         [status,result] = system('C:\Ubc_flux\UBC_ZIP.exe C:\Ubc_flux\ubc_unzip.ini'); 
     fprintf(fid,'%s\n',result);
         fprintf(fid,'Moving Picarro files to files.ubc.ca\\team.\n');
-[status,result] = system('robocopy D:\Sites\Picarro_AGGP\DataLog_User        "T:\Research_Groups\Sean_Smukler\SALdata\GHGdata\SAL Picarro All Data\UBC Farm Continous Data" /MOVE /E /NDL /NFL "');
+[status,result] = system('robocopy D:\Sites\Picarro_AGGP\DataLog_User        "\\files.ubc.ca\Team\Research_Groups\Sean_Smukler\SALdata\GHGdata\SAL Picarro All Data\UBC Farm Continous Data" /MOVE /E /NDL /NFL "');
 fprintf(fid,'%s\n',result);
 [status,result] = system('"rmdir D:\Sites\Picarro_AGGP\DataLog_User /S/Q "');
 fprintf(fid,'%s\n',result);
-[status,result] = system('robocopy D:\Sites\Picarro_AGGP\UBC_folder\csi_net  "T:\Research_Groups\Sean_Smukler\SALdata\GHGdata\SAL Picarro All Data\met-data\csi_net"                  /E /NDL /NFL         "');
+[status,result] = system('robocopy D:\Sites\Picarro_AGGP\UBC_folder\csi_net  "\\files.ubc.ca\Team\Research_Groups\Sean_Smukler\SALdata\GHGdata\SAL Picarro All Data\met-data\csi_net"                  /E /NDL /NFL         "');
 fprintf(fid,'%s\n',result);
-[status,result] = system('robocopy D:\Sites\Picarro_AGGP\UBC_folder          "T:\Research_Groups\Sean_Smukler\SALdata\GHGdata\SAL Picarro All Data\UBC Farm Continous Data\UBC_folder"  /MOVE /E /NDL /NFL "');
+[status,result] = system('robocopy D:\Sites\Picarro_AGGP\UBC_folder          "\\files.ubc.ca\Team\Research_Groups\Sean_Smukler\SALdata\GHGdata\SAL Picarro All Data\UBC Farm Continous Data\UBC_folder"  /MOVE /E /NDL /NFL "');
 fprintf(fid,'%s\n',result);
 [status,result] = system('rmdir D:\Sites\Picarro_AGGP\UBC_folder /S/Q ');
 fprintf(fid,'%s\n',result);
@@ -157,7 +159,7 @@ fprintf(fid,'%s\n',result);
         %[status,result] = system('"C:\Ubc_flux\PicarroMove.bat"');
     fprintf(fid,'%s\n',result);
     [status,result] = system('dir \\files.ubc.ca\team\LFS\Research_Groups\');
-    fprintf(fid,'$s\n',result);
+    fprintf(fid,'%s\n',result);
         fprintf(fid,'Processing Picarro data.\n');
         cd('\\files.ubc.ca\team\LFS\Research_Groups\Sean_Smukler\SALdata\matlab\Zoran_Picarro');
     fprintf(fid,'%s\n',pwd);
