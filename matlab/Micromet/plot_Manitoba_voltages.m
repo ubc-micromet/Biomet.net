@@ -31,4 +31,6 @@ set(gcf,'PaperPosition',[0.5 0.5 10 7.5])
 set(gcf,'PaperSize',[11 8.5])
 saveas(gcf,'G:\My Drive\Micromet Lab\Projects\ForPascal\Manitoba_Voltages','pdf')
 
+close(gcf)
+
 

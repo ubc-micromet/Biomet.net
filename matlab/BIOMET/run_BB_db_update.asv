@@ -11,10 +11,7 @@ function run_BB_db_update(yearIn,sites)
 % Feb 21, 2024 (Zoran)
 %   - limited BBS processing to twice per day at 1 and 13 hours
 %   - same for Flags processing except the hours are 2 and 14
-%   - the two changes shaved off almost 2 minutes from the totals (360s vs
-%     240s). The next improvement would be speeding up (or not doing)
-%     the Web updates (they take ~80s)
-%   - added some extra headers and footers, cleaned up the existing ones.
+%   - the two changes shaved off almost 2 minutes from the totals
 % Feb 8, 2024 (Zoran)
 %   - Added plot_Manitoba_voltages
 % Jul 27, 2023 (Zoran, June)

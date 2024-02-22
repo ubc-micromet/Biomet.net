@@ -121,7 +121,7 @@ for cntYears=1:length(yearIn)
         %======================================
         try
             outputPath = FluxDatabase_Pth;
-            inputPath = fullfile('p:\sites', siteID, 'Flux', num2str(yearIn(cntYears)), '*_EP-Summary*.txt');
+            inputPath = fullfile('p:\sites', siteID, 'Flux', [num2str(yearIn(cntYears)) '*_EP-Summary*.txt']);
             progressList = progressList_SmartFlux_Pth;  
             [numOfFilesProcessed,numOfDataPointsProcessed]= fr_EddyPro_database(inputPath,progressList,outputPath,[],[],missingPointValue);           
             fprintf('  %s  HH_SmartFlux:  Number of files processed = %d, Number of HHours = %d\n',siteID,numOfFilesProcessed,numOfDataPointsProcessed);
