@@ -3,12 +3,14 @@ function db_update_Micromet_EddyPro_Recalcs(yearIn,sites,flagProcessBiometEddyPr
 %
 %
 % Zoran Nesic       File created:       Aug 24, 2022
-%                   Last modification:  Jul 22, 2023 (Zoran)
+%                   Last modification:  Feb 16, 2024 
 % 
 
 
 % Revisions:
 %
+% Feb 16, 2024 (Zoran)
+%   - changed fr_SmartFlux_database to fr_EddyPro_database
 % Jul 22, 2023 (Zoran)
 %  - Added option to use a different path to "Sites" folder if there is a file
 %    biomet_sites_default.m on the path. Otherwise the program defaults to "p:\Sites'
@@ -48,7 +50,7 @@ for k=1:length(yearIn)
         inputPath = fullfile(sites_pth,...
                            sprintf('%s/Flux/eddypro_%s_%d*_full_output*_adv.csv',siteID,siteID,yearIn(k)));
         % Process the new files
-        [numOfFilesProcessed,numOfDataPointsProcessed]= fr_SmartFlux_database(inputPath,progressListPath,outputPath,[],[],missingPointValue);           
+        [numOfFilesProcessed,numOfDataPointsProcessed]= fr_EddyPro_database(inputPath,progressListPath,outputPath,[],[],missingPointValue);           
         fprintf('%s  EddyPro_full_output:  Number of files processed = %d, Number of HHours = %d\n',siteID,numOfFilesProcessed,numOfDataPointsProcessed);
         
         % Check if processing of Biomet EddyPro output files is requested
@@ -60,7 +62,7 @@ for k=1:length(yearIn)
             inputPath = fullfile(sites_pth,...
                                sprintf('%s/Flux/eddypro_%s_%d*_biomet*_adv.csv',siteID,siteID,yearIn(k)));
             % Process the new files
-            [numOfFilesProcessed,numOfDataPointsProcessed]= fr_SmartFlux_database(inputPath,progressListPath,outputPath,[],[],missingPointValue);           
+            [numOfFilesProcessed,numOfDataPointsProcessed]= fr_EddyPro_database(inputPath,progressListPath,outputPath,[],[],missingPointValue);           
             fprintf('%s  EddyPro_biomet:  Number of files processed = %d, Number of HHours = %d\n',siteID,numOfFilesProcessed,numOfDataPointsProcessed);
         end
     end %j  site counter
