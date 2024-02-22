@@ -18,10 +18,13 @@ function trace_str = read_data(yearIn, SiteID, ini_file, sourceDB, options)
 %                      See the function 'read_ini_file' for more information
 
 
-% last modification: Feb 15, 2023 
+% last modification: Feb 22, 2024
 
 % revisions:
 %
+% Feb 22, 2024 (Zoran)
+%   - added  && ~isempty(trace_str(1).searchPath) to avoid warning
+%     messages.
 % Feb 15, 2023 (Zoran)
 %   - made SearchPath option 'auto' work for the ThirdStage.ini files too.  
 % Jan 23, 2023 (Zoran)
@@ -218,7 +221,7 @@ bermsData = [];								%holds all the data from the berms database, filled only 
 bermsPath = '';								%holds the path location of the berms database
 
 %Break up search path into correct parts
-if isfield(trace_str(1),'searchPath')
+if isfield(trace_str(1),'searchPath') && ~isempty(trace_str(1).searchPath)
    [searchPath, remainder] = strtok( strrep(trace_str(1).searchPath, ',', ' ' ));
 else
    searchPath = [];
