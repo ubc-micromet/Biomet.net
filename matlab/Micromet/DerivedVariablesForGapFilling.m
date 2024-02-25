@@ -18,7 +18,7 @@ function [data_out,clean_tv] = DerivedVariablesForGapFilling(SiteID,FirstYear,tr
         if read_or_write == 1 & exist(setFolderSeparator(fullfile(Database_path,trace_name))) == 2
             [trace,clean_tv] = read_db([FirstYear:current_year],SiteID,'Clean/SecondStage',trace_name);
             if interpolate == 1
-                trace = interp1(clean_tv(isfinite(trace)),trace(isfinite(trace)),clean_tv);
+                trace = interp1(clean_tv(isfinite(trace)),trace(isfinite(trace)),clean_tv,'linear','extrap');
             end
             fileID = fopen(setFolderSeparator(fullfile(Derived_Variables,trace_name)),'w');
             fwrite(fileID,trace,'float32');
