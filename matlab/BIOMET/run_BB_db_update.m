@@ -3,11 +3,15 @@ function run_BB_db_update(yearIn,sites)
 %
 %
 % Zoran Nesic           File created:               2019
-%                       Last modification:  Feb 21, 2024
+%                       Last modification:  Feb 26, 2024
 
 %
 % Revisions:
 %
+% Feb 26, 2024 (Zoran)
+%   - Fixed a bug when the program run EddyPro database on BBS only twice
+%     per day. The idea was to avoid running BBS fr_automated_cleaning all the 
+%     time. Moved the if statement to bracket only fr_automated_cleaning.
 % Feb 21, 2024 (Zoran)
 %   - limited BBS processing to twice per day at 1 and 13 hours
 %   - same for Flags processing except the hours are 2 and 14
@@ -43,42 +47,41 @@ for cntStr = sites
     % if the site is not BBS run the full processing
     % also run if the site is BBS but the hour is either 1 or 13 and
     % the minutes are less than 30
-    if ~strcmpi(siteID,'BBS') || (ismember(hour(startTime),[1 13]) && minute(startTime)<30)
-        try
-            % Run database update without Web data processing
-            db_update_BB_site(yearIn,cntStr,1);
-        catch
-            fprintf('An error happen while running db_update_BB_site in run_BB_db_update.m\n');
-        end    
-        try
-            % Run database update for EddyPro recalced without Web data processing
-            db_update_Micromet_EddyPro_Recalcs(yearIn,cntStr);
-        catch
-            fprintf('An error happen while running db_update_Micromet_EddyPro_Recalcs in run_BB_db_update.m\n');
-        end
+    try
+        % Run database update without Web data processing
+        db_update_BB_site(yearIn,cntStr,1);
+    catch
+        fprintf('An error happen while running db_update_BB_site in run_BB_db_update.m\n');
+    end    
+    try
+        % Run database update for EddyPro recalced without Web data processing
+        db_update_Micromet_EddyPro_Recalcs(yearIn,cntStr);
+    catch
+        fprintf('An error happen while running db_update_Micromet_EddyPro_Recalcs in run_BB_db_update.m\n');
+    end
+    switch siteID
+        case 'DSM'
+            %Photo_Download(sites,[]);
+            netCam_Link = 'http://173.181.139.5:4925/netcam.jpg';
+            Call_WebCam_Picture(siteID,netCam_Link)
+        case 'RBM'
+            %Photo_Download(sites,[]);
+            netCam_Link = 'http://173.181.139.4:4925/netcam.jpg';
+            Call_WebCam_Picture(siteID,netCam_Link)
+        otherwise
+    end
+        
+    %Run quick daily total calculation for Pascal (DUC)
+    try
         switch siteID
-            case 'DSM'
-                %Photo_Download(sites,[]);
-                netCam_Link = 'http://173.181.139.5:4925/netcam.jpg';
-                Call_WebCam_Picture(siteID,netCam_Link)
-            case 'RBM'
-                %Photo_Download(sites,[]);
-                netCam_Link = 'http://173.181.139.4:4925/netcam.jpg';
-                Call_WebCam_Picture(siteID,netCam_Link)
+            case {'Hogg','Young','OHM'}
+                Manitoba_dailyvalues(cntStr,[]);
             otherwise
-        end
-        
-        %Run quick daily total calculation for Pascal (DUC)
-        try
-            switch siteID
-                case {'Hogg','Young','OHM'}
-                    Manitoba_dailyvalues(cntStr,[]);
-                otherwise
-            end    
-        catch
-            fprintf('Manitoba_dailyvalues() calculation failed for siteID: %s\n',siteID);
-        end
-        
+        end    
+    catch
+        fprintf('Manitoba_dailyvalues() calculation failed for siteID: %s\n',siteID);
+    end
+   if ~strcmpi(siteID,'BBS') || (ismember(hour(startTime),[1 13]) && minute(startTime)<30)
         % Run automated cleaning stages 1 and 2 so we have clean data
         % available for plotting and exporting (if needed)
         try

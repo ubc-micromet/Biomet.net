@@ -11,7 +11,10 @@ function run_BB_db_update(yearIn,sites)
 % Feb 21, 2024 (Zoran)
 %   - limited BBS processing to twice per day at 1 and 13 hours
 %   - same for Flags processing except the hours are 2 and 14
-%   - the two changes shaved off almost 2 minutes from the totals
+%   - the two changes shaved off almost 2 minutes from the totals (360s vs
+%     240s). The next improvement would be speeding up (or not doing)
+%     the Web updates (they take ~80s)
+%   - added some extra headers and footers, cleaned up the existing ones.
 % Feb 8, 2024 (Zoran)
 %   - Added plot_Manitoba_voltages
 % Jul 27, 2023 (Zoran, June)
@@ -40,7 +43,6 @@ for cntStr = sites
     % if the site is not BBS run the full processing
     % also run if the site is BBS but the hour is either 1 or 13 and
     % the minutes are less than 30
-    if ~strcmpi(siteID,'BBS') || (ismember(hour(startTime),[1 13]) && minute(startTime)<30)
         try
             % Run database update without Web data processing
             db_update_BB_site(yearIn,cntStr,1);
@@ -75,15 +77,16 @@ for cntStr = sites
         catch
             fprintf('Manitoba_dailyvalues() calculation failed for siteID: %s\n',siteID);
         end
-        
-        % Run automated cleaning stages 1 and 2 so we have clean data
-        % available for plotting and exporting (if needed)
-        try
-            fr_automated_cleaning(yearIn,siteID,[1 2]);
-        catch
-            fprintf('An error happen while running fr_automated_cleaning in run_BB_db_update.m\n');
-        end  
-    end
+       if ~strcmpi(siteID,'BBS') || (ismember(hour(startTime),[1 13]) && minute(startTime)<30)
+
+            % Run automated cleaning stages 1 and 2 so we have clean data
+            % available for plotting and exporting (if needed)
+            try
+                fr_automated_cleaning(yearIn,siteID,[1 2]);
+            catch
+                fprintf('An error happen while running fr_automated_cleaning in run_BB_db_update.m\n');
+            end  
+        end
 end
 
 %================
