@@ -393,7 +393,7 @@ if all(ismember(Sites,micrometSites))
         activate = '.\activate.bat';
         % a)
         if exist(pyenvPath,'dir') & isfile (pyScript) & hour(datetime)==1
-            CLI_args = sprintf("cd %s & %s & python %s --Task GSheetDump & deactivate & cd %s",pyenvPath,activate,pyScript,bioMetMatRoot);
+            CLI_args = sprintf("C: & cd %s & %s & python %s --Task GSheetDump & deactivate & cd %s",pyenvPath,activate,pyScript,bioMetMatRoot);
             [status,cmdout] = system(CLI_args);
             if status == 0
                 disp(fprintf('Read G Drive Files \n %s',cmdout))
@@ -403,7 +403,7 @@ if all(ismember(Sites,micrometSites))
         % b)
         elseif  exist(pyenvPath,'dir') & isfile (pyScript) & hour(datetime)==23
             ini_file = fullfile(bioMetPyRoot,'ini_files/ReadTraces_Biomet_Dump.ini');
-            CLI_args = sprintf("cd %s & %s & python %s --Task Read --ini %s --Sites %s --Years %s & deactivate & cd %s",pyenvPath,activate,pyScript,ini_file,strjoin(Sites),strjoin(string(Years)),bioMetMatRoot);
+            CLI_args = sprintf("C: & cd %s & %s & python %s --Task Read --ini %s --Sites %s --Years %s & deactivate & cd %s",pyenvPath,activate,pyScript,ini_file,strjoin(Sites),strjoin(string(Years)),bioMetMatRoot);
             [status,cmdout] = system(CLI_args);
             if status == 0
                 disp(fprintf('Writing Biomet Files \n %s',cmdout))
