@@ -9,6 +9,7 @@ import pathlib
 import sys
 import TzFuncs
 import time
+import json
 
 class DatabaseFunctions():
 
@@ -41,8 +42,6 @@ class DatabaseFunctions():
         for site_name in self.years_by_site.keys():
             if os.path.isfile(f'ini_files/site_configurations/{site_name}.ini'):
                 self.ini.read(f'ini_files/site_configurations/{site_name}.ini')
-            else:
-                print(f'{site_name} config file does not exist. Skpping')
         
     def sub(self,s):
         for path in self.ini['Paths'].keys():
@@ -280,19 +279,23 @@ class GSheetDump(DatabaseFunctions):
         self.padFullYear()
 
 class MakeCSV(DatabaseFunctions):
-    def __init__(self,Sites=None,Years=None,ini='ini_files/ReadTraces.ini'):
+    def __init__(self,Sites=None,Years=None,ini='ini_files/Write_CSV_Files.ini'):
         super().__init__(ini)
+        T1 = time.time()
         if Sites is None:
             Sites = self.years_by_site.keys()
         for self.site_name in Sites:
-            for self.Request in self.ini['Output']['requests'].split(','):
+            for Request,config in self.ini['Output'].items():
+                print(Request,config)
+                with open(f'ini_files/{config}') as json_file:
+                    self.config = json.load(json_file)
                 if Years is not None:
                     self.years_by_site[self.site_name] = Years
-                print(f'Creating .csv files for {self.site_name}: {self.Request}')
-                if self.ini[self.Request]['by_year']=='True':
+                print(f'Creating {Request} .csv files for {self.site_name}')
+                if self.config['by_year']=='True':
                     for self.Year in self.years_by_site[self.site_name]:
                         self.AllData = pd.DataFrame()
-                        self.dpath = self.sub(self.ini['Paths']['database_read'])+self.ini[self.Request]['stage']+'/'
+                        self.dpath = self.sub(self.ini['Paths']['database_read'])+self.config['stage']+'/'
                         if os.path.exists(self.dpath):
                             self.readYear()
                         self.write_csv()
@@ -300,7 +303,7 @@ class MakeCSV(DatabaseFunctions):
                 else:
                     self.AllData = pd.DataFrame()
                     for self.Year in self.years_by_site[self.site_name]:
-                        self.dpath = self.sub(self.ini['Paths']['database_read'])+self.ini[self.Request]['stage']+'/'
+                        self.dpath = self.sub(self.ini['Paths']['database_read'])+self.config['stage']+'/'
                         if os.path.exists(self.dpath):
                             self.readYear()
                     self.write_csv()
@@ -308,43 +311,36 @@ class MakeCSV(DatabaseFunctions):
     def readYear(self):
         self.readTimeVector()
         self.Data = pd.DataFrame(index=self.Time_Trace,data=self.readTraces())
-        self.Data[self.ini[self.Request]['timestamp']] = self.Data.index.floor('Min').strftime(self.ini[self.Request]['timestamp_FMT'])
-        for renames in self.ini[self.Request]['rename'].split(','):
-            r = renames.split('|')
-            if len(r)>1:
-                self.Data = self.Data.rename(columns={r[0]:r[1]})
-                if r[0] in self.unitDict:
-                    self.unitDict[r[1]]=self.unitDict.pop(r[0])
+        self.Data[self.config['timestamp']['output_name']] = self.Data.index.floor('Min').strftime(self.config['timestamp']['timestamp_fmt'])
         self.AllData = pd.concat([self.AllData,self.Data])
         self.AllData = self.AllData.loc[self.AllData.index<=pd.to_datetime('today')]
 
     def readTraces(self):
         D_traces = {}
         self.unitDict = {}
-        for Trace_Name,unit in zip(self.ini[self.Request]['traces'].split(','),self.ini[self.Request]['units'].split(',')):
+        for Trace_Name in self.config['Traces'].keys():
             trace = self.readBinary(Trace_Name,self.ini['Database']['trace_dtype'])
             if trace is not None:
-                D_traces[Trace_Name]=trace
-                self.unitDict[Trace_Name]=unit
+                D_traces[self.config['Traces'][Trace_Name]['output_name']]=trace
+                self.unitDict[self.config['Traces'][Trace_Name]['output_name']]=self.config['Traces'][Trace_Name]['Units']
         return (D_traces)
     
     def write_csv(self):
         if self.AllData.empty:
             print(f'No data to write for{self.site_name}: {self.Year}')
         else:
-            output_path = self.sub(self.ini[self.Request]['output_paths'])
+            output_path = self.sub(self.config['output_path'])
             if os.path.exists(output_path)==False:
                 os.makedirs(output_path)
-            output_path = self.sub(output_path+self.Request+'.csv')
+            output_path = self.sub(output_path+self.config['filename']+'.csv')
             self.addUnits()
-            self.AllData.set_index(self.ini[self.Request]['timestamp'],inplace=True)
+            self.AllData.set_index(self.config['timestamp']['output_name'],inplace=True)
+            self.AllData=self.AllData.fillna(eval(self.config['na_value']))
             self.AllData.to_csv(output_path)
         
     def addUnits(self):
-        if self.ini[self.Request]['units_in_header'].lower() == 'true':
-            self.unitDict['TIMESTAMP'] = self.ini[self.Request]['timestamp_units']
-
-            # unit_dic = {t:u for t,u in zip(self.AllData.columns,units)}
+        if self.config['units_in_header'].lower() == 'true':
+            self.unitDict[self.config['timestamp']['output_name']] = self.config['timestamp']['timestamp_units']
             self.AllData = pd.concat([pd.DataFrame(index=[-1],data=self.unitDict),self.AllData])
             
 
@@ -388,7 +384,7 @@ if __name__ == '__main__':
     
     ini_defaults = {
         'Help':'N\A',
-        'Read':'ini_files/ReadTraces.ini',
+        'CSVDump':'ini_files/Write_CSV_Files.ini',
         'Write':'ini_files/WriteTraces.ini',
         'GSheetDump':'ini_files/WriteTraces_Gsheets.ini'
     }
@@ -399,7 +395,7 @@ if __name__ == '__main__':
         else:
             ini = args.ini
 
-        if Task == 'Read':
+        if Task == 'CSVDump':
             MakeCSV(args.Sites,args.Years,ini=ini)
         elif Task == 'Write':
             MakeTraces(ini=ini)
@@ -407,7 +403,7 @@ if __name__ == '__main__':
             GSheetDump(ini=ini)
         elif Task == 'Help':
             print('Help: \n')
-            print("--Task: options ('Read', 'Write', or 'GSheetDump')")
+            print("--Task: options ('CSVDump', 'Write', or 'GSheetDump')")
             print("--Sites: Leave blank to run all sites or give a list of sites delimited by spaces, e.g., --Sites BB BB2 BBS )\n Only applies if Task == Read")
             print("--Years: Leave blank to run all years or give a list of years delimited by spaces, e.g., --Years 2020 2021 )\n Only applies if Task == Read")
             print("--ini: Leave blank to run default or give a list of ini files corresponding to each Task")

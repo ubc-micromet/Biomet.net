@@ -1,8 +1,8 @@
 
 function SubSurfaceGapfilling(SiteID,var_name_root);
-    % Written by June Skeeter
-    % Jan 30, 2024
-    % Gap-fill VWC data for BB sites (accounting for sensor movement/issues at BB1)
+% Written by June Skeeter
+% Jan 30, 2024
+% Gap-fill sub-surface data for BB sites (accounting for sensor movement/issues at BB1)
 
 arg_default('SiteID','BB');
 arg_default('var_name_root','VWC');
