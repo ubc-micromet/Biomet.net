@@ -41,109 +41,109 @@ fprintf('**** run_BB_db_update ******\n');
 fprintf('============================\n');
 %Cycle through all the sites and do site specific chores
 % (netCam picture taking, Manitoba daily values calculations,...)
-% for cntStr = sites
-   %  siteID = char(cntStr);
-   %  % run BBS site only twice per day (1pm, 1am)
-   %  % if the site is not BBS run the full processing
-   %  % also run if the site is BBS but the hour is either 1 or 13 and
-   %  % the minutes are less than 30
-   %  try
-   %      % Run database update without Web data processing
-   %      db_update_BB_site(yearIn,cntStr,1);
-   %  catch
-   %      fprintf('An error happen while running db_update_BB_site in run_BB_db_update.m\n');
-   %  end    
-   %  try
-   %      % Run database update for EddyPro recalced without Web data processing
-   %      db_update_Micromet_EddyPro_Recalcs(yearIn,cntStr);
-   %  catch
-   %      fprintf('An error happen while running db_update_Micromet_EddyPro_Recalcs in run_BB_db_update.m\n');
-   %  end
-   %  switch siteID
-   %      case 'DSM'
-   %          %Photo_Download(sites,[]);
-   %          netCam_Link = 'http://173.181.139.5:4925/netcam.jpg';
-   %          Call_WebCam_Picture(siteID,netCam_Link)
-   %      case 'RBM'
-   %          %Photo_Download(sites,[]);
-   %          netCam_Link = 'http://173.181.139.4:4925/netcam.jpg';
-   %          Call_WebCam_Picture(siteID,netCam_Link)
-   %      otherwise
-   %  end
-   % 
-   %  %Run quick daily total calculation for Pascal (DUC)
-   %  try
-   %      switch siteID
-   %          case {'Hogg','Young','OHM'}
-   %              Manitoba_dailyvalues(cntStr,[]);
-   %          otherwise
-   %      end    
-   %  catch
-   %      fprintf('Manitoba_dailyvalues() calculation failed for siteID: %s\n',siteID);
-   %  end
-   % if ~strcmpi(siteID,'BBS') || (ismember(hour(startTime),[1 13]) && minute(startTime)<30)
-   %      % Run automated cleaning stages 1 and 2 so we have clean data
-   %      % available for plotting and exporting (if needed)
-   %      try
-   %          fr_automated_cleaning(yearIn,siteID,[1 2]);
-   %      catch
-   %          fprintf('An error happen while running fr_automated_cleaning in run_BB_db_update.m\n');
-   %      end  
-   %  end
-% end
+for cntStr = sites
+    siteID = char(cntStr);
+    % run BBS site only twice per day (1pm, 1am)
+    % if the site is not BBS run the full processing
+    % also run if the site is BBS but the hour is either 1 or 13 and
+    % the minutes are less than 30
+    try
+        % Run database update without Web data processing
+        db_update_BB_site(yearIn,cntStr,1);
+    catch
+        fprintf('An error happen while running db_update_BB_site in run_BB_db_update.m\n');
+    end    
+    try
+        % Run database update for EddyPro recalced without Web data processing
+        db_update_Micromet_EddyPro_Recalcs(yearIn,cntStr);
+    catch
+        fprintf('An error happen while running db_update_Micromet_EddyPro_Recalcs in run_BB_db_update.m\n');
+    end
+    switch siteID
+        case 'DSM'
+            %Photo_Download(sites,[]);
+            netCam_Link = 'http://173.181.139.5:4925/netcam.jpg';
+            Call_WebCam_Picture(siteID,netCam_Link)
+        case 'RBM'
+            %Photo_Download(sites,[]);
+            netCam_Link = 'http://173.181.139.4:4925/netcam.jpg';
+            Call_WebCam_Picture(siteID,netCam_Link)
+        otherwise
+    end
 
-% %================
-% % do web updates 
-% %================
-% % create CSV files for the web server
-% fprintf('\nWeb updates for all sites and all years...\n');
-% tic;
-% sitesWeb = {'BB','BB2','DSM','RBM'};
-% for j=1:length(sitesWeb)
-%     % make sure that a bug in one site processing does not crash all
-%     % updates. Do it one site at the time
-%     try
-%         BB_webupdate(sitesWeb(j),'P:\Micromet_web\www\webdata\resources\csv\');
-%     catch
-%     end
-% end
-% fprintf(' Finished in: %5.1f seconds.\n',toc);
-% 
-% 
-% % Upload CSV files to the web server
-% system('start /MIN C:\Ubc_flux\BiometFTPsite\BB_Web_Update.bat');
-% 
-% % Plot Manitoba voltages
-% try
-%     plot_Manitoba_voltages
-% catch
-% end
+    %Run quick daily total calculation for Pascal (DUC)
+    try
+        switch siteID
+            case {'Hogg','Young','OHM'}
+                Manitoba_dailyvalues(cntStr,[]);
+            otherwise
+        end    
+    catch
+        fprintf('Manitoba_dailyvalues() calculation failed for siteID: %s\n',siteID);
+    end
+   if ~strcmpi(siteID,'BBS') || (ismember(hour(startTime),[1 13]) && minute(startTime)<30)
+        % Run automated cleaning stages 1 and 2 so we have clean data
+        % available for plotting and exporting (if needed)
+        try
+            fr_automated_cleaning(yearIn,siteID,[1 2]);
+        catch
+            fprintf('An error happen while running fr_automated_cleaning in run_BB_db_update.m\n');
+        end  
+    end
+end
+
+%================
+% do web updates 
+%================
+% create CSV files for the web server
+fprintf('\nWeb updates for all sites and all years...\n');
+tic;
+sitesWeb = {'BB','BB2','DSM','RBM'};
+for j=1:length(sitesWeb)
+    % make sure that a bug in one site processing does not crash all
+    % updates. Do it one site at the time
+    try
+        BB_webupdate(sitesWeb(j),'P:\Micromet_web\www\webdata\resources\csv\');
+    catch
+    end
+end
+fprintf(' Finished in: %5.1f seconds.\n',toc);
 
 
+% Upload CSV files to the web server
+system('start /MIN C:\Ubc_flux\BiometFTPsite\BB_Web_Update.bat');
 
-% %----------------------------------------------------------
-% % Process the flags files. This may take some time so it
-% % should be kept at the back of this function so it runs after the
-% % web updates are done. 
-% % Limited running this part to twice per day.
-% 
-% % if the time is right, run the Flags processing
-% if (ismember(hour(datetime),[2 14]) && minute(datetime)<30)
-%     fprintf('\nUpdating Flags database for all sites and for the current year only...');
-%     tic;
-%     % cycle through the sites
-%     for cntStr = sites
-%         siteID = char(cntStr);
-%         fprintf('%s  ',siteID);
-%         try
-%             % Run database update without Web data processing
-%             db_update_flags_files(yearIn,siteID, 'p:/Sites','p:/database');
-%         catch
-%             fprintf('An error happen while running db_update_flags_files in run_BB_db_update.m\n');
-%         end    
-%     end
-%     fprintf(' Finished flag processing in: %5.1f seconds.\n',toc);
-% end
+% Plot Manitoba voltages
+try
+    plot_Manitoba_voltages
+catch
+end
+
+
+
+%----------------------------------------------------------
+% Process the flags files. This may take some time so it
+% should be kept at the back of this function so it runs after the
+% web updates are done. 
+% Limited running this part to twice per day.
+
+% if the time is right, run the Flags processing
+if (ismember(hour(datetime),[2 14]) && minute(datetime)<30)
+    fprintf('\nUpdating Flags database for all sites and for the current year only...');
+    tic;
+    % cycle through the sites
+    for cntStr = sites
+        siteID = char(cntStr);
+        fprintf('%s  ',siteID);
+        try
+            % Run database update without Web data processing
+            db_update_flags_files(yearIn,siteID, 'p:/Sites','p:/database');
+        catch
+            fprintf('An error happen while running db_update_flags_files in run_BB_db_update.m\n');
+        end    
+    end
+    fprintf(' Finished flag processing in: %5.1f seconds.\n',toc);
+end
 
 
 % Added by June Skeeter
@@ -153,9 +153,10 @@ fprintf('============================\n');
 %   a. pull new manual data from G:drive
 %   b. write biomet data for EddyPro and Kljun (2015) FFP input data to highfreq
 
-% Run the following if all Sites are Micromet sites only
-
-test = 2
+arg_default('test',0)
+if ~iscell(sites)
+    sites = {sites};
+end
 if hour(datetime)==0 && minute(datetime)< 30 || test == 1
     for site = sites
         siteID = char(site);
@@ -175,8 +176,7 @@ if hour(datetime)==0 && minute(datetime)< 30 || test == 1
     end
 end
 if hour(datetime)==0 && minute(datetime)> 30 || test == 2
-    % try
-        %2)
+    try
         bioMetRoot = split(matlab.desktop.editor.getActiveFilename,'matlab');
         bioMetRoot = string(bioMetRoot(1));
         bioMetMatRoot = fullfile(string(bioMetRoot(1)),'/matlab/');
@@ -184,29 +184,29 @@ if hour(datetime)==0 && minute(datetime)> 30 || test == 2
         pyenvPath = fullfile(bioMetPyRoot,'.venv/Scripts/');
         pyScript = fullfile(bioMetPyRoot,'DatabaseFunctions.py');
         activate = '.\activate.bat';
-    %     % a)
         if exist(pyenvPath,'dir') & isfile (pyScript)
-            CLI_args = sprintf("cd %s & %s & python %s --Task GSheetDump & deactivate & cd %s",pyenvPath,activate,pyScript,bioMetMatRoot);
+
+            py_call = sprintf("%s --Task GSheetDump --Sites %s",pyScript,strjoin(sites));
+            CLI_args = sprintf("cd %s & %s & python %s & deactivate & cd %s",pyenvPath,activate,py_call,bioMetMatRoot);
             [status,cmdout] = system(CLI_args);
             if status == 0
                 disp(fprintf('Read G Drive Files \n %s',cmdout))
             else
                 disp(fprintf('GSheetDump Failed \n %s',cmdout))
             end
-    %     % b)
-    %     elseif  exist(pyenvPath,'dir') & isfile (pyScript) & hour(datetime)==23
-    %         ini_file = fullfile(bioMetPyRoot,'ini_files/ReadTraces_Biomet_Dump.ini');
-    %         CLI_args = sprintf("cd %s & %s & python %s --Task Read --ini %s --Sites %s --Years %s & deactivate & cd %s",pyenvPath,activate,pyScript,ini_file,strjoin(Sites),strjoin(string(Years)),bioMetMatRoot);
-    %         [status,cmdout] = system(CLI_args);
-    %         if status == 0
-    %             disp(fprintf('Writing Biomet Files \n %s',cmdout))
-    %         else
-    %             disp(fprintf('Writing Biomet Failed \n %s',cmdout))
-    %         end
+
+            py_call = sprintf("%s --Task CSVDump --Sites %s --Years %s",pyScript,strjoin(sites),int2str(yearIn));
+            CLI_args = sprintf("cd %s & %s & python %s & deactivate & cd %s",pyenvPath,activate,py_call,bioMetMatRoot);
+            [status,cmdout] = system(CLI_args);
+            if status == 0
+                disp(fprintf('Writing Biomet Files \n %s',cmdout))
+            else
+                disp(fprintf('Writing Biomet Failed \n %s',cmdout))
+            end
         end
-    % catch
-    %     fprintf('\n\n  ****** Error around Python code ***\n\n');
-    % end
+    catch
+        fprintf('\n\n  ****** Error around Python code ***\n\n');
+    end
 
 
 fprintf('\n\n**** run_BB_db_update finished in %6.1f sec.******\n',seconds(datetime-startTime));

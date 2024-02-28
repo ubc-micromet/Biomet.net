@@ -1,0 +1,43 @@
+{
+  "Traces": {
+    "L": {
+      "Units": "m",
+      "output_name": "L"
+    },
+    "USTAR": {
+      "Units": "m s^-1",
+      "output_name": "USTAR"
+    },
+    "wind_speed": {
+      "Units": "m s^-1",
+      "output_name": "wind_speed"
+    },
+    "wind_dir": {
+      "Units": "deg",
+      "output_name": "wind_dir"
+    },
+    "V_SIGMA": {
+      "Units": "m s^-1",
+      "output_name": "V_SIGMA"
+    },
+    "canopy_height": {
+      "Units": "m",
+      "output_name": "canopy_height"
+    },
+    "hpbl": {
+      "Units": "m",
+      "output_name": "hpbl"
+    }
+  },
+  "timestamp": {
+    "timestamp_fmt": "%Y-%m-%d %H%M",
+    "timestamp_units": "yyyy-mm-dd HHMM",
+    "output_name": "TIMESTAMP"
+  },
+  "units_in_header": "False",
+  "output_path": "HIGHFREQ/footprint/",
+  "by_year": "False",
+  "stage": "Clean/SecondStage/",
+  "na_value": "np.nan",
+  "filename": "np.nan"
+}
