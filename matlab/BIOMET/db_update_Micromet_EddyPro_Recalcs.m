@@ -1,14 +1,17 @@
-function db_update_Micromet_EddyPro_Recalcs(yearIn,sites,flagProcessBiometEddyProFiles)
+function db_update_Micromet_EddyPro_Recalcs(yearIn,sitesIn,flagProcessBiometEddyProFiles)
 % Convert EddyPro recalc files to database (read_bor()) files
 %
 %
 % Zoran Nesic       File created:       Aug 24, 2022
-%                   Last modification:  Feb 16, 2024 
+%                   Last modification:  Feb 28, 2024 
 % 
 
 
 % Revisions:
 %
+% Feb 28, 2024 (Zoran)
+%   - added conversion to a cell for the single sitID inputed as a char.
+%   - syntax cleanup
 % Feb 16, 2024 (Zoran)
 %   - changed fr_SmartFlux_database to fr_EddyPro_database
 % Jul 22, 2023 (Zoran)
@@ -21,9 +24,9 @@ function db_update_Micromet_EddyPro_Recalcs(yearIn,sites,flagProcessBiometEddyPr
 % Aug 29, 2022 (Zoran)
 %   - A small change in an fprintf() line.
 
-dv=datevec(now);
-arg_default('yearIn',dv(1));
-arg_default('sites','BB');
+
+arg_default('yearIn',year(datetime));
+arg_default('sites',{'BB'});
 arg_default('flagProcessBiometEddyProFiles',0);
 
 if exist('biomet_sites_default.m','file')
@@ -36,19 +39,24 @@ missingPointValue = NaN;            % For Micromet sites we'll use NaN to indica
 
 pth_db = db_pth_root; 
 
-for k=1:length(yearIn)
-    for j=1:length(sites)
-        siteID = char(sites(j));
-        fprintf('\n**** Processing Year: %d, Site: %s   *************\n',yearIn(k),siteID);
+if ~iscellstr(sitesIn) %#ok<ISCLSTR>
+    % Assume it is a string with a single SiteId
+    sitesIn = cellstr(sitesIn);
+end
+
+for cntYear=1:length(yearIn)
+    for cntSites=1:length(sitesIn)
+        siteID = char(sitesIn(cntSites));
+        fprintf('\n**** Processing Year: %d, Site: %s   *************\n',yearIn(cntYear),siteID);
 
         % Progress list for EddyPro files
-        progressListPath = fullfile(pth_db,sprintf('%s_EddyPro_progressList_%d.mat',siteID,yearIn(k)));
+        progressListPath = fullfile(pth_db,sprintf('%s_EddyPro_progressList_%d.mat',siteID,yearIn(cntYear)));
 
         % Path to Flux Database
         outputPath = fullfile(pth_db,'yyyy',siteID,'Flux');                     
         % Path to the source files
         inputPath = fullfile(sites_pth,...
-                           sprintf('%s/Flux/eddypro_%s_%d*_full_output*_adv.csv',siteID,siteID,yearIn(k)));
+                           sprintf('%s/Flux/eddypro_%s_%d*_full_output*_adv.csv',siteID,siteID,yearIn(cntYear)));
         % Process the new files
         [numOfFilesProcessed,numOfDataPointsProcessed]= fr_EddyPro_database(inputPath,progressListPath,outputPath,[],[],missingPointValue);           
         fprintf('%s  EddyPro_full_output:  Number of files processed = %d, Number of HHours = %d\n',siteID,numOfFilesProcessed,numOfDataPointsProcessed);
@@ -60,7 +68,7 @@ for k=1:length(yearIn)
             outputPath = fullfile(pth_db,'yyyy',siteID,'Met');                     
             % Path to the source files
             inputPath = fullfile(sites_pth,...
-                               sprintf('%s/Flux/eddypro_%s_%d*_biomet*_adv.csv',siteID,siteID,yearIn(k)));
+                               sprintf('%s/Flux/eddypro_%s_%d*_biomet*_adv.csv',siteID,siteID,yearIn(cntYear)));
             % Process the new files
             [numOfFilesProcessed,numOfDataPointsProcessed]= fr_EddyPro_database(inputPath,progressListPath,outputPath,[],[],missingPointValue);           
             fprintf('%s  EddyPro_biomet:  Number of files processed = %d, Number of HHours = %d\n',siteID,numOfFilesProcessed,numOfDataPointsProcessed);
