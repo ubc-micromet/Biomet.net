@@ -1,22 +1,28 @@
-function [data_out,clean_tv] = DerivedVariablesForGapFilling(SiteID,FirstYear,trace_names,read_or_write,interpolate,moving_avg);
+function [data_out,clean_tv] = DerivedVariablesForGapFilling(siteID,trace_names,read_or_write,interpolate,moving_avg);
     % Written by June Skeeter
     % Jan 30, 2024
     % Dump full time-series of met traces to Derived Variables so they can be used for second stage gap-filling of other met variables
 
-    arg_default('SiteID','BB');
-    arg_default('FirstYear',2014);
+    arg_default('siteID','BB');
     arg_default('trace_names',{'TA_1_1_1','RH_1_1_1','P_1_1_1'});
     arg_default('read_or_write',1) % 0 = read, 1 = write
     arg_default('interpolate',1); % 0 = don't interpolate, 1 = do interpolate
     arg_default('moving_avg',1); % 0 = don't get moving averages, 1 = do get moving averages
     current_year = year(datetime);
     
-    Derived_Variables = setFolderSeparator(fullfile(db_pth_root,'Calculation_Procedures/TraceAnalysis_ini/',SiteID,'/Derived_Variables/'));
-    Database_path = setFolderSeparator(fullfile(db_pth_root,string(FirstYear),SiteID,'Clean/SecondStage'));
+    for cntYears = 2014:year(datetime)
+        if exist(fullfile(db_pth_root,string(cntYears),siteID)) == 7
+            FirstYear = cntYears;
+            break
+        end
+    end
+
+    Derived_Variables = setFolderSeparator(fullfile(db_pth_root,'Calculation_Procedures/TraceAnalysis_ini/',siteID,'/Derived_Variables/'));
+    Database_path = setFolderSeparator(fullfile(db_pth_root,string(FirstYear),siteID,'Clean/SecondStage'));
     for i=1:length(trace_names)
         trace_name = trace_names{i};
         if read_or_write == 1 & exist(setFolderSeparator(fullfile(Database_path,trace_name))) == 2
-            [trace,clean_tv] = read_db([FirstYear:current_year],SiteID,'Clean/SecondStage',trace_name);
+            [trace,clean_tv] = read_db([FirstYear:current_year],siteID,'Clean/SecondStage',trace_name);
             if interpolate == 1
                 trace = interp1(clean_tv(isfinite(trace)),trace(isfinite(trace)),clean_tv,'linear','extrap');
             end
