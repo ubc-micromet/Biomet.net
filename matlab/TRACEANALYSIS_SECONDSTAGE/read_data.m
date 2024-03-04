@@ -115,12 +115,20 @@ end
 % Read each line of the initialization file and add the fields associated 
 % with each trace to the array of traces. 
 flag_read_ini = 0;
-if exist('ini_file') & ~isempty(ini_file)   
-   trace_str = read_ini_file(fid,yearIn);     
-   fclose(fid);
-   if isempty(trace_str)
-      return
-   end
+if exist('ini_file') & ~isempty(ini_file)
+    % Added by June Skeeter to alow reading from updated ini files
+    % Must be updated here and in readIniFileDirect.m < could be approached
+    % differently, just a quick solution for now
+    updated_sites = {'BB','BB2','BBS'};
+    if sum(strcmp(updated_sites,SiteID)) == 0
+        trace_str = read_ini_file(fid,yearIn);  
+    else
+        trace_str = read_ini_file_update(fid,yearIn);  
+    end
+    fclose(fid);
+    if isempty(trace_str)
+        return
+    end
 end
 
 % Fill in the empty year

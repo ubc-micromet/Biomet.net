@@ -42,5 +42,14 @@ else
     fprintf('Could not open file: %s\n', iniFileName);
     return
 end
-trace_str = read_ini_file(fid,yearIn);
+
+% Added by June Skeeter to alow reading from updated ini files
+% Must be updated here and in read_data.m < could be approached
+% differently, just a quick solution for now
+updated_sites = {'BB','BB2','BBS'};
+if sum(strcmp(updated_sites,SiteID)) == 0
+    trace_str = read_ini_file(fid,yearIn);  
+else
+    trace_str = read_ini_file_update(fid,yearIn);  
+end
 fclose(fid);

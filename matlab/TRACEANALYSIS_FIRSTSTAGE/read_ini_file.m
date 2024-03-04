@@ -340,7 +340,7 @@ while isstr(tm_line)
 	      trace_str(count).input_path = input_path;
 	      trace_str(count).output_path = output_path;
 	      trace_str(count).high_level_path = high_level_path;
-         trace_str(count).Last_Updated = datestr(now);   
+          trace_str(count).Last_Updated = datestr(now);   
       end
    	%---------------Finished reading the trace information between [TRACE]->[END] block 
 	 
