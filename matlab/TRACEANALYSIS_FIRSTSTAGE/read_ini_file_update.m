@@ -61,8 +61,8 @@ if~exist('Year','var') || isempty(Year)
 end
 
 % Define which fileds in the ini must exist
-required_common_ini_fields = {'variableName'; 'title'; 'units'; 'minMax'}; 
-required_first_stage_ini_fields = {'inputFileName'; 'measurementType'};
+required_common_ini_fields = {'variableName'; 'title'; 'units'}; 
+required_first_stage_ini_fields = {'inputFileName'; 'measurementType'; 'minMax'};
 required_second_stage_ini_fields = {'Evaluate1'};
 
 
