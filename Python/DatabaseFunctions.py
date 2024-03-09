@@ -332,7 +332,7 @@ class MakeCSV(DatabaseFunctions):
             output_path = self.sub(self.config['output_path'])
             if os.path.exists(output_path)==False:
                 os.makedirs(output_path)
-            output_path = self.sub(output_path+self.config['filename']+'.csv')
+            output_path = self.sub(output_path+self.config['filename'])
             self.addUnits()
             self.AllData.set_index(self.config['timestamp']['output_name'],inplace=True)
             self.AllData=self.AllData.fillna(eval(self.config['na_value']))
@@ -390,6 +390,7 @@ if __name__ == '__main__':
     }
     
     for i,Task in enumerate(args.Task):
+        print(Task)
         if args.ini is None:
             ini = ini_defaults[Task]
         else:
