@@ -245,7 +245,13 @@ function [varNames, unitsOut] = GHG_sep_var_names(orgVarsAndUnits)
         else
             tmpUnits{cntVars} = '';
         end  
-    end   
+        unitsOut.(char(varNames{varCnt})) = char(tmpUnits(varCnt));
+    end
+
+    % Output units in a matching structure
+    for varCnt = 1:length(varNames)
+        unitsOut.(char(varNames{varCnt})) = char(tmpUnits(varCnt));
+    end
 
     % in their wisdom, Matlab people have let multiple traces have
     % the same name. Some of them are just dumb '----'. Deal with those first.
@@ -261,26 +267,19 @@ function [varNames, unitsOut] = GHG_sep_var_names(orgVarsAndUnits)
     %   CO2_1 (mmol/m^3)	CO2_2 (mg/m^3) CO2_3 (umol/mol)	CO2_dry(umol/mol)
 
     % Renaming fields
-    varNamesUnique = unique(varNames,'stable');                 % find all unique names            
-    for cntVars = 1:length(varNamesUnique)                      % cycle through unique names    
-        indVarName = ismember(varNames,varNamesUnique(cntVars));
-        nNameUsage = sum(indVarName);                           % how many times the same name is used
-        if  nNameUsage > 1                                      % if the name repeats rename occurancies
-            ind = find(indVarName);                             % find location of the occurancies
-            for repCnt = 1:nNameUsage                           % rename them
-                varNames{ind(repCnt)} = sprintf('%s_%d',char(varNamesUnique(cntVars)),repCnt);
+    varNamesUnique = unique(varNames,'stable');         % find all unique names            
+    for varCnt = 2:length(varNamesUnique)      % cycle through unique names    
+        indVarName = ismember(varNames,varNamesUnique(varCnt));
+        nNameUsage = sum(indVarName);          % how many times the same name is used
+        if  nNameUsage > 1                     % if the name repeats rename occurancies
+            ind = find(indVarName);            % find location of the occurancies
+            for repCnt = 1:nNameUsage          % rename them
+                varNames{ind(repCnt)} = sprintf('%s_%d',char(varNamesUnique(varCnt)),repCnt);
             end
         end
-        % Output units in a matching structure
-        % have to make sure that the field names are valid. Use renameFields.
-        % try
-            varFieldName = char(varNames{cntVars});
-            renField = renameFields(varFieldName);
-            unitsOut.(renField) = char(tmpUnits(cntVars));
-        % catch
-        %     fprint('xx');
-        % end
     end    
+
+
 end
 
 %% OLD

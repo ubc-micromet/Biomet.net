@@ -12,11 +12,15 @@ function [EngUnits,Header,tv,dataOut] = fr_read_GHG_file(pathToGHGfile)
 %
 %
 % (c) Zoran Nesic                   File created:       Jan 20, 2022
-%                                   Last modification:  Jan 26, 2024
+%                                   Last modification:  Mar  9, 2024
 %
 
 % Revisions (last one first):
 %
+% Mar 9, 2024 (Zoran)
+%   - program now automatically detects the date column instead of testing
+%     the file name which is unreliable. 
+%   - added proper input parameters for fr_read_generic_file(....,'delimitedtext',0,8);
 % Jan 26, 2024 (Zoran)
 %   - added modifyVarNames = 1 in the call to fr_read_generic_data_file
 % Jan 20, 2024 (Zoran)
@@ -49,15 +53,13 @@ end
 sCMD = [exeFile ' x ' pathToGHGfile ' -o' pathToHF  ' -r -y'];
 [~,~] = dos(sCMD);
 
+% Detect the options to figure out where the date column is
+opts = detectImportOptions(filePath,'FileType','delimitedtext');
+indDate = find(strcmpi(opts.VariableTypes,'datetime'));
+dateColNum = [indDate(1) indDate(1)+1];
 timeInputFormat = {[],'HH:mm:ss:SSS'};
-if contains(filePath,'_AIU-','IgnoreCase',true)
-    % This is the output from SmartFlux2/LI-7550
-    dateColNum = [7 8];
-else
-    % This is the output from SmartFlux3
-    dateColNum = [8 9];
-end
-[EngUnits,Header,tv,dataOut] = fr_read_generic_data_file(filePath,'caller',[], dateColNum,timeInputFormat,[2 Inf],1,'delimitedtext',1);
+
+[EngUnits,Header,tv,dataOut] = fr_read_generic_data_file(filePath,'caller',[], dateColNum,timeInputFormat,[2 Inf],1,'delimitedtext',0,8);
 
 if exist(pathToHF,'dir')
     rmdir(pathToHF,'s');

@@ -26,6 +26,9 @@ function trace_str_out = read_ini_file(fid,Year)
 
 % Revisions
 %
+% Mar 4, 2024 (Zoran, June)
+%   - Removed minMax from the required parameters for all stages. It's now 
+%     required for the first stage only.
 % May 10, 2023 (Zoran)
 %  - Fixed a bug with the dates selection when weeding out obsolete traces 
 %    (inputFileName_dates)
@@ -75,8 +78,8 @@ if~exist('Year','var') || isempty(Year)
 end
 
 % Define which fileds in the ini must exist
-required_common_ini_fields = {'variableName', 'title', 'units', 'minMax'}; 
-required_first_stage_ini_fields = {'inputFileName', 'measurementType'};
+required_common_ini_fields = {'variableName', 'title', 'units'}; 
+required_first_stage_ini_fields = {'inputFileName', 'measurementType', 'minMax'};
 required_second_stage_ini_fields = {'Evaluate1'};
 
 % Set some locally used variables
