@@ -128,8 +128,10 @@ Header = [];  % just a place holder to keep the same output parameters
         else
             % keep the original names
             variableNames = f_tmp.Properties.VariableNames;
-            for cntVars = 1:length(variableNames)
-                Header.Units{cntVars} = '';
+            % but use the proper names for Units!
+            goodNames = renameFields(variableNames);
+            for cntVars = 1:length(goodNames)
+                Header.Units.(char(goodNames{cntVars})) = '';
             end
         end
         % if we want to modify the file name using our own rules (see renameFields local function for the list of rules)
@@ -179,6 +181,7 @@ Header = [];  % just a place holder to keep the same output parameters
             end   
         else
             outStruct.TimeVector = tv;
+            Header.Units.TimeVector = 'datenum';
         end
 
         % Convert EngUnits to Struc
@@ -239,7 +242,7 @@ function [varNames, unitsOut] = GHG_sep_var_names(orgVarsAndUnits)
     for cntVars = 1:length(orgVarsAndUnits)
         cVarAndUnits = char(orgVarsAndUnits{cntVars});
         x=regexp(cVarAndUnits,'[^()]*','match');
-        varNames{cntVars} = deblank(char(x(1)));
+        varNames{cntVars} = renameFields(deblank(char(x(1))));
         if length(x)>1
             tmpUnits{cntVars} = deblank(char(x(2)));
         else
@@ -250,7 +253,7 @@ function [varNames, unitsOut] = GHG_sep_var_names(orgVarsAndUnits)
     % in their wisdom, Matlab people have let multiple traces have
     % the same name. Some of them are just dumb '----'. Deal with those first.
     for cntVars = 1:length(varNames)
-        if contains(varNames(cntVars),'---')
+        if startsWith(varNames(cntVars),'___')
             varNames{cntVars} = 'foo';
         end
     end
@@ -260,26 +263,55 @@ function [varNames, unitsOut] = GHG_sep_var_names(orgVarsAndUnits)
     % Those will be renamed as:
     %   CO2_1 (mmol/m^3)	CO2_2 (mg/m^3) CO2_3 (umol/mol)	CO2_dry(umol/mol)
 
-    % Renaming fields
+    % Renaming non-unique fields
     varNamesUnique = unique(varNames,'stable');                 % find all unique names            
     for cntVars = 1:length(varNamesUnique)                      % cycle through unique names    
-        indVarName = ismember(varNames,varNamesUnique(cntVars));
+        currentVarName = varNamesUnique(cntVars);
+        indVarName = ismember(varNames,currentVarName);
         nNameUsage = sum(indVarName);                           % how many times the same name is used
         if  nNameUsage > 1                                      % if the name repeats rename occurancies
             ind = find(indVarName);                             % find location of the occurancies
             for repCnt = 1:nNameUsage                           % rename them
-                varNames{ind(repCnt)} = sprintf('%s_%d',char(varNamesUnique(cntVars)),repCnt);
+                varNames{ind(repCnt)} = sprintf('%s_%d',char(currentVarName),repCnt);
             end
         end
-        % Output units in a matching structure
-        % have to make sure that the field names are valid. Use renameFields.
-        % try
-            varFieldName = char(varNames{cntVars});
-            renField = renameFields(varFieldName);
-            unitsOut.(renField) = char(tmpUnits(cntVars));
-        % catch
-        %     fprint('xx');
-        % end
+    end
+    % Now match the units with the new variable names.
+    for cntVars = 1:length(varNames)
+        renField = char(varNames{cntVars});
+        %renField = renameFields(varFieldName);
+        varUnits = char(tmpUnits(cntVars));
+        if isempty(varUnits)
+            % otherwise it returns [1×0 char] which just looks ugly. 
+            varUnits = '';
+        end
+        if     (startsWith(renField,'CO2_') && ~strcmp('CO2_dry',renField)) ...
+            || (startsWith(renField,'CH4_') && ~strcmp('CH4_dry',renField)) ...
+            || (startsWith(renField,'H2O_') && ~strcmp('H2O_dry',renField))
+            % At this point we have multiple CO2/H2O/CH4 columns. Need to
+            % sort them out by the units so we don't have them looking
+            % like this: CO2_1, CO2_2...
+            switch varUnits
+                case 'mmol/m^3'
+                    extName = 'mole_density';
+                case {'mg/m^3','g/m^3'}
+                    extName = 'mass_density';
+                case {'umol/mol','mmol/mol'}
+                    extName = 'wet_mole_fraction';
+                otherwise
+                    % field names like CO2_Ab
+                    extName = '';
+            end
+            if ~isempty(extName)
+                varNames{cntVars} = [renField(1:4) extName];
+            else
+                varNames{cntVars} = renField;
+            end
+            unitsOut.(char(varNames{cntVars})) =  varUnits;
+        else
+            % Not a special case. No need to change the variable name
+            unitsOut.(renField) = varUnits;
+        end
     end    
 end
 
