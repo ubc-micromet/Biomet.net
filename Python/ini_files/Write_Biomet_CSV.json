@@ -6,19 +6,27 @@
     },
     "RH_1_1_1": {
       "Units": "%",
-      "output_name": "Pa_1_1_1"
+      "output_name": "RH_1_1_1"
     },
     "PA_1_1_1": {
       "Units": "kPa",
-      "output_name": "Rg_1_1_1"
+      "output_name": "Pa_1_1_1"
     },
     "SW_IN_1_1_1": {
       "Units": "W+1m-2",
-      "output_name": "LWIN_1_1_1"
+      "output_name": "Rg_1_1_1"
     },
     "LW_IN_1_1_1": {
       "Units": "W+1m-2",
+      "output_name": "LWIN_1_1_1"
+    },
+    "PPFD_IN_1_1_1": {
+      "Units": "umol+1m-2s-1",
       "output_name": "PPFD_1_1_1"
+    },
+    "canopy_height": {
+      "Units": "m",
+      "output_name": "canopy_height"
     }
   },
   "timestamp": {
