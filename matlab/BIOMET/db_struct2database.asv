@@ -51,14 +51,9 @@ function [structIn,dbFileNames, dbFieldNames,errCode] = db_struct2database(struc
 %   - found a bug. The program was not dealing with the duplicate time-vector entries
 %     properly (actually, not at all). 
 %     It was testing: 
-%            [new_tv,IA]=unique(new_tv);
-%            if length(tmp_new_tv) ~= length(new_tv)
-%     but this was never true IA and new_tv were always of the same size.
-%     Changed to:
-%           [tmp_new_tv,IA]=unique(new_tv,'last');
-%           if length(tmp_new_tv) ~= length(new_tv)
-%     The parameter 'last' in unique specifies that last duplicate entry should be kept.
-%
+%            [tmp_new_tv,IA]=unique(new_tv);
+    if length(tmp_new_tv) ~= length(new_tv)
+        
 % Jan 17, 2024 (Zoran)
 %  - added forceFullDB flag. The program now defaults to a full data base (for 30min data that means 17520 points)
 % Jan 12, 2024 (Zoran)
@@ -141,9 +136,11 @@ function [structIn,dbFileNames, dbFieldNames,errCode] = db_struct2database(struc
     end
     
     % Make sure there are no duplicate entries.
-    % If there are duplicate entries, keep the last one
-    [tmp_new_tv,IA]=unique(new_tv,'last');
-    if length(tmp_new_tv) ~= length(new_tv)               
+    [tmp_new_tv,IA]=unique(new_tv);
+    if length(tmp_new_tv) ~= length(new_tv)
+        % If there are duplicate entries, keep the first one
+        % (Note: it would probably be better to keep the last one.
+        %        Deal with it later, if needed. )
         if structType == 0
             structIn = structIn(IA);
         else
