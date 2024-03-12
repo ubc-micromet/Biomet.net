@@ -14,14 +14,14 @@ py .\DatabaseFunctions.py --Task GSheetDump
 Create biomet.csv files for sites for 2024:
 
 ```
-py .\DatabaseFunctions.py --Task Read --ini ini_files/ReadTraces_Biomet_Dump.ini --Years 2024
+python .\DatabaseFunctions.py --Task CSVDump --Sites BBS --Years 2024
 
 ```
 
-Submit all Read requests from all years for BB:
+Create biomet.csv files for all years for BB:
 
 ```
-py .\DatabaseFunctions.py --Task Read --Sites BB
+py .\DatabaseFunctions.py --Task CSVDump --Sites BB
 
 ```
 
