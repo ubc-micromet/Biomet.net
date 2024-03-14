@@ -24,7 +24,6 @@ class DatabaseFunctions():
     def find_Sites(self):
         start = 2014
         end = self.Year+1
-
         Root = self.ini['Paths']['database_read'].split('SITE')[0]
         self.years_by_site = {}
         for year in range(start,end):
@@ -60,11 +59,15 @@ class DatabaseFunctions():
         elif self.ini[self.batch]['date_Fmt'] != '':
             self.Data['Timestamp'] = ''
             for col in self.ini[self.batch]['date_cols'].split(','):
-                ix = self.ini[self.batch]['Header_list'].split(',').index(col)
-                unit = self.ini[self.batch]['Header_units'].split(',')[ix]
-                if unit.upper() == 'HHMM':
-                    self.Data.loc[self.Data[col]==2400,col]=0
-                self.Data['Timestamp'] = self.Data['Timestamp'].str.cat(self.Data[col].astype(str).str.zfill(len(unit)),sep='')
+                try:
+                    ix = self.ini[self.batch]['Header_list'].split(',').index(col)
+                    unit = self.ini[self.batch]['Header_units'].split(',')[ix]
+                    if unit.upper() == 'HHMM':
+                        self.Data.loc[self.Data[col]==2400,col]=0
+                    self.Data['Timestamp'] = self.Data['Timestamp'].str.cat(self.Data[col].astype(str).str.zfill(len(unit)),sep='')
+                except:
+                    self.Data['Timestamp'] = self.Data['Timestamp'].str.cat(self.Data[col].astype(str),sep='')
+                self.Data = self.Data.drop(col,axis=1)
             self.Data['Timestamp'] = pd.to_datetime(self.Data['Timestamp'],format=self.ini[self.batch]['date_Fmt'])
             self.Data = self.Data.set_index('Timestamp')
         if self.ini[self.batch]['is_dst'] == 'True':
@@ -126,13 +129,20 @@ class DatabaseFunctions():
                 fmt = self.ini['Database']['timestamp_dtype']
             else:
                 fmt = self.ini['Database']['trace_dtype']
-            Trace = self.Year[T].astype(fmt).values
-            if self.ini[self.batch]['prefix']!='' and T != self.ini['Database']['timestamp']:
-                T = self.ini[self.batch]['prefix'] + '_' + T
-            if self.ini[self.batch]['suffix']!='' and T != self.ini['Database']['timestamp']:
-                T += '_' + self.ini[self.batch]['suffix']
-            with open(f'{self.write_dir}/{T}','wb') as out:
-                Trace.tofile(out)
+            try:
+                Trace = self.Year[T].astype(fmt).values
+                del_chars = '()<>:"\|?'
+                for c in del_chars:
+                    T = T.replace(c,'')
+                T = T.replace('*','star').replace('/','_')
+                if self.ini[self.batch]['prefix']!='' and T != self.ini['Database']['timestamp']:
+                    T = self.ini[self.batch]['prefix'] + '_' + T
+                if self.ini[self.batch]['suffix']!='' and T != self.ini['Database']['timestamp']:
+                    T += '_' + self.ini[self.batch]['suffix']
+                with open(f'{self.write_dir}/{T}','wb') as out:
+                    Trace.tofile(out)
+            except:
+                print(f'Could not write column: {T}')
 
     def copy_raw_data_files(self,dir=None,file=None,format='dat'):
         copy_to = self.sub(self.ini['Paths']['sites'])
@@ -192,7 +202,11 @@ class MakeTraces(DatabaseFunctions):
         file_patterns = self.ini[self.batch]['filename'].split(',')
         self.Data = pd.DataFrame()
         self.Metadata = pd.DataFrame()
-        search_dir = self.ini['Paths']['datadump'].replace('SITE',self.site_name) + self.ini[self.batch]['restrict_search_to']
+        if self.ini[self.batch]['search_dir'] in [k for k in self.ini['Paths'].keys()]:
+            search_dir = self.ini['Paths'][self.ini[self.batch]['search_dir']].replace('SITE',self.site_name) + self.ini[self.batch]['restrict_search_to']
+            print(self.ini[self.batch]['search_dir'].replace('SITE',self.site_name) )
+        else:
+            search_dir = self.ini[self.batch]['search_dir']# Call to sub fuction could be added here
         for dir,_,files in os.walk(search_dir):
             for file in (files):
                 fn = f"{dir}/{file}"
@@ -368,7 +382,7 @@ if __name__ == '__main__':
     CLI.add_argument(
         "--Years",
         nargs='*',
-        type=str,
+        type=int,
         default=None,
         )
     
@@ -395,9 +409,13 @@ if __name__ == '__main__':
             ini = ini_defaults[Task]
         else:
             ini = args.ini
+        if args.Years is not None:
+            Years = np.arange(min(args.Years),max(args.Years)+1)
+        else:
+            Years = None
 
         if Task == 'CSVDump':
-            MakeCSV(args.Sites,args.Years,ini=ini)
+            MakeCSV(args.Sites,Years,ini=ini)
         elif Task == 'Write':
             MakeTraces(ini=ini)
         elif Task == 'GSheetDump':
