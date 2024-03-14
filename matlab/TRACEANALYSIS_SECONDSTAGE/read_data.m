@@ -345,7 +345,7 @@ disp('Cleaning traces ...');
 for countTraces = 1:numberTraces
     
     trace_out = trace_str(countTraces);   
-    h = waitbar(countTraces/numberTraces,h,trace_out.variableName);
+    %h = waitbar(countTraces/numberTraces,h,trace_out.variableName);
 
    
    %Load the next trace into trace_out

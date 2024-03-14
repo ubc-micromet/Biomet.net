@@ -17,7 +17,7 @@
 
 %% Load one trace and plot it
 pth = biomet_path(2022,'DSM','MET');            % find data base path for year = 2022, DSM site
-pth = biomet_path([],'DSM','MET');              % or: find data base path for the current year, DSM site
+%pth = biomet_path([],'DSM','MET');              % or: find data base path for the current year, DSM site
 tv = read_bor(fullfile(pth,'clean_tv'),8);      % load the time vector (Matlab's datenum format)
 tv_dt = datetime(tv,'convertfrom','datenum');   % convert to Matlab's datetime object (use for all new stuff)
 [DOY,year] = fr_get_doy(tv,0);                  % calculate DOY (Campbell format) from tv

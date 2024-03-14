@@ -157,7 +157,7 @@ arg_default('test',0)
 if ~iscell(sites)
     sites = {sites};
 end
-if hour(datetime)==0 && minute(datetime)< 30 || test == 1
+if hour(datetime)==13 && minute(datetime)< 30 || test == 1
     for site = sites
         siteID = char(site);
         try
@@ -175,7 +175,7 @@ if hour(datetime)==0 && minute(datetime)< 30 || test == 1
         end
     end
 end
-if hour(datetime)==0 && minute(datetime)> 30 || test == 2
+if hour(datetime)==13 && minute(datetime)> 30 || test == 2
     try
         bioMetRoot = split(matlab.desktop.editor.getActiveFilename,'matlab');
         bioMetRoot = string(bioMetRoot(1));
@@ -190,19 +190,12 @@ if hour(datetime)==0 && minute(datetime)> 30 || test == 2
             CLI_args = sprintf("cd %s & %s & python %s & deactivate & cd %s",pyenvPath,activate,py_call,bioMetMatRoot);
             [status,cmdout] = system(CLI_args);
             if status == 0
-                disp(fprintf('Read G Drive Files \n %s',cmdout))
+                fprintf('Read G Drive Files \n %s',cmdout)
             else
-                disp(fprintf('GSheetDump Failed \n %s',cmdout))
+                fprintf('GSheetDump Failed \n %s',cmdout)
             end
-
-            py_call = sprintf("%s --Task CSVDump --Sites %s --Years %s",pyScript,strjoin(sites),int2str(yearIn));
-            CLI_args = sprintf("cd %s & %s & python %s & deactivate & cd %s",pyenvPath,activate,py_call,bioMetMatRoot);
-            [status,cmdout] = system(CLI_args);
-            if status == 0
-                disp(fprintf('Writing Biomet Files \n %s',cmdout))
-            else
-                disp(fprintf('Writing Biomet Failed \n %s',cmdout))
-            end
+        else
+            fprint('Py Env does not exist')
         end
     catch
         fprintf('\n\n  ****** Error around Python code ***\n\n');
