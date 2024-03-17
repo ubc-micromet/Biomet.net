@@ -42,7 +42,6 @@ ThirdStage_REddyProc <- function(pathSetIni) {
   source(pthIniFile)
 
   #Copy files from second stage to third stage (only if not from FLUXNET files)
-
   if (data_source != "FLUXNET") {
     for (j in 1:length(yrs)) {
       in_path <- paste(db_ini,"/",as.character(yrs[j]),"/",site,"/clean/SecondStage/", sep = "")
@@ -140,8 +139,9 @@ ThirdStage_REddyProc <- function(pathSetIni) {
           }
       }
     }
-
+    
     # Create NEE variable if FC exists
+    # <<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>
     if (length(grep("FC", colnames(data))) > 0){
       data$NEE <- data$FC
     }
@@ -161,7 +161,6 @@ ThirdStage_REddyProc <- function(pathSetIni) {
     # Rearrange data frame and only keep relevant variables for input into REddyProc
     data_REddyProc <- data[ , -which(names(data) %in% c("datetime","hour","minute"))]
     data_REddyProc <- data_REddyProc[ , col_order]
-
     # Rename column names to variable names in REddyProc
     colnames(data_REddyProc)<-var_names
 
@@ -189,10 +188,10 @@ ThirdStage_REddyProc <- function(pathSetIni) {
     #+++ Initalize R5 reference class sEddyProc for post-processing of eddy data
     #+++ with the variables needed for post-processing later
     #+
-    add dynamic call
+    # add dynamic call  <<<<<<<<<        <<<<<<<<<<<<<<<<>>>>>>>>>>>>>         >>>>>>>>>>>>>>>>>>>>>>>
     EProc <- sEddyProc$new(
-      site, EddyDataWithPosix, c('NEE','FC','LE','H','FCH4','Rg','Tair','VPD', 'Ustar'))
-
+      site, EddyDataWithPosix, c('NEE','FC','LE','H','Rg','Tair','VPD', 'Ustar'))
+    
     # Here we only use three ustar scenarios - for full uncertainty estimates, use the UNCERTAINTY SCRIPT (or full vs. fast run - as an option in ini)
     if (Ustar_scenario == 'full') {
       nScen <- 39
@@ -212,19 +211,20 @@ ThirdStage_REddyProc <- function(pathSetIni) {
     #EProc$sPlotNEEVersusUStarForSeason() -> save plot if needed
 
     # Gap-filling
+    # <<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     EProc$sMDSGapFillUStarScens('NEE')
     EProc$sMDSGapFillUStarScens('FC')
     EProc$sMDSGapFillUStarScens('LE')
     EProc$sMDSGapFillUStarScens('H')
     
-    Add if statement
-    EProc$sMDSGapFillUStarScens('FCH4')
+    # Add if statement
+    # EProc$sMDSGapFillUStarScens('FCH4')
 
     # "_f" denotes the filled value and "_fsd" the estimated standard deviation of its uncertainty.
     # grep("NEE_.*_f$",names(EProc$sExportResults()), value = TRUE) -> print output if needed
     # grep("NEE_.*_fsd$",names(EProc$sExportResults()), value = TRUE) -> print output if needed
     # EProc$sPlotFingerprintY('NEE_U50_f', Year = 2022) -> view plot if needed
-
+    browser()
     # Partitioning
     EProc$sSetLocationInfo(LatDeg = lat, LongDeg = long, TimeZoneHour = TimeZoneHour)
     EProc$sMDSGapFill('Tair', FillAll = FALSE,  minNWarnRunLength = NA)
@@ -258,7 +258,6 @@ ThirdStage_REddyProc <- function(pathSetIni) {
     vars_remove <- c(colnames(FilledEddyData)[grepl('\\Thres.', names(FilledEddyData))],
                      colnames(FilledEddyData)[grepl('\\_fqc.', names(FilledEddyData))])
     FilledEddyData <- FilledEddyData[, -which(names(FilledEddyData) %in% vars_remove)]
-
     # Save data
     # Loop through each year and save each year individually
     for (j in 1:length(yrs)) {
