@@ -224,7 +224,8 @@ ThirdStage_REddyProc <- function(pathSetIni) {
     # grep("NEE_.*_f$",names(EProc$sExportResults()), value = TRUE) -> print output if needed
     # grep("NEE_.*_fsd$",names(EProc$sExportResults()), value = TRUE) -> print output if needed
     # EProc$sPlotFingerprintY('NEE_U50_f', Year = 2022) -> view plot if needed
-    browser()
+
+    
     # Partitioning
     EProc$sSetLocationInfo(LatDeg = lat, LongDeg = long, TimeZoneHour = TimeZoneHour)
     EProc$sMDSGapFill('Tair', FillAll = FALSE,  minNWarnRunLength = NA)
