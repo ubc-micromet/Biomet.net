@@ -125,18 +125,21 @@ ThirdStage_REddyProc <- function(config,data_in) {
 
 RF_GapFilling <- function(config,data_in){
     fill_names <- names(config$RF_GapFilling)
-    for (i in 1:length(fill)){
-        var_dep <- unlist(config$RF_GapFilling[[fill_names[i]]]$var_dep)
-        predictors <- unlist(strsplit(config$RF_GapFilling[[fill_names[i]]]$Predictors, split = ","))
-        vars_in <- c(var_dep,predictors,"DateTime","DoY")
-        gap_filled <- RandomForestModel(
-            data_in[,vars_in],fill_names[i])
-        FilledEddyData = dplyr::bind_cols(
-            data_in,gap_filled
-            )
+    if (!is.null(fill_names)){
+        for (i in 1:length(fill)){
+            var_dep <- unlist(config$RF_GapFilling[[fill_names[i]]]$var_dep)
+            predictors <- unlist(strsplit(config$RF_GapFilling[[fill_names[i]]]$Predictors, split = ","))
+            vars_in <- c(var_dep,predictors,"DateTime","DoY")
+            gap_filled <- RandomForestModel(
+                data_in[,vars_in],fill_names[i])
+            FilledEddyData = dplyr::bind_cols(
+                data_in,gap_filled
+                )
+        }
+        return(FilledEddyData)
+    }else {
+       return(data_in)
     }
-    # names(FilledEddyData) <- gsub("\\...\\d+","",colnames(FilledEddyData))
-    return(FilledEddyData)
     
 }
 
@@ -176,11 +179,20 @@ write_traces <- function(config,data){
 }
 start.time <- Sys.time()
 
-args <- c("C:/Database/Calculation_Procedures/TraceAnalysis_ini/BB/BB_ThirdStage.yml",2021,2022)
+# Define run (some of this e.g., root, can be defined from a global ini file)
+root <- "C:/Database/Calculation_Procedures/TraceAnalysis_ini"
+siteID <- "BBS"
+StartYear <- 2023
+EndYear <- 2024
+fn <- sprintf('%s_ThirdStage.yml',siteID)
+config_file <- file.path(root,siteID,fn)
+args <- c(config_file,StartYear,EndYear)
+
+yrs <- c(args[2]:args[length(args)])
 
 config <- configure(args[1]) # Load configuration file
 
-input_data <- read_traces(config,args[2:length(args)]) # Read Stage 2 Data
+input_data <- read_traces(config,yrs) # Read Stage 2 Data
 
 FilledEddyData <- ThirdStage_REddyProc(config,input_data) # Run REddyProc
 
