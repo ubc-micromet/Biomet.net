@@ -1,4 +1,6 @@
 import os
+import yaml
+import db_root as db
 import numpy as np
 import pandas as pd
 import configparser
@@ -11,9 +13,11 @@ import TzFuncs
 import time
 import json
 
+
 class DatabaseFunctions():
 
     def __init__(self,ini=''):
+        print('Initialized using db_root: ', db.db_root)
         # Parse the ini files then find all site-years in the database
         self.ini = configparser.ConfigParser()
         self.ini.read('ini_files/BiometPy.ini')
@@ -22,25 +26,16 @@ class DatabaseFunctions():
         self.find_Sites()
 
     def find_Sites(self):
-        start = 2014
-        end = self.Year+1
-        Root = self.ini['Paths']['database_read'].split('SITE')[0]
         self.years_by_site = {}
-        for year in range(start,end):
-            if os.path.isdir(Root.replace('YEAR',str(year))):
-                Dirs = os.listdir(Root.replace('YEAR',str(year)))
-                for site in Dirs:
-                    if site.startswith('.') or site.startswith('_'):
-                        pass
-                    else:
-                        if site not in self.ini['Exceptions']['not_sites']:
-                            if site in self.years_by_site:
-                                self.years_by_site[site].append(year)
-                            else:
-                                self.years_by_site[site] = [year]
-        for site_name in self.years_by_site.keys():
-            if os.path.isfile(f'ini_files/site_configurations/{site_name}.ini'):
-                self.ini.read(f'ini_files/site_configurations/{site_name}.ini')
+        for f in os.listdir(db.db_root+'/Calculation_Procedures/TraceAnalysis_ini/'):
+            if f.startswith('_') == False:
+                self.years_by_site[f] = []
+        for y in os.listdir(db.db_root):
+            if y[0].isdigit():
+                for site in self.years_by_site.keys():
+                    if os.path.isdir(f'{db.db_root}/{y}/{site}'):
+                        self.years_by_site[site].append(y)
+
         
     def sub(self,s):
         for path in self.ini['Paths'].keys():
@@ -119,7 +114,7 @@ class DatabaseFunctions():
             self.Write_Trace()
 
     def Write_Trace(self):
-        self.write_dir = self.ini['Paths']['database_write'].replace('YEAR',str(self.y)).replace('SITE',self.site_name)+self.ini[self.batch]['subfolder']
+        self.write_dir = self.sub(f'{db.db_root}/YEAR/SITE/')+self.ini[self.batch]['subfolder']
         if os.path.isdir(self.write_dir)==False:
             print('Creating new directory at:\n', self.write_dir)
             os.makedirs(self.write_dir)
@@ -309,7 +304,7 @@ class MakeCSV(DatabaseFunctions):
                 if self.config['by_year']=='True':
                     for self.Year in self.years_by_site[self.site_name]:
                         self.AllData = pd.DataFrame()
-                        self.dpath = self.sub(self.ini['Paths']['database_read'])+self.config['stage']+'/'
+                        self.dpath = self.sub(f'{db.db_root}/YEAR/SITE/')+self.config['stage']+'/'
                         if os.path.exists(self.dpath):
                             self.readYear()
                         self.write_csv()
@@ -317,7 +312,7 @@ class MakeCSV(DatabaseFunctions):
                 else:
                     self.AllData = pd.DataFrame()
                     for self.Year in self.years_by_site[self.site_name]:
-                        self.dpath = self.sub(self.ini['Paths']['database_read'])+self.config['stage']+'/'
+                        self.dpath = self.sub(f'{db.db_root}/YEAR/SITE/')+self.config['stage']+'/'
                         if os.path.exists(self.dpath):
                             self.readYear()
                     self.write_csv()

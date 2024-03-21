@@ -41,11 +41,9 @@ else:
     pth = [v for v in os.environ.values() if 'UBC_PC_Setup' in v]
     if len(pth)>0:
         pth = pth[0]+'/'
-        if os.path.isfile(pth[0]+config_fn):
-            db_root = get_config(pth[0]+config_fn)
-        elif os.path.isfile(pth[0]+matlab_fn):
-            db_root = get_matlab_default(pth[0]+matlab_fn)
+        if os.path.isfile(pth+config_fn):
+            db_root = get_config(pth+config_fn)
+        elif os.path.isfile(pth+matlab_fn):
+            db_root = get_matlab_default(pth+matlab_fn)
     else:
         db_root = input('No default database path found, input path to database:')
-
-print(db_root)
