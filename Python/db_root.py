@@ -39,8 +39,8 @@ elif os.path.isfile('Matlab/'+matlab_fn):
 # Repeat 1 & 2, prompt for input as last resort
 else:
     pth = [v for v in os.environ.values() if 'UBC_PC_Setup' in v]
-    print(pth)
     if len(pth)>0:
+        pth = pth[0]+'/'
         if os.path.isfile(pth[0]+config_fn):
             db_root = get_config(pth[0]+config_fn)
         elif os.path.isfile(pth[0]+matlab_fn):
