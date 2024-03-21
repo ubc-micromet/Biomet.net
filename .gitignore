@@ -4,3 +4,9 @@ R/database_functions/.DS_Store
 R/data_visualization/.Rhistory
 R/database_functions/.Rhistory
 .lintr
+
+# Windows default autosave extension
+*.asv
+
+# OSX / *nix default autosave extension
+*.m~

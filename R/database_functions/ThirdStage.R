@@ -7,6 +7,8 @@
 # output procedures
 
 # Load libraries
+library('fs')
+# library("tools")
 library("yaml")
 library("REddyProc")
 library("rlist")
@@ -14,29 +16,49 @@ require("dplyr")
 require("lubridate")
 require("data.table")
 
-configure <- function(filename){
-    config <- yaml.load_file(filename)
-    # Read function for loading data
-    p <- sapply(list.files(pattern="read_database.R", path=config$Database$fx_path, full.names=TRUE), source)
-    # Read function for RF gap-filling data
-    p <- sapply(list.files(pattern="RandomForestModel.R", path=config$Database$fx_path, full.names=TRUE), source)
 
+configure <- function(siteID){
+    # Get path of current script
+    fx_path <- path_dir(as.character(sys.frame(1)$ofile))
+    # Read function to get db_root variable
+    sapply(list.files(pattern="db_root.R", path=fx_path, full.names=TRUE), source)
+
+    # Read a the global database configuration
+    filename <- file.path(db_root,'Calculation_Procedures/TraceAnalysis_ini/_config.yml')
+    dbase_config = yaml.load_file(filename)
+
+    # Read a the site specific configuration
+    fn <- sprintf('%s_ThirdStage.yml',siteID)
+    filename <- file.path(db_root,'Calculation_Procedures/TraceAnalysis_ini',siteID,fn)
+    config <- yaml.load_file(filename)
+
+    # merge the config files
+    config <- c(dbase_config,config)
+
+    # Add the relevant paths
+    config$Database$db_root <- db_root
+    config$fx_path <- fx_path
     return(config)
 }
 
+
 read_traces <- function(config,yrs){
+    # Read function for loading data
+    sapply(list.files(pattern="read_database.R", path=config$fx_path, full.names=TRUE), source)
+
     siteID <- config$Metadata$siteID
     db_root <- config$Database$db_root
     data <- data.frame()
 
     # Copy files from second stage to third stage, takes everything by default
     # Can change behavior later if needed
-    level_in <- config$Database$level_in
+    level_in <- config$Database$Paths$SecondStage
+    tv_input <- config$Database$datenum$filename
     for (j in 1:length(yrs)) {
         in_path <- file.path(db_root,as.character(yrs[j]),siteID,level_in)
         copy_vars <- list.files(in_path)
         copy_vars <- copy_vars[! copy_vars %in% c(config$Metadata$tv_input)]
-        data.now <- read_database(db_root,yrs[j],siteID,level_in,copy_vars,config$Database$tv_input,0)
+        data.now <- read_database(db_root,yrs[j],siteID,level_in,copy_vars,tv_input,0)
         data <- dplyr::bind_rows(data,data.now)
     }
     # Create time variables
@@ -124,9 +146,13 @@ ThirdStage_REddyProc <- function(config,data_in) {
 }
 
 RF_GapFilling <- function(config,data_in){
+    
+    # Read function for RF gap-filling data
+    p <- sapply(list.files(pattern="RandomForestModel.R", path=config$fx_path, full.names=TRUE), source)
+
     fill_names <- names(config$RF_GapFilling)
     if (!is.null(fill_names)){
-        for (i in 1:length(fill)){
+        for (i in 1:length(fill_names)){
             var_dep <- unlist(config$RF_GapFilling[[fill_names[i]]]$var_dep)
             predictors <- unlist(strsplit(config$RF_GapFilling[[fill_names[i]]]$Predictors, split = ","))
             vars_in <- c(var_dep,predictors,"DateTime","DoY")
@@ -146,9 +172,9 @@ RF_GapFilling <- function(config,data_in){
 write_traces <- function(config,data){
     yrs <- sort(unique(data$Year)) 
     siteID <- config$Metadata$siteID
-    level_in <- config$Database$level_in
-    level_out <- config$Database$level_out
-    tv_input <- config$Database$tv_input
+    level_in <- config$Database$Paths$SecondStage
+    level_out <- config$Database$Paths$ThirdStage
+    tv_input <- config$Database$datenum$filename
     db_root <- config$Database$db_root
 
     for (j in 1:(length(yrs)-1)){
@@ -177,16 +203,12 @@ write_traces <- function(config,data){
     }
   
 }
+
 start.time <- Sys.time()
 
-# Define run (some of this e.g., root, can be defined from a global ini file)
-root <- "C:/Database/Calculation_Procedures/TraceAnalysis_ini"
-siteID <- "BBS"
-StartYear <- 2023
-EndYear <- 2024
-fn <- sprintf('%s_ThirdStage.yml',siteID)
-config_file <- file.path(root,siteID,fn)
-args <- c(config_file,StartYear,EndYear)
+
+# args <- c(siteID,StartYear,EndYear)
+# source("C:/Biomet.net/R/database_functions/ThirdStage.R")
 
 yrs <- c(args[2]:args[length(args)])
 
@@ -204,5 +226,4 @@ end.time <- Sys.time()
 print('Stage 3 Complete, total run time:')
 print(end.time - start.time)
 
-# args <- c("C:/Database/Calculation_Procedures/TraceAnalysis_ini/BBS/BBS_ThirdStage.ini",2023,2024)
-# source("C:/Biomet.net/R/database_functions/ThirdStage.R")
+

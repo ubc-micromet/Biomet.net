@@ -175,34 +175,35 @@ if hour(datetime)==13 && minute(datetime)< 30 || test == 1
         end
     end
 end
-if hour(datetime)==13 && minute(datetime)> 30 || test == 2
-    try
-        bioMetRoot = split(matlab.desktop.editor.getActiveFilename,'matlab');
-        bioMetRoot = string(bioMetRoot(1));
-        bioMetMatRoot = fullfile(string(bioMetRoot(1)),'/matlab/');
-        bioMetPyRoot = fullfile(bioMetRoot,'/Python/');
-        pyenvPath = fullfile(bioMetPyRoot,'.venv/Scripts/');
-        pyScript = fullfile(bioMetPyRoot,'DatabaseFunctions.py');
-        activate = '.\activate.bat';
-        if exist(pyenvPath,'dir') & isfile (pyScript)
-
-            py_call = sprintf("%s --Task GSheetDump --Sites %s",pyScript,strjoin(sites));
-            CLI_args = sprintf("cd %s & %s & python %s & deactivate & cd %s",pyenvPath,activate,py_call,bioMetMatRoot);
-            [status,cmdout] = system(CLI_args);
-            if status == 0
-                fprintf('Read G Drive Files \n %s',cmdout)
-            else
-                fprintf('GSheetDump Failed \n %s',cmdout)
-            end
-        else
-            fprint('Py Env does not exist')
-        end
-    catch
-        fprintf('\n\n  ****** Error around Python code ***\n\n');
-    end
-
+% JS < Turned off python code until ini file transfer is complete
+% if hour(datetime)==13 && minute(datetime)> 30 || test == 2
+%     try
+%         bioMetRoot = split(matlab.desktop.editor.getActiveFilename,'matlab');
+%         bioMetRoot = string(bioMetRoot(1));
+%         bioMetMatRoot = fullfile(string(bioMetRoot(1)),'/matlab/');
+%         bioMetPyRoot = fullfile(bioMetRoot,'/Python/');
+%         pyenvPath = fullfile(bioMetPyRoot,'.venv/Scripts/');
+%         pyScript = fullfile(bioMetPyRoot,'DatabaseFunctions.py');
+%         activate = '.\activate.bat';
+%         if exist(pyenvPath,'dir') & isfile (pyScript)
+% 
+%             py_call = sprintf("%s --Task GSheetDump --Sites %s",pyScript,strjoin(sites));
+%             CLI_args = sprintf("cd %s & %s & python %s & deactivate & cd %s",pyenvPath,activate,py_call,bioMetMatRoot);
+%             [status,cmdout] = system(CLI_args);
+%             if status == 0
+%                 fprintf('Read G Drive Files \n %s',cmdout)
+%             else
+%                 fprintf('GSheetDump Failed \n %s',cmdout)
+%             end
+%         else
+%             fprint('Py Env does not exist')
+%         end
+%     catch
+%         fprintf('\n\n  ****** Error around Python code ***\n\n');
+%     end
+% 
+% end
 
 fprintf('\n\n**** run_BB_db_update finished in %6.1f sec.******\n',seconds(datetime-startTime));
 fprintf('=====================================================\n\n\n');
 
-end
