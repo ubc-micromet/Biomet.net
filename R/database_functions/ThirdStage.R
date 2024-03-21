@@ -206,16 +206,13 @@ write_traces <- function(config,data){
 
 start.time <- Sys.time()
 
-siteID <- "BB"
-StartYear <- 2021
-EndYear <- 2021
 
-args <- c(siteID,StartYear,EndYear)
+# args <- c(siteID,StartYear,EndYear)
 # source("C:/Biomet.net/R/database_functions/ThirdStage.R")
 
 yrs <- c(args[2]:args[length(args)])
 
-config <- configure(siteID) # Load configuration file
+config <- configure(args[1]) # Load configuration file
 
 input_data <- read_traces(config,yrs) # Read Stage 2 Data
 
