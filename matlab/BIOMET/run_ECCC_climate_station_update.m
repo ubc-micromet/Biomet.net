@@ -42,9 +42,9 @@ arg_default('dbase_pth',db_pth_root);
 for cntStations = 1:length(stationIDs)
     sID = stationIDs(cntStations);
     switch sID
-        case 49088
-            % Burns Bog station
-            pathECCC = 'yyyy\BB\Met\ECCC';
+        % case 49088
+        %     % Burns Bog station
+        %     pathECCC = 'yyyy\BB\Met\ECCC';
         case 10927
             % Hogg station
             pathECCC = 'yyyy\Hogg\Met\ECCC';
