@@ -4,6 +4,10 @@
 import os
 import sys
 import yaml
+
+config_fn = '_config.yml'
+matlab_fn = 'biomet_database_default.m'
+
 # To find database_default from inside (the root) of a project folder
 def get_matlab_default(fn):
     # Read .m file as "text"
@@ -22,10 +26,6 @@ def get_config(fn='_config.yml'):
         config = yaml.safe_load(f)
     return(config['Database']['root'])
 
-os.chdir('C:/Users/User')
-
-config_fn = '_config.yml'
-matlab_fn = 'biomet_database_default.m'
 
 # 1 Search for _config.yml in root of Project Folder
 if os.path.isfile(config_fn):
@@ -39,6 +39,7 @@ elif os.path.isfile('Matlab/'+matlab_fn):
 # Repeat 1 & 2, prompt for input as last resort
 else:
     pth = [v for v in os.environ.values() if 'UBC_PC_Setup' in v]
+    print(pth)
     if len(pth)>0:
         if os.path.isfile(pth[0]+config_fn):
             db_root = get_config(pth[0]+config_fn)
@@ -47,3 +48,4 @@ else:
     else:
         db_root = input('No default database path found, input path to database:')
 
+print(db_root)
