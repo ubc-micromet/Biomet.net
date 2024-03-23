@@ -43,10 +43,13 @@ function [structIn,dbFileNames, dbFieldNames,errCode] = db_struct2database(struc
 %
 %
 % (c) Zoran Nesic               File created:       Sep 28, 2023
-%                               Last modification:  Mar 11, 2024
+%                               Last modification:  Mar 22, 2024
 
 % Revisions:
 % 
+% Mar 22, 2024 (Zoran)
+%   - Bug fix: when the output folder contained ".DS_Store" file saveAll would
+%     crash. Added this line: "&& ~contains(allFiles(cntAllFiles).name,'.DS_Store') ..."
 % Mar 11, 2024 (Zoran)
 %   - found a bug. The program was not dealing with the duplicate time-vector entries
 %     properly (actually, not at all). 
@@ -432,6 +435,7 @@ function errCode = saveAll(statsNew,fileNamesIn,fieldNamesIn,currentTv,inputTv,m
             if ~allFiles(cntAllFiles).isdir ...
                && ~strcmpi(allFiles(cntAllFiles).name,'TimeVector') ...
                && ~contains(allFiles(cntAllFiles).name,'.mat','IgnoreCase',true) ...
+               && ~contains(allFiles(cntAllFiles).name,'.DS_Store') ...
                && ~strcmpi(allFiles(cntAllFiles).name,'clean_tv')
                 foundFile = false;                      % Default: the file does not exist in fileNamesIn  
                 % search for fileName in fileNamesIn
