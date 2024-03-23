@@ -60,7 +60,7 @@ if ~isempty(structAllTags)
             indTaggedDependants = 1:length(list_of_traces);
         elseif indField ~= 0
             % if cTag is memeber of customTags than add those trace names
-            structCustomTagTraces = split(customTags.(char(customTagFieldNames(indField))),',')';
+            structCustomTagTraces = strtrim(split(customTags.(char(customTagFieldNames(indField))),','))';
             structTraceName = [structTraceName structCustomTagTraces]; %#ok<AGROW>
         else
             % loop through all the traces and find all the ones that have this tag
