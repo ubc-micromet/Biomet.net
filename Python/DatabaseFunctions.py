@@ -3,7 +3,7 @@ import yaml
 import db_root as db
 import numpy as np
 import pandas as pd
-# import configparser
+import datetime as dt
 import argparse
 import datetime
 import shutil
@@ -14,19 +14,29 @@ import time
 import json
 
 
+
 class DatabaseFunctions():
 
-    def __init__(self,procedures = '/Calculation_Procedures/TraceAnalysis_ini/', ini=''):
+    def __init__(self,ini=[]):
         self.db_root = db.db_root
-        self.procedures = procedures
+        self.db_ini = db.db_ini
         print('Initialized using db_root: ', self.db_root)
-        with open(f'{self.db_root}{self.procedures}_config.yml') as f:
+        # Read base config 
+        with open(f'{self.db_ini}_config.yml') as f:
             self.ini = yaml.safe_load(f)
+            print(f'Loaded {self.db_ini}_config.yml')
+        # Read user provided configuration(s)
+        for f_in in ini:
+            if os.path.isfile(f'{self.db_ini}{f_in}'):
+                with open(f'{self.db_ini}{f_in}') as f:
+                    yml_in = {f_in.split('.')[0]:yaml.safe_load(f)}
+                    self.ini.update(yml_in)
+                    print(f'Loaded {self.db_ini}{f_in}')
         self.find_Sites()
 
     def find_Sites(self):
         self.years_by_site = {}
-        for f in os.listdir(self.db_root+self.procedures):
+        for f in os.listdir(self.db_ini):
             if f.startswith('_') == False:
                 self.years_by_site[f] = []
         for y in os.listdir(self.db_root):
@@ -35,11 +45,26 @@ class DatabaseFunctions():
                     if os.path.isdir(f'{self.db_root}/{y}/{site}'):
                         self.years_by_site[site].append(y)
 
+    def read_db(self,siteID,Years,stage,trace_names):
+        tv_info = self.ini['Database']['Timestamp']
+        tr_info = self.ini['Database']['Traces']
+        tv = [np.fromfile(f'{self.db_root}{y}/{siteID}/{stage}/{tv_info["name"]}',tv_info['dtype']) for y in Years]
+        tv = np.concatenate(tv,axis=0)
+        DT = pd.to_datetime(tv-tv_info['base'],unit=tv_info['base_unit']).round('S')
+        traces={}        
+        for f in trace_names:
+            try:
+                trace = [np.fromfile(f'{self.db_root}{y}/{siteID}/{stage}/{f}',tr_info['dtype']) for y in Years]
+                traces[f]=np.concatenate(trace,axis=0)
+            except:
+                traces[f]=np.empty(tv.shape)*np.nan
+        self.data = pd.DataFrame(data=traces,index=DT)
+
         
     def sub(self,s):
-        for path in self.ini['Paths'].keys():
-            s = s.replace(path.upper(),self.ini['Paths'][path])
-        for key,value in {'YEAR':self.Year,'SITE':self.site_name}.items():
+        for path in self.ini['Shortcuts'].keys():
+            s = s.replace(path.upper(),self.ini['Shortcuts'][path])
+        for key,value in {'YEAR':self.Year,'SITEID':self.siteID}.items():
             if key in s:
                 s = s.replace(key,str(value))
         return(s)
@@ -65,7 +90,7 @@ class DatabaseFunctions():
             self.Data['Timestamp'] = pd.to_datetime(self.Data['Timestamp'],format=self.ini[self.batch]['date_Fmt'])
             self.Data = self.Data.set_index('Timestamp')
         if self.ini[self.batch]['is_dst'] == 'True':
-            lat_lon=[float(self.ini[self.site_name]['latitude']),float(self.ini[self.site_name]['longitude'])]
+            lat_lon=[float(self.ini[self.siteID]['latitude']),float(self.ini[self.siteID]['longitude'])]
             tzf = TzFuncs.Tzfuncs(lat_lon=lat_lon,DST=True)
             tzf.convert(self.Data.index)
             self.Data = self.Data.set_index(tzf.Standard_Time)
@@ -77,26 +102,6 @@ class DatabaseFunctions():
         if self.ini[self.batch]['aggregate']!='':
             self.Data = self.Data.agg(self.ini[self.batch]['aggregate'].split(','),axis=1)
 
-    def readBinary(self,file,dtype):
-        file = self.dpath+file
-        if os.path.isfile(file):
-            with open(file, mode='rb') as f:
-                trace = np.fromfile(f, dtype)
-                return(trace)
-            
-    def readTimeVector(self):
-        clean_tv = self.readBinary(self.ini['Database']['timestamp'],self.ini['Database']['timestamp_dtype'])
-        if clean_tv is None:
-            clean_tv = self.readBinary(self.ini['Database']['timestamp_alt'],self.ini['Database']['timestamp_dtype'])
-        if clean_tv is not None:
-            base = float(self.ini['Database']['datenum_base'])
-            unit = self.ini['Database']['datenum_base_unit']
-            self.Time_Trace = pd.to_datetime(clean_tv-base,unit=unit).round('T')
-        else:
-            print('Warning - time vector does not exist - generating anyway, double check the inputs / outputs')
-            print('Could not import: ',self.dpath,'/',self.ini['Database']['timestamp'])
-            self.Time_Trace = pd.date_range(start='2022-01-01 00:30',end='2023-01-01',freq='30T')
-    
     def padFullYear(self):
         for self.y in self.Data.index.year.unique():
             self.Year = pd.DataFrame(data={'Timestamp':pd.date_range(start = f'{self.y}01010030',end=f'{self.y+1}01010001',freq='30T')})
@@ -166,6 +171,44 @@ class DatabaseFunctions():
                 str += '\n\n' +self.ini[self.batch]['readme']
                 readme.write(str)
 
+class MakeCSV(DatabaseFunctions):
+    def __init__(self,Sites=None,Years=[dt.datetime.now().year],ini=[]):
+        super().__init__(ini)
+        T1 = time.time()
+        if Sites is None:
+            Sites = self.years_by_site.keys()
+        for self.siteID in Sites:
+            for req in ini:
+                req = req.split('.')[0]
+                stage = self.ini[req]["stage"]
+                traces = list(self.ini[req]['Traces'].keys())
+                print(f'Creating {req} for {self.siteID}')
+                self.read_db(self.siteID,Years,stage,traces)
+
+                if self.ini[req]['by_year']:
+                    Start = self.data.index-pd.Timedelta(30,'m')
+                    for self.Year in Years:
+                        self.write_csv(self.data.loc[Start.year==self.Year].copy(),self.ini[req])
+                    
+    def write_csv(self,df,config):
+        if df.empty:
+            print(f'No data to write for {self.siteID}: {self.Year}')
+        else:
+            df[config['timestamp']['output_name']] = df.index.floor('Min').strftime(config['timestamp']['timestamp_fmt'])
+            output_path = self.sub(config['output_path'])
+            if os.path.exists(output_path)==False:
+                os.makedirs(output_path)
+            output_path = self.sub(output_path+config['filename'])
+            print(output_path)
+            if config['units_in_header'].lower() == 'true':
+                unitDict = {key:config['Traces'][key]['Units'] for key in config['Traces'].keys()}
+                unitDict[config['timestamp']['output_name']] = config['timestamp']['timestamp_units']
+                df = pd.concat([pd.DataFrame(index=[-1],data=unitDict),df])
+            df=df.fillna(config['na_value'])
+            df.to_csv(output_path,index=False)
+        
+            
+
 class MakeTraces(DatabaseFunctions):
     # Accepts an ini file that prompt a search of the datadump folder - or a pandas dataframe with a datetime index
     def __init__(self,ini='ini_files/WriteTraces.ini',DataTable=None):
@@ -173,12 +216,12 @@ class MakeTraces(DatabaseFunctions):
         if DataTable is None:
             for self.batch in self.ini['Input']['file_batches'].split(','):
                 print('Processing: ',self.batch)
-                self.site_name = self.ini[self.batch]['Site']
+                self.siteID = self.ini[self.batch]['Site']
                 self.findFiles()
                 self.Process()
         else:
             self.batch = self.ini['Input']['file_batches'].split(',')[0]
-            self.site_name = self.ini[self.batch]['Site']
+            self.siteID = self.ini[self.batch]['Site']
             self.Data = DataTable
             self.Process()
     
@@ -197,8 +240,8 @@ class MakeTraces(DatabaseFunctions):
         self.Data = pd.DataFrame()
         self.Metadata = pd.DataFrame()
         if self.ini[self.batch]['search_dir'] in [k for k in self.ini['Paths'].keys()]:
-            search_dir = self.ini['Paths'][self.ini[self.batch]['search_dir']].replace('SITE',self.site_name) + self.ini[self.batch]['restrict_search_to']
-            print(self.ini[self.batch]['search_dir'].replace('SITE',self.site_name) )
+            search_dir = self.ini['Paths'][self.ini[self.batch]['search_dir']].replace('SITE',self.siteID) + self.ini[self.batch]['restrict_search_to']
+            print(self.ini[self.batch]['search_dir'].replace('SITE',self.siteID) )
         else:
             search_dir = self.ini[self.batch]['search_dir']# Call to sub fuction could be added here
         for dir,_,files in os.walk(search_dir):
@@ -267,7 +310,7 @@ class GSheetDump(DatabaseFunctions):
     def __init__(self, ini='ini_files/WriteTraces_Gsheets.ini'):
         super().__init__(ini)
         for self.batch in self.ini['Input']['file_batches'].split(','):
-            self.site_name = self.ini[self.batch]['Site']
+            self.siteID = self.ini[self.batch]['Site']
             self.readSheet()
 
     def readSheet(self):
@@ -286,71 +329,6 @@ class GSheetDump(DatabaseFunctions):
             self.Data.drop(colFilter,inplace=True,axis=1)
         self.padFullYear()
 
-class MakeCSV(DatabaseFunctions):
-    def __init__(self,Sites=None,Years=None,ini='ini_files/Write_CSV_Files.ini'):
-        super().__init__(ini)
-        T1 = time.time()
-        if Sites is None:
-            Sites = self.years_by_site.keys()
-        for self.site_name in Sites:
-            for Request,config in self.ini['Output'].items():
-                print(Request,config)
-                with open(f'ini_files/{config}') as json_file:
-                    self.config = json.load(json_file)
-                if Years is not None:
-                    self.years_by_site[self.site_name] = Years
-                print(f'Creating {Request} .csv files for {self.site_name}')
-                if self.config['by_year']=='True':
-                    for self.Year in self.years_by_site[self.site_name]:
-                        self.AllData = pd.DataFrame()
-                        self.dpath = self.sub(f'{self.db_root}/YEAR/SITE/')+self.config['stage']+'/'
-                        if os.path.exists(self.dpath):
-                            self.readYear()
-                        self.write_csv()
-
-                else:
-                    self.AllData = pd.DataFrame()
-                    for self.Year in self.years_by_site[self.site_name]:
-                        self.dpath = self.sub(f'{self.db_root}/YEAR/SITE/')+self.config['stage']+'/'
-                        if os.path.exists(self.dpath):
-                            self.readYear()
-                    self.write_csv()
-                        
-    def readYear(self):
-        self.readTimeVector()
-        self.Data = pd.DataFrame(index=self.Time_Trace,data=self.readTraces())
-        self.Data[self.config['timestamp']['output_name']] = self.Data.index.floor('Min').strftime(self.config['timestamp']['timestamp_fmt'])
-        self.AllData = pd.concat([self.AllData,self.Data])
-        self.AllData = self.AllData.loc[self.AllData.index<=pd.to_datetime('today')]
-
-    def readTraces(self):
-        D_traces = {}
-        self.unitDict = {}
-        for Trace_Name in self.config['Traces'].keys():
-            trace = self.readBinary(Trace_Name,self.ini['Database']['trace_dtype'])
-            if trace is not None:
-                D_traces[self.config['Traces'][Trace_Name]['output_name']]=trace
-                self.unitDict[self.config['Traces'][Trace_Name]['output_name']]=self.config['Traces'][Trace_Name]['Units']
-        return (D_traces)
-    
-    def write_csv(self):
-        if self.AllData.empty:
-            print(f'No data to write for{self.site_name}: {self.Year}')
-        else:
-            output_path = self.sub(self.config['output_path'])
-            if os.path.exists(output_path)==False:
-                os.makedirs(output_path)
-            output_path = self.sub(output_path+self.config['filename'])
-            self.addUnits()
-            self.AllData.set_index(self.config['timestamp']['output_name'],inplace=True)
-            self.AllData=self.AllData.fillna(eval(self.config['na_value']))
-            self.AllData.to_csv(output_path)
-        
-    def addUnits(self):
-        if self.config['units_in_header'].lower() == 'true':
-            self.unitDict[self.config['timestamp']['output_name']] = self.config['timestamp']['timestamp_units']
-            self.AllData = pd.concat([pd.DataFrame(index=[-1],data=self.unitDict),self.AllData])
-            
 
 if __name__ == '__main__':
     T1 = time.time()
