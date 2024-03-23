@@ -35,16 +35,33 @@ structAllTraceNames = {list_of_traces.variableName};
 % Find if there are any tags (tag_*) in the list of dependents
 structAllTags = structTraceName(startsWith(structTraceName,'tag_'));
 
+% Add custom tags from siteID_CustomTags.m file if such file exists
+% under Derived_Variables
+%--- to be implemented -------
+siteID = list_of_traces(1).SiteID;
+fileName = [siteID '_CustomTags'];
+if exist(fileName,'file')
+    customTags = eval(fileName);
+    customTagFieldNames = fieldnames(customTags);
+else
+    customTagFieldNames = [];
+end
+
 % if tags exist, convert them to trace names and add them
 % to the list of dependants
 if ~isempty(structAllTags)
     indTaggedDependants = [];
     for cntTags = 1:length(structAllTags)
         cTag = char(structAllTags(cntTags));
+        indField = ismember(customTagFieldNames,cTag);
         % Deal with special tags (tag_ALL, tag_AllMet, tag_AllFlux)        
         if strcmpi(cTag,'tag_All')
             % tag_All affects all traces
             indTaggedDependants = 1:length(list_of_traces);
+        elseif indField ~= 0
+            % if cTag is memeber of customTags than add those trace names
+            structCustomTagTraces = split(customTags.(char(customTagFieldNames(indField))),',')';
+            structTraceName = [structTraceName structCustomTagTraces]; %#ok<AGROW>
         else
             % loop through all the traces and find all the ones that have this tag
             for cntTraces = 1:length(list_of_traces)
