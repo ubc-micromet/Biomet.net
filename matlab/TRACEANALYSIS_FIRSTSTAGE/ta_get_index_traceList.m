@@ -14,7 +14,7 @@ function returnInd = ta_get_index_traceList(trc_names,list_of_traces)
 %   - fixed syntax errors
 %   - symplified the code
 %   - added handling of tags
-%   - implemented a meta tag: "Tag_All". More to follow.
+%   - implemented a meta tag: "tag_All". More to follow.
 
 
 returnInd = [];
