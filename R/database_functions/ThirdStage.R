@@ -6,15 +6,18 @@
     # siteID (e.g., BB)
     # startYear (first year to run, e.g., 2022)
 # Optional: 
-    # lastYear (years run will be: c(startYear:lastYear)
+    # lastYear years run will be: c(startYear:lastYear)
 
 
 # Example call from command line (assumes R is added to your PATH variable)
-# Rscript --vanilla ThirdStage.R BBS 2023 2024
+# Rscript --vanilla C:/Biomet.net/R/database_functions/ThirdStage.R BBS 2023 2024
 
 # Example call from R terminal
 # args <- c("BBS",2023,2024)
 # source("C:/Biomet.net/R/database_functions/ThirdStage.R")
+
+# # Install on first run
+# install.packages(c('rs','yaml','rlist','dplyr','lubridate','data.table','tidyverse','caret'))
 
 # Load libraries
 library('fs')
