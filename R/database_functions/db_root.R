@@ -1,12 +1,15 @@
 # Find the database root path
 # Written by June Skeeter March 2024
 
+# Run from the root of your project folder to identify the proper path to the database for your project
+
 library("yaml")
 
 # Names of config files to search for
 # Generic configuration option
+# Not yet implemented but could be later
 config_fn = '_config.yml'
-# Default matlab option
+# Default matlab option, following current procedures
 matlab_fn = 'biomet_database_default.m'
 
 # To find database_default from inside (the root) of a project folder
@@ -40,11 +43,15 @@ get_config <- function(fn='_config.yml'){
 if (file.exists(config_fn)){
     db_root <- get_config(config_fn)
 }
-# 2 Search for matalab default in root of project folder
+# 2 Search for matalab default in root of current folder
+else if (file.exists(matlab_fn)) {
+    db_root <- get_biomet_default(matlab_fn)
+}
+# 3 Search for Matlabl folder in root of project folder
 else if (file.exists(file.path('Matlab/',matlab_fn))) {
     db_root <- get_biomet_default(file.path('Matlab/',matlab_fn))
 }
-# 3 Search environment variables for UBC_PC_Setup
+# 4 Search environment variables for UBC_PC_Setup
 # Repeat 1 & 2, prompt for input as last resort
 else {
     A <- 'UBC_PC_Setup'
@@ -57,8 +64,7 @@ else {
             db_root <- get_biomet_default(file.path(pth,'PC_specific',matlab_fn))
         }
     }else{
-        cat("No default database path found, input path to database: ")
-        db_root <- readLines(con = "stdin", n = 1)
+        print('Default database path not identified!  Ensure you have the configuration setup properly')
     }
 }
 }
