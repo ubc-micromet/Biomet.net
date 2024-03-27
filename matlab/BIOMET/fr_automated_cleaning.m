@@ -39,10 +39,15 @@ function fr_automated_cleaning(Years,Sites,stages,db_out,db_ini)
 %    to use a local copy of the database.
 
 
-% kai* Feb 12, 2003                     Last modified: Feb 12, 2024
+% kai* Feb 12, 2003                     Last modified: Mar 22, 2024
 %
 % Revisions:
 % 
+% Mar 22, 2024 (Zoran)
+%   - renamed SiteId to siteID
+%   - removed Derived_Variables from the path when processing of a siteID is finished.
+%     Leaving it to linger around could mess up running of some other programs/sites
+%     during the current Matlab session (used to stay persistant until Matlab session is closed)
 % Feb 12, 2024 (Zoran)
 %   - Limitted running DerivedVariablesForGapFilling on Micromet sites
 %     only.
@@ -68,9 +73,9 @@ function fr_automated_cleaning(Years,Sites,stages,db_out,db_ini)
 % Sep 21, 2022 (Zoran)
 %   - change path creation to make it work compatible with MacOS:
 %     Changed:
-%       pth_out_second = fullfile(db_out,yy_str,SiteId,'clean\SecondStage','');
+%       pth_out_second = fullfile(db_out,yy_str,siteID,'clean\SecondStage','');
 %     to
-%       pth_out_second = fullfile(db_out,yy_str,SiteId,'clean','SecondStage','');
+%       pth_out_second = fullfile(db_out,yy_str,siteID,'clean','SecondStage','');
 % Aug 10, 2022 (Zoran)
 %   - Had to change my mind about preventing (error-ing)on the use of
 %     db_out option. Some of our backup programs might be using this
@@ -149,7 +154,7 @@ All_Sites     = {'BS'   'CR' 'FEN' 'HJP02' 'HJP75' 'JP'   'OY' 'PA'   'YF' 'LGR1
 arg_default('Sites',All_Sites)
 
 if ~iscellstr(Sites) %#ok<ISCLSTR>
-    % Assume it is a string with a single SiteId
+    % Assume it is a string with a single siteID
     Sites = cellstr(Sites);
 end
 
@@ -200,41 +205,41 @@ numOfYears = length(Years);
 numOfSites = length(Sites);
 
 for cntSites = 1:numOfSites
-    SiteId = upper(char(Sites(cntSites)));
+    siteID = upper(char(Sites(cntSites)));
     
     for cntYears = 1:numOfYears
         yy = Years(cntYears);
         yy_str = num2str(yy(1));
         try
-            fid = fopen(fullfile(db_pth,yy_str,SiteId,'automated_cleaning.log'),'a');
+            fid = fopen(fullfile(db_pth,yy_str,siteID,'automated_cleaning.log'),'a');
             if fid > -1
                 fclose(fid);
-                diary(fullfile(db_pth,yy_str,SiteId,'automated_cleaning.log'));
+                diary(fullfile(db_pth,yy_str,siteID,'automated_cleaning.log'));
             else
-                disp(['Write protected file: ' fullfile(db_pth,yy_str,SiteId,'automated_cleaning.log')]);
+                disp(['Write protected file: ' fullfile(db_pth,yy_str,siteID,'automated_cleaning.log')]);
             end
         catch ME
             disp(ME.message);
         end
         fprintf('==============  Start =========================================\n');
         fprintf('Date: %s\n',datetime);
-        fprintf('SiteId = %s\n',SiteId);
+        fprintf('siteID = %s\n',siteID);
         
         %------------------------------------------------------------------
         % Get output paths
         %------------------------------------------------------------------
-        pth_out_first  = fullfile(db_out,yy_str,SiteId,'');
-        pth_out_second = fullfile(db_out,yy_str,SiteId,'clean','SecondStage','');
-        pth_out_third  = fullfile(db_out,yy_str,SiteId,'clean','ThirdStage', '');
+        pth_out_first  = fullfile(db_out,yy_str,siteID,'');
+        pth_out_second = fullfile(db_out,yy_str,siteID,'clean','SecondStage','');
+        pth_out_third  = fullfile(db_out,yy_str,siteID,'clean','ThirdStage', '');
         
         %------------------------------------------------------------------
         % Do first stage cleaning and exporting
         %------------------------------------------------------------------
         if ~isempty(find(stages == 1)) %#ok<*EFIND>
             stage_str = 'First ';
-            disp(['============== ' stage_str ' stage cleaning ' SiteId ' ' yy_str ' ==============']);
-            db_dir_ini(yy(1),SiteId,db_out,1);
-            data_first = fr_cleaning_siteyear(yy(1),SiteId,1,db_ini);
+            disp(['============== ' stage_str ' stage cleaning ' siteID ' ' yy_str ' ==============']);
+            db_dir_ini(yy(1),siteID,db_out,1);
+            data_first = fr_cleaning_siteyear(yy(1),siteID,1,db_ini);
             ta_export(data_first,pth_out_first);
             fprintf('============== End of cleaning stage 1 =============\n');
         end
@@ -244,10 +249,10 @@ for cntSites = 1:numOfSites
         %------------------------------------------------------------------
         if ~isempty(find(stages == 2))
             stage_str = 'Second';
-            disp(['============== ' stage_str ' stage cleaning ' SiteId ' ' yy_str ' ==============']);
+            disp(['============== ' stage_str ' stage cleaning ' siteID ' ' yy_str ' ==============']);
             
-            db_dir_ini(yy(1),SiteId,db_out,2);
-            data_second = fr_cleaning_siteyear(yy(1),SiteId,2,db_ini);
+            db_dir_ini(yy(1),siteID,db_out,2);
+            data_second = fr_cleaning_siteyear(yy(1),siteID,2,db_ini);
             ta_export(data_second,pth_out_second);
             fprintf('============== End of cleaning stage 2 =============\n');
         end
@@ -257,9 +262,9 @@ for cntSites = 1:numOfSites
         %------------------------------------------------------------------
         if ~isempty(find(stages == 3))
             stage_str = 'Third ';
-            disp(['============== ' stage_str ' stage cleaning ' SiteId ' ' yy_str ' ==============']);
-            db_dir_ini(yy(1),SiteId,db_out,3);
-            data_third = fr_cleaning_siteyear(yy(1),SiteId,3,db_ini);
+            disp(['============== ' stage_str ' stage cleaning ' siteID ' ' yy_str ' ==============']);
+            db_dir_ini(yy(1),siteID,db_out,3);
+            data_third = fr_cleaning_siteyear(yy(1),siteID,3,db_ini);
             ta_export(data_third,pth_out_third);
             fprintf('============== End of cleaning stage 3 =============\n');
         end
@@ -268,9 +273,9 @@ for cntSites = 1:numOfSites
         % Do FCRN exporting
         %------------------------------------------------------------------
         if ~isempty(find(stages == 4))
-            disp(['============== ' SiteId ' - FCRN Export =================================']);
+            disp(['============== ' siteID ' - FCRN Export =================================']);
             data_fcrn = fcrn_trace_str(data_first,data_second,data_third);
-            fcrnexport(SiteId,data_fcrn);
+            fcrnexport(siteID,data_fcrn);
             fprintf('============== End of cleaning stage 4 =============\n');
         end
         
@@ -279,10 +284,10 @@ for cntSites = 1:numOfSites
         % Do a local FCRN export right up to current day
         %------------------------------------------------------------------
         if ~isempty(find(stages == 5))
-            disp(['============== ' SiteId ' - Local FCRN Export =================================']);
+            disp(['============== ' siteID ' - Local FCRN Export =================================']);
             data_fcrn_local = fcrn_trace_str(data_first,data_second,data_third);
             flag_local = 1;
-            fcrnexport(SiteId,data_fcrn_local,flag_local);
+            fcrnexport(siteID,data_fcrn_local,flag_local);
             fprintf('============== End of cleaning stage 5 =============\n');
         end
         
@@ -291,14 +296,14 @@ for cntSites = 1:numOfSites
         %------------------------------------------------------------------
         if dailymode | ~isempty(find(stages==6)) %#ok<*OR2> % July 10, 2007: added a stage 6 so we can produce web graphs explicitly by site
             try
-                if ismember(SiteId,{'HP09' 'HP11' 'MPB1' 'MPB2' 'MPB3'})
-                    opsite_web_analysis(yy(1),SiteId);
+                if ismember(siteID,{'HP09' 'HP11' 'MPB1' 'MPB2' 'MPB3'})
+                    opsite_web_analysis(yy(1),siteID);
                     autoGraph(data_first)
                 else
                     autoGraph(data_third)
                 end
             catch
-                disp(['Could not generate graphs for ' SiteId ' ' yy_str]);
+                disp(['Could not generate graphs for ' siteID ' ' yy_str]);
             end
         end
         
@@ -311,9 +316,9 @@ for cntSites = 1:numOfSites
         %------------------------------------------------------------------
         if ~isempty(find(stages == 7))
             stage_str = '7-th';
-            disp(['============== ' stage_str ' stage cleaning ' SiteId ' ' yy_str ' ==============']);
-            db_dir_ini(yy(1),SiteId,db_out,3);
-            runThirdStageCleaningREddyProc(yy(1),SiteId,'fast',2);  % use only 2 years for gap filling
+            disp(['============== ' stage_str ' stage cleaning ' siteID ' ' yy_str ' ==============']);
+            db_dir_ini(yy(1),siteID,db_out,3);
+            runThirdStageCleaningREddyProc(yy(1),siteID,'fast',2);  % use only 2 years for gap filling
             fprintf('============== End of cleaning stage 7 =============\n');
         end
         
@@ -323,15 +328,17 @@ for cntSites = 1:numOfSites
         %------------------------------------------------------------------
         if ~isempty(find(stages == 8))
             stage_str = '8-th';
-            disp(['============== ' stage_str ' stage. Exporting AmeriFlux csv file for: ' SiteId ' ' yy_str ' ==============']);
-            pathAF = fullfile(db_pth,num2str(yy(1)),SiteId,'Clean','Ameriflux');
-            saveDatabaseToAmeriFluxCSV(SiteId,yy(1),pathAF);
+            disp(['============== ' stage_str ' stage. Exporting AmeriFlux csv file for: ' siteID ' ' yy_str ' ==============']);
+            pathAF = fullfile(db_pth,num2str(yy(1)),siteID,'Clean','Ameriflux');
+            saveDatabaseToAmeriFluxCSV(siteID,yy(1),pathAF);
             fprintf('============== End of cleaning stage 8 =============\n'); 
         end          
         clear data_* ini_* pth_* mat_*
     end
-    
-    fprintf('============== End of cleaning Site: %s, year: %d ===========\n',SiteId,yy(1));
+    % Remove Derived_Variables path from the path
+    rmpath( biomet_path('Calculation_Procedures\TraceAnalysis_ini',siteID,'Derived_Variables'))
+
+    fprintf('============== End of cleaning Site: %s, year: %d ===========\n',siteID,yy(1));
     
     if ~isempty(hTimer)
         % restart the original diary file name
