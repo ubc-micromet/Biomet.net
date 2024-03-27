@@ -14,9 +14,13 @@ get_biomet_default <- function(fn){
     # Read .m file as "text"
     config <- paste(readLines(fn), collapse="\n")
     # Identify system, translate Matlab to Python, and evaluate
+    config <- gsub('function x = biomet_database_default\n','',as.character(config))
     config <- gsub('%','#',as.character(config))
     config <- gsub('\\\\','/',as.character(config))
-    config <- strsplit(config,"if ispc")[[1]][2]
+    config <- strsplit(config,"if ispc")[[1]]
+    if (length(config)>1) {
+       config <- config[2]
+    }
     config <- strsplit(config,"elseif ismac")[[1]]
     if(.Platform$OS.type == "unix") {
         eval(parse(text=config[2]))
@@ -49,8 +53,8 @@ else {
     if (!identical(unname(pth)[[1]], character(0))){
         if (file.exists(file.path(pth,config_fn))){
             db_root <- get_config(file.path(pth,config_fn))
-        }else if (file.exists(file.path(pth,matlab_fn))) {
-            db_root <- get_biomet_default(file.path(pth,matlab_fn))
+        }else if (file.exists(file.path(pth,'PC_specific',matlab_fn))) {
+            db_root <- get_biomet_default(file.path(pth,'PC_specific',matlab_fn))
         }
     }else{
         cat("No default database path found, input path to database: ")
@@ -58,4 +62,6 @@ else {
     }
 }
 }
+
+db_ini = file.path(db_root[1],'Calculation_Procedures/TraceAnalysis_ini/')
 

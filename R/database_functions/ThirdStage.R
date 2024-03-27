@@ -1,14 +1,26 @@
 # Written by June Skeeter (March 2024)
 # Intended to streamline third stage processing
+# Input Arguments:
 
-## Need to add:
-# Clear third stage folder before running
-# copy clean_tv directly from second stage
-# output procedures
+# Required:
+    # siteID (e.g., BB)
+    # startYear (first year to run, e.g., 2022)
+# Optional: 
+    # lastYear years run will be: c(startYear:lastYear)
+
+
+# Example call from command line (assumes R is added to your PATH variable)
+# Rscript --vanilla C:/Biomet.net/R/database_functions/ThirdStage.R BBS 2023 2024
+
+# Example call from R terminal
+# args <- c("BBS",2023,2024)
+# source("C:/Biomet.net/R/database_functions/ThirdStage.R")
+
+# # Install on first run
+# install.packages(c('rs','yaml','rlist','dplyr','lubridate','data.table','tidyverse','caret'))
 
 # Load libraries
 library('fs')
-# library("tools")
 library("yaml")
 library("REddyProc")
 library("rlist")
@@ -16,10 +28,24 @@ require("dplyr")
 require("lubridate")
 require("data.table")
 
-
 configure <- function(siteID){
-    # Get path of current script
-    fx_path <- path_dir(as.character(sys.frame(1)$ofile))
+    # Get path of current script & arguments
+    # Procedures differ if called via command line or via source()
+    cmdArgs <- commandArgs(trailingOnly = FALSE)
+    needle <- "--file="
+    match <- grep(needle, cmdArgs)
+    if (length(match) > 0) {
+            # Rscript
+            args <- commandArgs(trailingOnly = TRUE)
+            fx_path<- path_dir(normalizePath(sub(needle, "", cmdArgs[match])))
+    } else {
+            # 'source'd via R console
+            fx_path<- path_dir(normalizePath(sys.frames()[[1]]$ofile))
+    }
+
+    siteID <- args[1]
+    yrs <- c(args[2]:args[length(args)])
+
     # Read function to get db_root variable
     sapply(list.files(pattern="db_root.R", path=fx_path, full.names=TRUE), source)
 
@@ -38,22 +64,23 @@ configure <- function(siteID){
     # Add the relevant paths
     config$Database$db_root <- db_root
     config$fx_path <- fx_path
+    config$yrs <- yrs
     return(config)
 }
 
-
-read_traces <- function(config,yrs){
+read_traces <- function(){
     # Read function for loading data
     sapply(list.files(pattern="read_database.R", path=config$fx_path, full.names=TRUE), source)
 
     siteID <- config$Metadata$siteID
+    yrs <- config$yrs
     db_root <- config$Database$db_root
     data <- data.frame()
 
     # Copy files from second stage to third stage, takes everything by default
     # Can change behavior later if needed
     level_in <- config$Database$Paths$SecondStage
-    tv_input <- config$Database$datenum$filename
+    tv_input <- config$Database$Timestamp$name
     for (j in 1:length(yrs)) {
         in_path <- file.path(db_root,as.character(yrs[j]),siteID,level_in)
         copy_vars <- list.files(in_path)
@@ -78,14 +105,15 @@ read_traces <- function(config,yrs){
     return(data)
 }
 
-ThirdStage_REddyProc <- function(config,data_in) {
+ThirdStage_REddyProc <- function(data_in) {
     
     # Rearrange data frame and only keep relevant variables for input into REddyProc
     data_REddyProc <- data_in[ , c(unlist(config$REddyProc$vars_in),"DateTime","Year","DoY","Hour")]
     # Rename column names to variable names in REddyProc
     colnames(data_REddyProc)<-c(names(config$REddyProc$vars_in),"DateTime","Year","DoY","Hour")
 
-    # Old code had hardcoded storage calculations here.  Consensus on storage fluxes?
+    # Old code had hardcoded storage calculations here
+    # Consensus on storage fluxes? Should be calculated in stage 2?
 
     # Run REddyProc
     # Following "https://cran.r-project.org/web/packages/REddyProc/vignettes/useCase.html" This is more up to date than the Wutzler et al. paper
@@ -145,7 +173,7 @@ ThirdStage_REddyProc <- function(config,data_in) {
     return(FilledEddyData)
 }
 
-RF_GapFilling <- function(config,data_in){
+RF_GapFilling <- function(data_in){
     
     # Read function for RF gap-filling data
     p <- sapply(list.files(pattern="RandomForestModel.R", path=config$fx_path, full.names=TRUE), source)
@@ -158,26 +186,26 @@ RF_GapFilling <- function(config,data_in){
             vars_in <- c(var_dep,predictors,"DateTime","DoY")
             gap_filled <- RandomForestModel(
                 data_in[,vars_in],fill_names[i])
-            FilledEddyData = dplyr::bind_cols(
+            data_out = dplyr::bind_cols(
                 data_in,gap_filled
                 )
         }
-        return(FilledEddyData)
+        return(data_out)
     }else {
        return(data_in)
     }
     
 }
 
-write_traces <- function(config,data){
-    yrs <- sort(unique(data$Year)) 
+write_traces <- function(data){
+    yrs <- config$yrs 
     siteID <- config$Metadata$siteID
     level_in <- config$Database$Paths$SecondStage
     level_out <- config$Database$Paths$ThirdStage
     tv_input <- config$Database$datenum$filename
     db_root <- config$Database$db_root
 
-    for (j in 1:(length(yrs)-1)){
+    for (j in 1:length(yrs)){
         # Create new directory, or clear existing directory
         out_path <- file.path(db_root,as.character(yrs[j]),siteID,level_out) 
         dir.create(out_path, showWarnings = FALSE)
@@ -207,23 +235,16 @@ write_traces <- function(config,data){
 start.time <- Sys.time()
 
 
-# args <- c(siteID,StartYear,EndYear)
-# source("C:/Biomet.net/R/database_functions/ThirdStage.R")
+config <- configure() # Load configuration file
 
-yrs <- c(args[2]:args[length(args)])
+input_data <- read_traces() # Read Stage 2 Data
 
-config <- configure(args[1]) # Load configuration file
+FilledEddyData <- ThirdStage_REddyProc(input_data) # Run REddyProc
 
-input_data <- read_traces(config,yrs) # Read Stage 2 Data
+FilledEddyData <- RF_GapFilling(FilledEddyData)
 
-FilledEddyData <- ThirdStage_REddyProc(config,input_data) # Run REddyProc
-
-FilledEddyData <- RF_GapFilling(config,FilledEddyData)
-
-write_traces(config,FilledEddyData) # Write Stage 3 Data
+write_traces(FilledEddyData) # Write Stage 3 Data
 
 end.time <- Sys.time()
 print('Stage 3 Complete, total run time:')
 print(end.time - start.time)
-
-

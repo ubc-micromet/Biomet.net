@@ -47,3 +47,5 @@ else:
             db_root = get_matlab_default(pth+matlab_fn)
     else:
         db_root = input('No default database path found, input path to database:')
+
+db_ini = db_root+'Calculation_Procedures/TraceAnalysis_ini/'
