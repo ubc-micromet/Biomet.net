@@ -15,7 +15,7 @@
 #install.packages('caret') # for machine learning run and tuning
 #install.packages('randomForest') # randomforest model
 
-RandomForestModel <- function(df,fill_name,plot_results=0) {
+RandomForestModel <- function(df,fill_name,plot_results=0,fill_tag='_RF_f') {
   
   # load libraries
   library(tidyverse)
@@ -111,7 +111,6 @@ RandomForestModel <- function(df,fill_name,plot_results=0) {
               importance = TRUE)
   
   ############### Results
-  
   # whole dataset
   result <- subset(ML.df,select = var_dep)
   
@@ -151,9 +150,9 @@ RandomForestModel <- function(df,fill_name,plot_results=0) {
   df.out <- data.frame(df[,1]) 
   # Make sure output data frame is the same length as the input data
   df.out[ind_start:ind_end, ] <- result[,3] #RF_filled
-  names(df.out) <- paste(fill_name,'_f_RF',sep="")
+  names(df.out) <- paste(fill_name,fill_tag,sep="")
   df.out$RF_filled <- NA
   df.out$RF_filled[ind_start:ind_end] <- result[,2] #RF_model
-  names(df.out)[2] <- paste(fill_name,'_fall_RF',sep="")  
+  names(df.out)[2] <- paste(fill_name,fill_tag,"all",sep="")  
   return(df.out)
 }
