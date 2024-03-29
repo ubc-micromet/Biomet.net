@@ -62,7 +62,6 @@ RandomForestModel <- function(df,fill_name,plot_results=0,fill_tag='_RF_f') {
   ## Create tune-grid (all combinations of hyper-parameters)
   tgrid <- expand.grid(
     mtry = c(1:length(predictor_vars)-1), # since mtry can not be larger than number of variables in data, could add parameter in function for step so doesn't default increment by 1
-    
     splitrule = "variance", 
     min.node.size = c(5, 50, 100)
   )
