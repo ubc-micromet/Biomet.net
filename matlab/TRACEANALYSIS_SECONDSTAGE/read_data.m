@@ -6,7 +6,7 @@ function trace_str = read_data(yearIn, SiteID, ini_file, sourceDB, options)
 % on the data.
 
 
-%Input:	'Year' - year of the data to be read
+% Input:	'yearIn' - year of the data to be read
 %			'SideId' - site Id of the data to be read
 %			'ini_file' - file path for the ini file (first or second stage)
 %			'options' - currently not used (not required), default is 'none'
@@ -14,14 +14,17 @@ function trace_str = read_data(yearIn, SiteID, ini_file, sourceDB, options)
 %   						(default path of database) or contains the path of the database 
 %							to be read(not required), default is 'database'
 
-%Output: 'trace_str' - an array of traces organized in a particular trace structure
+% Output: 'trace_str' - an array of traces organized in a particular trace structure
 %                      See the function 'read_ini_file' for more information
 
 
-% last modification: Feb 22, 2024
+% last modification: Apr 2, 2024
 
 % revisions:
 %
+% Apr 2, 2024 (Zoran)
+%   - changed: arg_default('year',yearNow) to arg_default('yearIn',yearNow).
+%     The former was wrong.
 % Feb 22, 2024 (Zoran)
 %   - added  && ~isempty(trace_str(1).searchPath) to avoid warning
 %     messages.
@@ -71,9 +74,7 @@ bgc = [0 0.36 0.532];
 
 [yearNow,~,~] = datevec(now);
 
-% 'year' is a method e.g., year(datetime("today")) will give you the
-% current year.  Overwriting it here might not be the best thing to do?
-arg_default('year',yearNow)
+arg_default('yearIn',yearNow)
 ini_file_default = biomet_path('Calculation_Procedures\TraceAnalysis_ini',SiteID);
 ini_file_default = setFolderSeparator(fullfile(ini_file_default,[SiteID '_FirstStage.ini']));
 arg_default('ini_file',ini_file_default)
@@ -88,7 +89,7 @@ addpath( biomet_path('Calculation_Procedures\TraceAnalysis_ini',SiteID,'Derived_
 
 %-------------------------------------------------------------------------------------
 %Open initialization file if it is present:
-if exist('ini_file') & ~isempty(ini_file) %#ok<*AND2>
+if exist('ini_file','var') & ~isempty(ini_file) %#ok<*AND2>
    ind = find(ini_file==filesep);
    if isempty(ind)      
       temp = which(ini_file);
@@ -109,22 +110,19 @@ if exist('ini_file') & ~isempty(ini_file) %#ok<*AND2>
       return
    end
    % end kai*
-end
 
-%-------------------------------------------------------------------------------------
-% Read each line of the initialization file and add the fields associated 
-% with each trace to the array of traces. 
-flag_read_ini = 0;
-if exist('ini_file') & ~isempty(ini_file)   
+   %-------------------------------------------------------------------------------------
+   % Read each line of the initialization file and add the fields associated 
+   % with each trace to the array of traces. 
    trace_str = read_ini_file(fid,yearIn);     
    fclose(fid);
    if isempty(trace_str)
       return
-   end
+   end   
 end
 
 % Fill in the empty year
-if ~exist('SiteID') | isempty(SiteID)
+if ~exist('SiteID','var') | isempty(SiteID)
    SiteID = upper(trace_str(1).SiteID);
 end
 
@@ -247,7 +245,7 @@ while ~isempty( searchPath )
          %Added Apr 6, 2022 (Zoran)
          initializeWorkSpaceTraces( [pth_full 'Met\Clean\'] ); %load all the traces into the workspace, used by second stage reading
          % Added Jun 6, 2022 (Sara K)
-         %initializeWorkSpaceTraces( biomet_path(year,'ECCC') ); %load all the traces into the workspace, used by second stage reading
+         %initializeWorkSpaceTraces( biomet_path(yearIn,'ECCC') ); %load all the traces into the workspace, used by second stage reading
 
      case 'high_level'
         for pth = trace_str(1).high_level_path
