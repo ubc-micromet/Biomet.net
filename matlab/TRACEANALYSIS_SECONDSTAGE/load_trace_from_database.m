@@ -10,8 +10,11 @@ function trace_out = load_trace_from_database(trace_in)
 %The result is the same as 'trace_in' except with three new fields: data,data_old,DOY
 %which are raw data, and the decimal day of year with time shift.
 
-%Revisions: 
+% Revisions: 
 %
+% Apr 2, 2024 (Zoran)
+%   - Enabled trace file name to be 'clean_tv' or TimeVector. That way the 
+%     time can be loaded up and used to filter data periods.
 % May 9, 2023 (Zoran)
 %   - When .inputFileName length was 1 the string was not processed correctly.
 %     The single .inputFileName is a string and when we had multiple .inputFileName
@@ -53,50 +56,58 @@ time_shift = trace_in.Diff_GMT_to_local_time;
 
 pth = biomet_path(Year,SiteID, trace_in.ini.measurementType);		%find path in database
 
-if isfield(trace_in.ini,'inputFileName_dates')
-    % Create a time vector first for the current year
-    % to be able to pick the inputFileName(s) that 
-    % were relevant for that year.
-    % The time vector resolution is assumed to be 30min and it's only used
-    % here to identify the correct file name (it's not part of the data
-    % output)
-    tvYear = fr_round_time(datenum(Year,1,1,0,30,0):1/48:datenum(Year+1,1,1,0,0,0));
-    for i = 1:size(char(trace_in.ini.inputFileName),1)
-        % Sometimes users would not input singular inputFileName-s as 
-        % a cell array. This deals with that issue by checking first
-        if iscell(trace_in.ini.inputFileName(i))
-            inputFileName = char(trace_in.ini.inputFileName(i));
-        else
-            inputFileName = char(trace_in.ini.inputFileName(i,:));
-        end
-        ind = find(tvYear > trace_in.ini.inputFileName_dates(i,1) & ...
-            tvYear <= trace_in.ini.inputFileName_dates(i,2));        
-        if ~isempty(ind)
-            % load data only if this input file is relevant for this year.
-            % (this data trace could be non-existent for this year in which
-            % case program would output errors. This way only relevant
-            % files are read.
-            [temp_data_cur,timeVector] = read_db(Year,SiteID,...
-                trace_in.ini.measurementType,inputFileName,warn_flag);
-            if ~exist('temp_data','var')
-                % Create a NaN array of the appropriate length.
-                temp_data = NaN.*ones(length(timeVector),1);
+% if trace name is 'clean_tv' or 'TimeVector' then load it up as a special case
+% Load it up using read_bor and skip all the other tests.
+% 
+if strcmpi(trace_in.ini.inputFileName,'clean_tv') || strcmpi(trace_in.ini.inputFileName,'TimeVector')
+    temp_data = read_bor(fullfile(pth, char(trace_in.ini.inputFileName)),8);			%read tv from database
+    timeVector = temp_data;
+else
+    if isfield(trace_in.ini,'inputFileName_dates')
+        % Create a time vector first for the current year
+        % to be able to pick the inputFileName(s) that 
+        % were relevant for that year.
+        % The time vector resolution is assumed to be 30min and it's only used
+        % here to identify the correct file name (it's not part of the data
+        % output)
+        tvYear = fr_round_time(datenum(Year,1,1,0,30,0):1/48:datenum(Year+1,1,1,0,0,0)); %#ok<*DATNM>
+        for i = 1:size(char(trace_in.ini.inputFileName),1)
+            % Sometimes users would not input singular inputFileName-s as 
+            % a cell array. This deals with that issue by checking first
+            if iscell(trace_in.ini.inputFileName(i))
+                inputFileName = char(trace_in.ini.inputFileName(i));
+            else
+                inputFileName = char(trace_in.ini.inputFileName(i,:));
             end
-            try
-                temp_data(ind) = temp_data_cur(ind);
-            catch
-                if ~isempty(ind)
-                    try
-                        temp_data(ind) = read_bor([pth inputFileName],[],[],[],ind);			%read from database
-                    catch
+            ind = find(tvYear > trace_in.ini.inputFileName_dates(i,1) & ...
+                tvYear <= trace_in.ini.inputFileName_dates(i,2));        
+            if ~isempty(ind)
+                % load data only if this input file is relevant for this year.
+                % (this data trace could be non-existent for this year in which
+                % case program would output errors. This way only relevant
+                % files are read.
+                [temp_data_cur,timeVector] = read_db(Year,SiteID,...
+                    trace_in.ini.measurementType,inputFileName,warn_flag);
+                if ~exist('temp_data','var')
+                    % Create a NaN array of the appropriate length.
+                    temp_data = NaN.*ones(length(timeVector),1);
+                end
+                try
+                    temp_data(ind) = temp_data_cur(ind);
+                catch
+                    if ~isempty(ind)
+                        try
+                            temp_data(ind) = read_bor([pth inputFileName],[],[],[],ind);			%read from database
+                        catch
+                        end
                     end
                 end
             end
         end
+    else
+        [temp_data,timeVector] = read_db(Year,SiteID,...
+            trace_in.ini.measurementType,char(trace_in.ini.inputFileName),warn_flag);
     end
-else
-    [temp_data,timeVector] = read_db(Year,SiteID,...
-        trace_in.ini.measurementType,char(trace_in.ini.inputFileName),warn_flag);
 end
          
 %if berms data has been inputed then
@@ -131,8 +142,7 @@ else
 %   trace_in.data = temp_data(indOut);
 end
 
-
-if length(temp_data) == 1 & isnan(temp_data) %#ok<AND2>
+if length(temp_data) == 1 & isnan(temp_data) 
     trace_in.data       = NaN .* ones(size(timeVector));
 else
     trace_in.data       = temp_data;

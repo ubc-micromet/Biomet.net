@@ -43,11 +43,14 @@ function [EngUnits,Header,tv,outStruct] = fr_read_generic_data_file(fileName,ass
 %                          
 %
 % (c) Zoran Nesic                   File created:       Dec 20, 2023
-%                                   Last modification:  Mar  9, 2024
+%                                   Last modification:  Mar 25, 2024
 %
 
 % Revisions (last one first):
 %
+% Mar 25, 2024 (Zoran)
+%   - added '.' to the list of characters that need to be replaced if they
+%     appear in the variable names. Replace with '_'
 % Mar 9, 2024 (Zoran)
 %   - proper handling of GHG HF files. Automatic detection of DATAH column
 % Feb 16, 2024 (Zoran)
@@ -223,6 +226,7 @@ end
 function renFields = renameFields(fieldsIn)
     renFields  = strrep(fieldsIn,' ','_');
     renFields  = strrep(renFields,'-','_');
+    renFields  = strrep(renFields,'.','_');
     renFields  = strrep(renFields,'u*','us');
     renFields  = strrep(renFields,'(z_d)/L','zdL');
     renFields  = strrep(renFields,'T*','ts');
