@@ -35,7 +35,7 @@ get_biomet_default <- function(fn){
         
 get_config <- function(fn='_config.yml'){
     config <- yaml.load_file(fn)
-    return(config$Database$root)
+    return(config$RootDirs$Database)
     }
 
 {

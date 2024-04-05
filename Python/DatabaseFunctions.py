@@ -17,7 +17,7 @@ import json
 
 class DatabaseFunctions():
 
-    def __init__(self,ini=[]):
+    def __init__(self,ini={}):
         self.db_root = db.db_root
         self.db_ini = db.db_ini
         print('Initialized using db_root: ', self.db_root)
@@ -25,13 +25,19 @@ class DatabaseFunctions():
         with open(f'{self.db_ini}_config.yml') as f:
             self.ini = yaml.safe_load(f)
             print(f'Loaded {self.db_ini}_config.yml')
-        # Read user provided configuration(s)
-        for f_in in ini:
-            if os.path.isfile(f'{self.db_ini}{f_in}'):
-                with open(f'{self.db_ini}{f_in}') as f:
-                    yml_in = {f_in.split('.')[0]:yaml.safe_load(f)}
+
+        # Read user provided configuration as a dictionary or .yml file
+            
+        if type(ini)==str:
+            if os.path.isfile(f'{self.db_ini}{ini}'):
+                with open(f'{self.db_ini}{ini}') as f:
+                    yml_in = {ini.split('.')[0]:yaml.safe_load(f)}
                     self.ini.update(yml_in)
-                    print(f'Loaded {self.db_ini}{f_in}')
+                    print(f'Loaded {self.db_ini}{ini}')
+        elif type(ini)==dict:
+            self.ini.update(ini)
+            print(f'Loaded user provided settings:')
+            print(ini)
         self.find_Sites()
 
     def find_Sites(self):
@@ -62,11 +68,15 @@ class DatabaseFunctions():
 
         
     def sub(self,s):
-        for path in self.ini['Shortcuts'].keys():
-            s = s.replace(path.upper(),self.ini['Shortcuts'][path])
-        for key,value in {'YEAR':self.Year,'SITEID':self.siteID}.items():
-            if key in s:
-                s = s.replace(key,str(value))
+        if 'Shortcuts' in self.ini.keys():
+            for path in self.ini['Shortcuts'].keys():
+                s = s.replace(path.upper(),self.ini['Shortcuts'][path])
+        try:
+            for key,value in {'YEAR':self.Year,'SITEID':self.siteID}.items():
+                if key in s:
+                    s = s.replace(key,str(value))
+        except:
+            pass
         return(s)
 
     def dateIndex(self):
@@ -172,7 +182,7 @@ class DatabaseFunctions():
                 readme.write(str)
 
 class MakeCSV(DatabaseFunctions):
-    def __init__(self,Sites=None,Years=[dt.datetime.now().year],ini=[]):
+    def __init__(self,Sites=None,Years=[dt.datetime.now().year],ini={}):
         super().__init__(ini)
         T1 = time.time()
         if Sites is None:
@@ -184,13 +194,22 @@ class MakeCSV(DatabaseFunctions):
                 traces = list(self.ini[req]['Traces'].keys())
                 print(f'Creating {req} for {self.siteID}')
                 self.read_db(self.siteID,Years,stage,traces)
-
-                if self.ini[req]['by_year']:
+                if 'by_year' in self.ini['data'].keys() and self.ini[req]['by_year']:
                     Start = self.data.index-pd.Timedelta(30,'m')
                     for self.Year in Years:
                         self.write_csv(self.data.loc[Start.year==self.Year].copy(),self.ini[req])
+                else:
+                    self.write_csv(self.data,self.ini[req])
                     
     def write_csv(self,df,config):
+        if 'output_path' not in config.keys():
+            config['output_path']=os.getcwd()+'/'
+        if 'timestamp' not in config.keys():
+            config['timestamp']={'output_name': 'TIMESTAMP',
+                                'timestamp_fmt': '%Y-%m-%d %H%M',
+                                'timestamp_units': 'yyyy-mm-dd HHMM'}
+        if 'units_in_header' not in config.keys():
+            config['units_in_header'] = False
         if df.empty:
             print(f'No data to write for {self.siteID}: {self.Year}')
         else:
@@ -200,7 +219,7 @@ class MakeCSV(DatabaseFunctions):
                 os.makedirs(output_path)
             output_path = self.sub(output_path+config['filename'])
             print(output_path)
-            if config['units_in_header'].lower() == 'true':
+            if config['units_in_header'] == True:
                 unitDict = {key:config['Traces'][key]['Units'] for key in config['Traces'].keys()}
                 unitDict[config['timestamp']['output_name']] = config['timestamp']['timestamp_units']
                 df = pd.concat([pd.DataFrame(index=[-1],data=unitDict),df])
