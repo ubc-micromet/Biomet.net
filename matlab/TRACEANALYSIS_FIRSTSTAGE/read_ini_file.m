@@ -1,4 +1,4 @@
-function trace_str_out = read_ini_file(fid,yearIn)
+function trace_str_out = read_ini_file(fid,yearIn,fromRootIniFile)
 % This function creates an array of structures based on the parameters in the
 % initialization file.  This structure is used throughout the rest of the
 % program.
@@ -7,6 +7,12 @@ function trace_str_out = read_ini_file(fid,yearIn)
 %                               initialization file now open for reading.
 %           'yearIn'        -   this is the year to be added to the year-independent
 %                               initialization file being read
+%           fromRootIniFile -   this is a structure that only exists if this function
+%                               is called recursively and it's used to pass these
+%                               variables between the two ini files:
+%                               fromRootIniFile.Site_name
+%                               fromRootIniFile.SiteID
+%                               fromRootIniFile.Difference_GMT_to_local_time
 % Ouput:
 %           'trace_str_out' -   This is the array of structures representing all
 %						        the information for each trace in the initialization file.
@@ -28,8 +34,10 @@ function trace_str_out = read_ini_file(fid,yearIn)
 
 % Revisions
 %
-% Apr 6, 2024 (Zoran)
+% Apr 7, 2024 (Zoran)
 %   - syntax fixing and updating. reformatting text.
+%   - Introduced #include statement that lets ini files include other standard ini files
+%     to minimize the site-specific edits.
 %   - Did a workaround for an interesting Matlab bug. This line would
 %     not "shortcircuit" if the first condition is true (and it's supposed to)
 %       if isempty(sngle_qt) | (sngle_qt(1) > comment_ln(1)) | (sngle_qt(2) < comment_ln(1))
@@ -50,8 +58,19 @@ function trace_str_out = read_ini_file(fid,yearIn)
 
 % If the year is missing then set it to empty
 arg_default('yearIn',[])
+% If this is not a recursive call to this function the set this parameter to []
+arg_default('fromRootIniFile',[])
+
+if isempty(fromRootIniFile)
+    flagRecursiveCall = false;
+else
+    flagRecursiveCall = true;
+end
+
 iniFileName = char(arrayfun(@fopen, fid, 'UniformOutput', 0));
-fprintf('Reading ini file: \n   %s \n',iniFileName);
+if ~flagRecursiveCall
+    fprintf('Reading ini file: \n   %s \n',iniFileName);
+end
 
 % Extract the ini file type ('first','second','third')
 [iniFilePath,iniFileType,~] = fileparts(iniFileName);
@@ -98,21 +117,51 @@ required_second_stage_ini_fields = {'Evaluate1'};
 try
     % Set some locally used variables
     tm_line=fgetl(fid);
-    count = 0;
-    count_lines = 1;
+    countTraces = 0;
+    countLines = 1;
     while ischar(tm_line)
         temp_var = '';
         tm_line = strtrim(tm_line);             % remove leading and trailing whitespace chars
         temp = find(tm_line~=32 & tm_line~=9);  %skip white space outside [TRACE]->[END] blocks
         if isempty(temp) | strcmp(tm_line(temp(1)),'%')
             % if tm_line is empty or a comment line, do nothing
+        elseif startsWith(tm_line,'#include ','IgnoreCase',1)
+            % this is an #include statement. Load the new ini file. 
+            % If the file path is not included in the name assume the same location
+            % as the original ini file
+            includeFileName = tm_line(10:end);
+            if exist(includeFileName,'file')
+                fidInclude = fopen(includeFileName,'r');
+                if fidInclude < 1
+                    error('Could not open #include file: %s. Line: %d',includeFileName,countLines);
+                end
+            else
+                % maybe the file name does not give the full path. Use the same path as for the current ini file
+                if exists(fullfile(iniFilePath,includeFileName),'file')
+                    fidInclude = fopen(fullfile(iniFilePath,includeFileName),'r');
+                    if fidInclude < 1
+                        error('Could not open #include file: %s. Line: %d',includeFileName,countLines);
+                    end
+                end
+            end
+            % Call this function recursively to extract the new traces
+            % but first the variables below will need to be passed to the function
+            fromRootIniFile.Site_name               = Site_name;
+            fromRootIniFile.SiteID                  = SiteID;
+            fromRootIniFile.Diff_GMT_to_local_time  = Difference_GMT_to_local_time;
+            fprintf('   Reading included file: %s. \n',fopen(fidInclude));
+            trace_str_inlude = read_ini_file(fidInclude,yearIn,fromRootIniFile);
+            for cntIncludeTraces = 1:length(trace_str_inlude)
+                countTraces = countTraces+1;
+                trace_str(countTraces) = trace_str_inlude(cntIncludeTraces);
+            end
         elseif strncmp(tm_line,'[Trace]',7)
             %------------------------------------locate each [TRACE]->[END] block in ini_file
             %update which trace this is(used only for error messages):
-            count = count+1;
+            countTraces = countTraces+1;
             %Read the first line inside the [TRACE]->[END] block:
             tm_line = fgetl(fid);
-            count_lines = count_lines + 1;
+            countLines = countLines + 1;
             eval_cnt = 0;
             while ~strncmp(tm_line,'[End]',5)
                 %Until the [END] block is found, read each line and add the assigned variables
@@ -172,7 +221,7 @@ try
                                 %                     if ~isempty(eqlind) & isempty(findstr(curr_line(1:eqlind(1)),'Evaluate'))
                                 if ~isempty(eqlind) & ~contains(curr_line(1:eqlindTMP(1)),'Evaluate')
                                     if isempty(comnt) | (eqlind(1) < comnt(1))
-                                        disp(['Missing variable assignment in trace #' num2str(count) ' on line number: ' num2str(count_lines-1) '!']);
+                                        disp(['Missing variable assignment in trace #' num2str(countTraces) ' on line number: ' num2str(countLines-1) '!']);
                                         trace_str_out='';
                                         return
                                     end
@@ -204,7 +253,7 @@ try
                                     end
                                     %get next line and continue while loop:
                                     mkstr = fgetl(fid);
-                                    count_lines = count_lines + 1;
+                                    countLines = countLines + 1;
                                 end
                             end
                             %exit the while loop and reset the current line to include all strings
@@ -214,13 +263,13 @@ try
                             if ~isempty(eqlind)
                                 curr_line = [curr_line(1:eqlind(1)) fin_str];
                             else
-                                disp(['Missing variable assignment in trace #' num2str(count) ' on line number: ' num2str(count_lines)  '!']);
+                                disp(['Missing variable assignment in trace #' num2str(countTraces) ' on line number: ' num2str(countLines)  '!']);
                                 trace_str_out='';
                                 return
                             end
                         else
                             %there is no '=' sign which is not allowed
-                            disp(['Missing equal sign ''='' in trace #' num2str(count) ' on line number: ' num2str(count_lines)  '!']);
+                            disp(['Missing equal sign ''='' in trace #' num2str(countTraces) ' on line number: ' num2str(countLines)  '!']);
                             trace_str_out='';
                             return
                         end
@@ -255,7 +304,7 @@ try
                             %eval(['temp_var.' curr_line ';']);
                         catch ME
                             %Any error's are caught in the try-catch block:
-                            disp(['Error in trace #' num2str(count) ' on line number: ' num2str(count_lines) '!']);
+                            disp(['Error in trace #' num2str(countTraces) ' on line number: ' num2str(countLines) '!']);
                             disp(ME);
                             trace_str_out='';
                             return
@@ -264,12 +313,12 @@ try
                 end
                 %Get next line:
                 tm_line = fgetl(fid);
-                count_lines = count_lines + 1;
+                countLines = countLines + 1;
             end
 
             %Test for required fields that the initialization file must have.
-            curr_fields = fieldnames(temp_var);															%get current fields
-            chck_common = ismember(required_common_ini_fields,curr_fields);						%check to see if the fields that are common to both stages are present
+            curr_fields = fieldnames(temp_var);												%get current fields
+            chck_common = ismember(required_common_ini_fields,curr_fields);				    %check to see if the fields that are common to both stages are present
             chck_first_stage = ismember(required_first_stage_ini_fields,curr_fields);		%check to see if the fields that are common to both stages are present
             chck_second_stage = ismember(required_second_stage_ini_fields,curr_fields);		%check to see if the fields that are common to both stages are present
 
@@ -277,21 +326,21 @@ try
                 if all(chck_first_stage)
                     if strcmp(iniFileType,'first')
                         stage = 'first';
-                        trace_str(count).stage = 'first';
+                        trace_str(countTraces).stage = 'first';
                     else
-                        error('Ini file is for the stage: %s but the stage: % is detected based on the required field names. Line: %d',iniFileType,stage,count_lines);
+                        error('Ini file is for the stage: %s but the stage: % is detected based on the required field names. Line: %d',iniFileType,stage,countLines);
                     end
                 end
                 if all(chck_second_stage)
                     if strcmp(iniFileType,'second')
                         stage = 'second';
-                        trace_str(count).stage = 'second';
+                        trace_str(countTraces).stage = 'second';
                     else
-                        error('Ini file is for the stage: %s but the stage: % is detected based on the required field names. Line: %d',iniFileType,stage,count_lines);
+                        error('Ini file is for the stage: %s but the stage: % is detected based on the required field names. Line: %d',iniFileType,stage,countLines);
                     end
                 end
             else
-                fprintf(2,'Error in ini file, common required field(s) do not exist. Line: %d\n',count_lines);
+                fprintf(2,'Error in ini file, common required field(s) do not exist. Line: %d\n',countLines);
                 trace_str_out = '';
                 return
             end
@@ -299,37 +348,45 @@ try
             %Update the current trace with ini_file information listed outside the
             %[TRACE]->[END] blocks:
 
+            % If this is call to the function is reading an included ini file (#include statement)
+            % then the following variables need to be passed from the main ini file down.
+            % if fromRootIniFile is not empty load up the variables
+            if ~isempty(fromRootIniFile)
+                Site_name                       = fromRootIniFile.Site_name;
+                SiteID                          = fromRootIniFile.SiteID;
+                Difference_GMT_to_local_time    = fromRootIniFile.Diff_GMT_to_local_time;
+            end
             %**** Trace structure defined for each itteration of the array ******
-            trace_str(count).Error = 0;
-            trace_str(count).Site_name = Site_name;
-            trace_str(count).variableName = temp_var.variableName;
-            trace_str(count).ini = temp_var;
-            trace_str(count).SiteID = SiteID;
-            trace_str(count).Year = yearIn;
-            trace_str(count).Diff_GMT_to_local_time = '';
-            trace_str(count).Last_Updated = '';
-            trace_str(count).data = [];
-            trace_str(count).DOY = [];
-            trace_str(count).timeVector = [];
-            trace_str(count).data_old = [];
+            trace_str(countTraces).Error = 0;
+            trace_str(countTraces).Site_name = Site_name;
+            trace_str(countTraces).variableName = temp_var.variableName;
+            trace_str(countTraces).ini = temp_var;
+            trace_str(countTraces).SiteID = SiteID;
+            trace_str(countTraces).Year = yearIn;
+            trace_str(countTraces).Diff_GMT_to_local_time = '';
+            trace_str(countTraces).Last_Updated = '';
+            trace_str(countTraces).data = [];
+            trace_str(countTraces).DOY = [];
+            trace_str(countTraces).timeVector = [];
+            trace_str(countTraces).data_old = [];
 
-            trace_str(count).stats = [];
-            trace_str(count).runFilter_stats = [];
-            trace_str(count).pts_restored = [];
-            trace_str(count).pts_removed = [];
+            trace_str(countTraces).stats = [];
+            trace_str(countTraces).runFilter_stats = [];
+            trace_str(countTraces).pts_restored = [];
+            trace_str(countTraces).pts_removed = [];
 
-            switch trace_str(count).stage
+            switch trace_str(countTraces).stage
                 case 'first'
-                    trace_str(count).Diff_GMT_to_local_time = Difference_GMT_to_local_time;
-                    trace_str(count).Last_Updated = char(datetime("now"));
+                    trace_str(countTraces).Diff_GMT_to_local_time = Difference_GMT_to_local_time;
+                    trace_str(countTraces).Last_Updated = char(datetime("now"));
 
                 case 'second'
                     % kai* 14 Dec, 2000
                     % inserted the measurement_type field to facilitate easier output
                     % end kai*
 
-                    trace_str(count).ini.measurementType = 'high_level';
-                    trace_str(count).searchPath = searchPath;
+                    trace_str(countTraces).ini.measurementType = 'high_level';
+                    trace_str(countTraces).searchPath = searchPath;
 
                     if ~isempty(input_path) & input_path(end) ~= '\'
                         input_path = [input_path filesep];
@@ -347,10 +404,10 @@ try
                         input_path(ind_year:ind_year+3) = num2str(yearIn);
                     end
 
-                    trace_str(count).input_path = input_path;
-                    trace_str(count).output_path = output_path;
-                    trace_str(count).high_level_path = high_level_path;
-                    trace_str(count).Last_Updated = char(datetime("now"));
+                    trace_str(countTraces).input_path = input_path;
+                    trace_str(countTraces).output_path = output_path;
+                    trace_str(countTraces).high_level_path = high_level_path;
+                    trace_str(countTraces).Last_Updated = char(datetime("now"));
             end
             %---------------Finished reading the trace information between [TRACE]->[END] block
 
@@ -373,10 +430,10 @@ try
             eval([tm_line ';'])		%(siteID,site_name, etc).
         end
         tm_line = fgetl(fid);		%get next line of ini_file
-        count_lines = count_lines + 1;
+        countLines = countLines + 1;
     end
 catch ME
-    error('Error while processing: \n%s\n on line:%d:(%s)\nExiting read_ini_file() ...\n',iniFileName,count_lines,tm_line);
+    error('Error while processing: \n%s\n on line:%d:(%s)\nExiting read_ini_file() ...\n',iniFileName,countLines,tm_line);
 end
 % Before exporting the list of traces, go through inputFileName_dates for
 % each trace (if it exists) and remove the traces that fall outside of the
@@ -419,5 +476,7 @@ for cntTrace = 1:length(trace_str)
         end
     end
 end
-fprintf('   %d traces read from the ini file. \n',length(trace_str));
-fprintf('   %d traces that exist in year %d are kept for processing.\n',cntGoodTrace,yearIn);
+if ~flagRecursiveCall
+    fprintf('   %d traces read from the ini file. \n',length(trace_str));
+    fprintf('   %d traces that exist in year %d are kept for processing.\n',cntGoodTrace,yearIn);
+end
