@@ -1,11 +1,11 @@
-function trace_str_out = read_ini_file(fid,Year)
+function trace_str_out = read_ini_file(fid,yearIn)
 % This function creates an array of structures based on the parameters in the
 % initialization file.  This structure is used throughout the rest of the
 % program.
 % Input:
 %           'fid'           -   this is the file id number associated with the
 %                               initialization file now open for reading.
-%           'year'          -   this is the year to be added to the year-independent
+%           'yearIn'        -   this is the year to be added to the year-independent
 %                               initialization file being read
 % Ouput:
 %           'trace_str_out' -   This is the array of structures representing all
@@ -30,7 +30,7 @@ function trace_str_out = read_ini_file(fid,Year)
 %
 % Apr 6, 2024 (Zoran)
 %   - syntax fixing and updating. reformatting text.
-%   - Did a workaround for an interesting Matlab bugg. This line would
+%   - Did a workaround for an interesting Matlab bug. This line would
 %     not "shortcircuit" if the first condition is true (and it's supposed to)
 %       if isempty(sngle_qt) | (sngle_qt(1) > comment_ln(1)) | (sngle_qt(2) < comment_ln(1))
 %     If you check the same condition using || instead of | the line works the way it should.
@@ -83,8 +83,8 @@ trace_str.output_path = '';         %holds the path where output data is dumped
 trace_str.high_level_path = '';
 
 % If the year is missing then set it to empty
-if~exist('Year','var') || isempty(Year)
-    Year = '';
+if~exist('yearIn','var') || isempty(yearIn)
+    yearIn = '';
 end
 
 % Define which fileds in the ini must exist
@@ -121,7 +121,7 @@ try
                 %initial indices of spaces and comments:
                 temp_cm = [];
                 if ~isempty(curr_line)
-                   	%ignore white space characters by locating first and last non-white space:
+                    %ignore white space characters by locating first and last non-white space:
                     temp_sp = find(curr_line~=32 & curr_line~=9);
                     if ~isempty(temp_sp)
                         curr_line = curr_line(temp_sp(1):temp_sp(end));
@@ -249,7 +249,7 @@ try
                                 curr_line = ['Evaluate' num2str(eval_cnt) curr_line(9:end)];
                                 curr_line = curr_line(curr_line~=32 & curr_line~=9);
                             end
-                            posEq = strfind(curr_line,'=');                         % Find where "=" is 
+                            posEq = strfind(curr_line,'=');                         % Find where "=" is
                             newFieldName = strtrim(curr_line(1:posEq-1));
                             temp_var.(newFieldName) = eval(curr_line(posEq+1:end)); % assign the value
                             %eval(['temp_var.' curr_line ';']);
@@ -300,11 +300,11 @@ try
 
             %**** Trace structure defined for each itteration of the array ******
             trace_str(count).Error = 0;
-            trace_str(count).Site_name = '';
-            trace_str(count).variableName = '';
-            trace_str(count).ini = [];
-            trace_str(count).SiteID = '';
-            trace_str(count).Year = '';
+            trace_str(count).Site_name = Site_name;
+            trace_str(count).variableName = temp_var.variableName;
+            trace_str(count).ini = temp_var;
+            trace_str(count).SiteID = SiteID;
+            trace_str(count).Year = yearIn;
             trace_str(count).Diff_GMT_to_local_time = '';
             trace_str(count).Last_Updated = '';
             trace_str(count).data = [];
@@ -317,48 +317,41 @@ try
             trace_str(count).pts_restored = [];
             trace_str(count).pts_removed = [];
 
-            %Set the trace structure to it's actual data
-            trace_str(count).Site_name = Site_name;
-            trace_str(count).variableName = temp_var.variableName;
-            trace_str(count).ini = temp_var;
-            trace_str(count).SiteID = SiteID;
-            trace_str(count).Year = Year;
-
             switch trace_str(count).stage
                 case 'first'
                     trace_str(count).Diff_GMT_to_local_time = Difference_GMT_to_local_time;
                     trace_str(count).Last_Updated = char(datetime("now"));
 
-        		case 'second'
+                case 'second'
                     % kai* 14 Dec, 2000
-            	      % inserted the measurement_type field to facilitate easier output
-                 	   % end kai*
+                    % inserted the measurement_type field to facilitate easier output
+                    % end kai*
 
-                       trace_str(count).ini.measurementType = 'high_level';
-                       trace_str(count).searchPath = searchPath;
+                    trace_str(count).ini.measurementType = 'high_level';
+                    trace_str(count).searchPath = searchPath;
 
-              	      if ~isempty(input_path) & input_path(end) ~= '\'
-              	         input_path = [input_path filesep];
-            	      end
-            	      if ~isempty(output_path) & output_path(end) ~= '\'
-              	         output_path = [output_path filesep];
-            	      end
+                    if ~isempty(input_path) & input_path(end) ~= '\'
+                        input_path = [input_path filesep];
+                    end
+                    if ~isempty(output_path) & output_path(end) ~= '\'
+                        output_path = [output_path filesep];
+                    end
 
-              	     %Elyn 08.11.01 - added year-independent path name option
-               	     ind_year = strfind(lower(input_path),'yyyy');
-            	     if isempty(ind_year) & length(ind_year) > 1
-                 	      error 'Year-independent paths require a wildcard: yyyy!'
-            	     end
-            	     if ~isempty(ind_year) & length(ind_year) == 1
-            	         input_path(ind_year:ind_year+3) = num2str(Year);
-            	     end
+                    %Elyn 08.11.01 - added year-independent path name option
+                    ind_year = strfind(lower(input_path),'yyyy');
+                    if isempty(ind_year) & length(ind_year) > 1
+                        error 'Year-independent paths require a wildcard: yyyy!'
+                    end
+                    if ~isempty(ind_year) & length(ind_year) == 1
+                        input_path(ind_year:ind_year+3) = num2str(yearIn);
+                    end
 
-              	      trace_str(count).input_path = input_path;
-                      trace_str(count).output_path = output_path;
-                      trace_str(count).high_level_path = high_level_path;
-                      trace_str(count).Last_Updated = char(datetime("now"));
+                    trace_str(count).input_path = input_path;
+                    trace_str(count).output_path = output_path;
+                    trace_str(count).high_level_path = high_level_path;
+                    trace_str(count).Last_Updated = char(datetime("now"));
             end
-           	%---------------Finished reading the trace information between [TRACE]->[END] block
+            %---------------Finished reading the trace information between [TRACE]->[END] block
 
         elseif isletter(tm_line(1))
             %read other variables in the ini_file not between [TRACE]->[END] blocks:
@@ -391,8 +384,8 @@ end
 % in this Year are left in trace_str_out. (added Feb 11, 2023, Zoran)
 
 cntGoodTrace = 0;
-strYearDate = datenum(Year,1,1,0,30,0);
-endYearDate = datenum(Year+1,1,1,0,0,0);
+strYearDate = datenum(yearIn,1,1,0,30,0);
+endYearDate = datenum(yearIn+1,1,1,0,0,0);
 for cntTrace = 1:length(trace_str)
     % logic test. True if inputFileName_dates field doesn't exists or it's empty.
     bool_no_inputFileName_dates = (~isfield(trace_str(cntTrace).ini,'inputFileName_dates') ...
@@ -427,4 +420,4 @@ for cntTrace = 1:length(trace_str)
     end
 end
 fprintf('   %d traces read from the ini file. \n',length(trace_str));
-fprintf('   %d traces that exist in year %d are kept for processing.\n',cntGoodTrace,Year);
+fprintf('   %d traces that exist in year %d are kept for processing.\n',cntGoodTrace,yearIn);
