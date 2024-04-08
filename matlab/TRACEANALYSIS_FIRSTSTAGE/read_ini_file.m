@@ -48,9 +48,15 @@ function trace_str_out = read_ini_file(fid,yearIn)
 %  - added detecting the ini name and printing it
 %
 
+% If the year is missing then set it to empty
+arg_default('yearIn',[])
 iniFileName = char(arrayfun(@fopen, fid, 'UniformOutput', 0));
-
 fprintf('Reading ini file: \n   %s \n',iniFileName);
+
+% Extract the ini file type ('first','second','third')
+[iniFilePath,iniFileType,~] = fileparts(iniFileName);
+iniFileType = split(iniFileType,{'_','Stage'});
+iniFileType = lower(char(iniFileType(2)));
 
 trace_str = [];
 
@@ -82,24 +88,18 @@ trace_str.input_path = '';          %holds the path of the database of the sourc
 trace_str.output_path = '';         %holds the path where output data is dumped
 trace_str.high_level_path = '';
 
-% If the year is missing then set it to empty
-if~exist('yearIn','var') || isempty(yearIn)
-    yearIn = '';
-end
-
 % Define which fileds in the ini must exist
 required_common_ini_fields = {'variableName', 'title', 'units'};
 required_first_stage_ini_fields = {'inputFileName', 'measurementType', 'minMax'};
 required_second_stage_ini_fields = {'Evaluate1'};
 
-% Set some locally used variables
-tm_line=fgetl(fid);
-count = 0;
-count_lines = 1;
-
 %Read each line of the ini_file given by the file ID number, 'fid', and for each trace
 %listed, store into an array of structures:
 try
+    % Set some locally used variables
+    tm_line=fgetl(fid);
+    count = 0;
+    count_lines = 1;
     while ischar(tm_line)
         temp_var = '';
         tm_line = strtrim(tm_line);             % remove leading and trailing whitespace chars
@@ -275,22 +275,23 @@ try
 
             if all(chck_common)
                 if all(chck_first_stage)
-                    stage = 'first';
-                    trace_str(count).stage = 'first';
+                    if strcmp(iniFileType,'first')
+                        stage = 'first';
+                        trace_str(count).stage = 'first';
+                    else
+                        error('Ini file is for the stage: %s but the stage: % is detected based on the required field names. Line: %d',iniFileType,stage,count_lines);
+                    end
                 end
-
                 if all(chck_second_stage)
-                    stage = 'second';
-                    trace_str(count).stage = 'second';
+                    if strcmp(iniFileType,'second')
+                        stage = 'second';
+                        trace_str(count).stage = 'second';
+                    else
+                        error('Ini file is for the stage: %s but the stage: % is detected based on the required field names. Line: %d',iniFileType,stage,count_lines);
+                    end
                 end
             else
-                disp('Error in ini file, common required field(s) do not exist');
-                trace_str_out = '';
-                return
-            end
-
-            if strcmp(stage,'none')
-                disp('Error: Unrecognized ini file format');
+                fprintf(2,'Error in ini file, common required field(s) do not exist. Line: %d\n',count_lines);
                 trace_str_out = '';
                 return
             end
@@ -375,8 +376,7 @@ try
         count_lines = count_lines + 1;
     end
 catch ME
-    trace_str_out = [];
-    error('Error while processing: \n%s\n on line:%d:(%s)\nExiting read_ini_file() ...\n',fopen(fid),count_lines,tm_line);
+    error('Error while processing: \n%s\n on line:%d:(%s)\nExiting read_ini_file() ...\n',iniFileName,count_lines,tm_line);
 end
 % Before exporting the list of traces, go through inputFileName_dates for
 % each trace (if it exists) and remove the traces that fall outside of the
