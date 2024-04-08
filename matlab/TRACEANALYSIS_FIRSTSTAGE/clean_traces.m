@@ -4,18 +4,20 @@ function data_out = clean_traces(trace_str,interp_flag)
 % An extra field called stats is created for each trace.
 % This field contains various statistics about the cleaning procedures.
 %
-% Input:			trace_str:		Either one single trace, or an array of structures.
-% Vars:		    	filt_len:		Length of the running filter.
-%					num_std:		Number of standard deviations used in the running filter.
-%					filt_opt:		Filter option (1==standard way) or (2==no-phase shift).
-%					num_rep:		Number of repititions of the running filter.
-%					clean_flags:    Represents the cleaning procedures used on each point.
-%										(ex:   1 is selected, 2 is min, 4 is max, 8 is fr_despike,
-%												 16 is runfilter, 32 is restored (used later).
-% Output:		data_out:		Either one single cleaned trace, or an array of trace
-%										structures.
+% Input:			
+%   trace_str:		Either one single trace, or an array of structures.
+%
+% Output:		
+%   data_out:		Either one single cleaned trace, or an array of trace
+%					structures.
 
 % Revisions:
+%
+% Apr 5, 2024 (Zoran)
+%  - edited header by removing old definitions of Input:
+%  - Improved handling of the current year future dates
+%    (replacing any points beyond the current date with NaNs)
+%    so it now uses datetime.
 %
 % Nov 25, 2022 (Zoran)
 %  - The previous fix, caused an unintended issue where the
@@ -90,7 +92,7 @@ function trace_out = clean_one_trace(trace_in,interp_flag)
 %this function cleans a single trace,keeps track of statistics, and returns the cleaned
 %trace structure.
 indexInterpPts = [];						%variables used for cleaning statistics
-indexPtsNotCleaned = [];
+indexPtsNotCleaned = []; %#ok<NASGU>
 indexPtsDespiked = [];
 indexPtsClampedMax = [];
 indexPtsClampedMin = [];
@@ -101,21 +103,18 @@ indmax = [];
 indtime = [];
 
 numPtsCleaned = 0;					
-numPtsNotCleaned = 0;
+numPtsNotCleaned = 0; %#ok<NASGU>
 numPtsDespiked = 0;
 numPtsZero = 0;
 numDependClean = 0;
 OutsideMin = 0;
 OutsideMax = 0;
-OutsideTime = 0;
 
 clean_flags = [];
 
 %Replace any points beyond the current date with NaNs:
-
-currYear = datevec(now);     				%find current year
-if isfield(trace_in, 'Year') & trace_in.Year == currYear(1) %#ok<*AND2>
-   curr_day = ceil(now - datenum(currYear(1),1,0) + 1);
+if isfield(trace_in, 'Year') & trace_in.Year == year(datetime) %#ok<*AND2>
+   curr_day = day(datetime,"dayofyear");
    indtimeAfter = find(trace_in.DOY >= curr_day);
   
   %*********************************************************************
@@ -136,7 +135,7 @@ if isfield(trace_in, 'Year') & trace_in.Year == currYear(1) %#ok<*AND2>
    end
    % If timeser is only part of the year indtimeAfter might be empty
    if ~isempty(indtimeAfter) 
-      indtime = [indtimeBefore(end)+2:indtimeAfter(end)];  
+      indtime = indtimeBefore(end)+2:indtimeAfter(end);  
       trace_in.data(indtime) = NaN;  
    end
    % end kai*
