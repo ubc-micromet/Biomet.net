@@ -484,9 +484,11 @@ for cntTrace = 1:length(trace_str)
                     if ~strcmpi(curName,'Enable')
                         trace_str(cntTrace).ini.(curName) = EC.(curName);
                     end
-                end         
-            % Process all otherTraces variables    
-            elseif exist('otherTraces','var') && otherTraces.Enable == 1
+                end  
+            end
+        else
+            % Process all defaults (instrumentType ='') using otherTraces variables    
+            if exist('otherTraces','var') && otherTraces.Enable == 1
                 fNames = fieldnames(otherTraces);
                 for cntFields = 1:length(fNames)
                     curName = char(fNames(cntFields));
@@ -494,7 +496,7 @@ for cntTrace = 1:length(trace_str)
                         trace_str(cntTrace).ini.(curName) = otherTraces.(curName);
                     end
                 end                    
-            end               
+            end  
         end
     end
 end
