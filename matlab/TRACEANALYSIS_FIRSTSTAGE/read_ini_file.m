@@ -34,6 +34,9 @@ function trace_str_out = read_ini_file(fid,yearIn,fromRootIniFile)
 
 % Revisions
 %
+% Apr 9, 2024 (Zoran)
+%   - added processing of global instrument-specific and trace-specific variables used
+%     for overwriting the default parameters from the templates used with #include.
 % Apr 7, 2024 (Zoran)
 %   - syntax fixing and updating. reformatting text.
 %   - Introduced #include statement that lets ini files include other standard ini files
