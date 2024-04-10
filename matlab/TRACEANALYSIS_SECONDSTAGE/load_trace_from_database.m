@@ -12,6 +12,10 @@ function trace_out = load_trace_from_database(trace_in)
 
 % Revisions: 
 %
+% Apr 10, 2024 (Zoran)
+%  - made sure that the program checks if "&& ~isempty(trace_in.ini.inputFileName_dates)" before
+%    trying to deal with the inputFileName_dates information. Otherwise bad things happen 
+%    when inputFileName_dates = [];
 % Apr 2, 2024 (Zoran)
 %   - Enabled trace file name to be 'clean_tv' or TimeVector. That way the 
 %     time can be loaded up and used to filter data periods.
@@ -63,7 +67,7 @@ if strcmpi(trace_in.ini.inputFileName,'clean_tv') || strcmpi(trace_in.ini.inputF
     temp_data = read_bor(fullfile(pth, char(trace_in.ini.inputFileName)),8);			%read tv from database
     timeVector = temp_data;
 else
-    if isfield(trace_in.ini,'inputFileName_dates')
+    if isfield(trace_in.ini,'inputFileName_dates') && ~isempty(trace_in.ini.inputFileName_dates)
         % Create a time vector first for the current year
         % to be able to pick the inputFileName(s) that 
         % were relevant for that year.

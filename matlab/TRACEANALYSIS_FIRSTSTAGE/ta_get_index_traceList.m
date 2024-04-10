@@ -6,10 +6,13 @@ function returnInd = ta_get_index_traceList(trc_names,list_of_traces)
 %			'list_of_traces'	-contains list of all traces present in the ini_file.
 %   Output:	'returnInd'			-contains indices of trc_names within list_of_traces.
 %
-% Last modification:    Mar 22, 2024 
+% Last modification:    Apr 10, 2024 
 
 % Revisions
 %
+% Apr 10, 2024 (June & Zoran)
+%   - the function was not using getAllTags so the standard tags were not used.
+%     Fixed it by calling getAllTags.
 % Mar 22, 2024 (Zoran)
 %   - fixed syntax errors
 %   - symplified the code
@@ -36,14 +39,9 @@ structAllVariableNames = {list_of_traces.variableName};
 % under Derived_Variables
 %--- to be implemented -------
 siteID = list_of_traces(1).SiteID;
-fileName = [siteID '_CustomTags'];
-if exist(fileName,'file')
-    customTags = eval(fileName);   
-else
-    customTags = [];
-end
+allTags = getAllTags(siteID);
 
-structNamesOfDependants = convert_tags_to_Traces(list_of_traces,structNamesOfDependants,customTags);
+structNamesOfDependants = convert_tags_to_Traces(list_of_traces,structNamesOfDependants,allTags);
 
 % Get the indices of all traces:
 [~, ~, returnInd]=intersect(structNamesOfDependants,structAllVariableNames);
