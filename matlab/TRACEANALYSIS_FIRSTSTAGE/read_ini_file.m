@@ -435,6 +435,88 @@ try
 catch ME
     error('Error while processing: \n%s\n on line:%d:(%s)\nExiting read_ini_file() ...\n',iniFileName,countLines,tm_line);
 end
+
+%--------------------- Global variables -------------------------------------
+% The ini file could have a set of global variables that are used
+% to populate (and overwrite if needed) the existing Trace definitions
+% that belong to large groups of traces:
+% instrumentTypes: LI7200, LI7700, Anemometer, EC
+for cntTrace = 1:length(trace_str)
+    % go one trace at the time and see if anything needs to be overwritten
+    if isfield(trace_str(cntTrace).ini,'instrumentType')
+        instrumentType = trace_str(cntTrace).ini.instrumentType;
+        if ~isempty(instrumentType)
+            % Process all LI7200 variables
+            if strcmpi(instrumentType,'LI7200') && exist('LI7200','var') && LI7200.Enable == 1
+                fNames = fieldnames(LI7200);
+                for cntFields = 1:length(fNames)
+                    curName = char(fNames(cntFields));
+                    if ~strcmpi(curName,'Enable')
+                        trace_str(cntTrace).ini.(curName) = LI7200.(curName);
+                    end
+                end
+            % Process all LI7700 variables
+            elseif strcmpi(instrumentType,'LI7700') && exist('LI7700','var') && LI7700.Enable == 1
+                fNames = fieldnames(LI7700);
+                for cntFields = 1:length(fNames)
+                    curName = char(fNames(cntFields));
+                    if ~strcmpi(curName,'Enable')
+                        trace_str(cntTrace).ini.(curName) = LI7700.(curName);
+                    end
+                end                
+            % Process all Anemometer variables
+            elseif strcmpi(instrumentType,'Anemometer') && exist('Anemometer','var') && Anemometer.Enable == 1
+                fNames = fieldnames(Anemometer);
+                for cntFields = 1:length(fNames)
+                    curName = char(fNames(cntFields));
+                    if ~strcmpi(curName,'Enable')
+                        trace_str(cntTrace).ini.(curName) = Anemometer.(curName);
+                    end
+                end
+            % Process all EC variables    
+            elseif strcmpi(instrumentType,'EC') && exist('EC','var') && EC.Enable == 1
+                fNames = fieldnames(EC);
+                for cntFields = 1:length(fNames)
+                    curName = char(fNames(cntFields));
+                    if ~strcmpi(curName,'Enable')
+                        trace_str(cntTrace).ini.(curName) = EC.(curName);
+                    end
+                end         
+            % Process all otherTraces variables    
+            elseif exist('otherTraces','var') && otherTraces.Enable == 1
+                fNames = fieldnames(otherTraces);
+                for cntFields = 1:length(fNames)
+                    curName = char(fNames(cntFields));
+                    if ~strcmpi(curName,'Enable')
+                        trace_str(cntTrace).ini.(curName) = otherTraces.(curName);
+                    end
+                end                    
+            end               
+        end
+    end
+end
+
+%--------------------- Trace variables -------------------------------------
+% The ini file could have a set of global variables that are used
+% to populate (and overwrite if needed) the existing Trace definitions
+% for individual traces
+if exist('Trace','var')
+    % Find all traces that need to be overwritten
+    tracesToOverwrite = fieldnames(Trace);
+    for cntTrace = 1:length(trace_str)
+        % go one trace at the time and see if anything needs to be overwritten
+        variableName = trace_str(cntTrace).variableName;
+        indTrace = ismember(tracesToOverwrite,variableName);
+        if any(indTrace)
+            allFieldsToOverwrite = fieldnames(Trace.(variableName));
+            for cntOverwrite = 1:length(allFieldsToOverwrite)
+                fieldToOverwrite = char(allFieldsToOverwrite(cntOverwrite));
+                trace_str(cntTrace).ini.(fieldToOverwrite) = Trace.(variableName).(fieldToOverwrite);
+            end
+        end
+    end
+end
+%-------------------- remove traces not used in the current year ---------------
 % Before exporting the list of traces, go through inputFileName_dates for
 % each trace (if it exists) and remove the traces that fall outside of the
 % given range. That will insure that only the traces that were present
