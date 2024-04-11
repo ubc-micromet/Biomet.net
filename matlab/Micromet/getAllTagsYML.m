@@ -1,38 +1,44 @@
 function tagsOut = getAllTagsYML(siteID)
-% Extract all tags for one site
-%
-% Zoran Nesic               File created:           Apr 1, 2024
-%                           Last modification:      Apr 5, 2024
 
-% Revisions
-%
-% Apr 5, 2024 (Zoran)
-%  - improved handling of missing CustomTags
-%  - added beeps when the tag overwriting happens
-% Apr 9, 2024 (JS)
-%  - revised to handle a tags in .yml format
+% Perhaps default configurations (should stay in Biomet.Net?)
+calc_prodecures = fullfile(biomet_database_default,'Calculation_Procedures\TraceAnalysis_ini');
+config_file = fullfile(calc_prodecures,'_config.yml');
+% Load default tags from the config file
+% Will crash if does not exit, but everyone shoud obtain the default config
+% if they don't already have it.  Will also crash if user doesn't have yaml
+% extenion installed.  Go to add on and search "yaml".
+% Ideally this config file would only be loaded once, somewhere much
+% further up the chain
+config = yaml.loadFile(config_file);
+tags_in = config.Processing.FirstStage.DependencyTags;
+tagsOut = parseTags(tags_in);
 
-
-% first load the standard se
-tag_file = fullfile(biomet_database_default,'Calculation_Procedures\TraceAnalysis_ini\_StandardTags.yml');
-if exist(tag_file,'file');
-    S = yaml.loadFile(tag_file);
-    tagsOut = parseTags(S);
-else
-    tagsOut = [];
+% Conditionally load custom tags from site specific config file
+site_config_file = fullfile(calc_prodecures,siteID,sprintf('%s_config.yml',siteID));
+if exist(site_config_file,'file');
+    site_config = yaml.loadFile(site_config_file);
+    try
+        tags_in = site_config.Processing.FirstStage.DependencyTags;
+        site_tags = parseTags(tags_in);
+        % Append custom dependencies to default tags where applicable
+        % Otherwise add as new dependency field
+        fn = fieldnames(site_tags);
+        for n =1:length(fn)
+            if isfield(tagsOut,fn{n})
+                tags_in = strjoin([tagsOut.(fn{n}),site_tags.(fn{n})],',');
+                tagsOut = setfield(tagsOut,fn{n},tags_in(1));
+            else
+                tagsOut = setfield(tagsOut,fn{n},site_tags.(fn{n}));
+            end
+        end
+    catch
+        disp('Site-specific tags do not exist or could not be parsed')
+    end
 end
 
-custom_tag_file = sprintf('%s_CustomTags.yml',siteID)
-custom_tag_file = fullfile(biomet_database_default,'Calculation_Procedures\TraceAnalysis_ini',siteID,'Derived_Variables',custom_tag_file);
-if exist(custom_tag_file,'file');
-    S = yaml.loadFile(custom_tag_file);
-    customtagsOut = parseTags(S);
-else
-    customtagsOut = [];
-end
+% Remove any duplicate values
+tagsOut = dropDuplicates(tagsOut);
 
-
-a=1
 
 function Flt =  flatten_struct(A)
     A = struct2cell(A);
@@ -48,18 +54,18 @@ function Flt =  flatten_struct(A)
 
 end
 
-
 function tagsOut = parseTags(subStruct,tagsOut)
     % Recursive functition to go through nested struct of tags
     arg_default('tagsOut',struct())
     fn = fieldnames(subStruct);
     for k=1:numel(fn)
-        disp(fn{k})
         if isstruct(subStruct.(fn{k}))
             tags_in = flatten_struct(subStruct.(fn{k}));
             tags_in = strjoin(tags_in,",");
             tagsOut = setfield(tagsOut,fn{k},tags_in);
             tagsOut = parseTags(subStruct.(fn{k}),tagsOut);
+            % Reset to current fn
+            fn = fieldnames(subStruct);
         elseif isstring(subStruct.(fn{k}))
             tags_in = [strtrim(strrep(subStruct.(fn{k})," ",",")),''];
             tagsOut = setfield(tagsOut,fn{k},tags_in(1));
@@ -69,5 +75,10 @@ end
 end
 
 function tagsOut = dropDuplicates(tagsOut)
-
+    fn = fieldnames(tagsOut);
+    for n =1:length(fn)
+        tags_in = unique(split(tagsOut.(fn{n}),','));
+        tags_in = strjoin(tags_in,',');
+        tagsOut = setfield(tagsOut,fn{n},tags_in);
+    end
 end

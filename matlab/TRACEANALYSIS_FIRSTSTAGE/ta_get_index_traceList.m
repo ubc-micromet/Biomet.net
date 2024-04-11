@@ -9,7 +9,8 @@ function returnInd = ta_get_index_traceList(trc_names,list_of_traces)
 % Last modification:    Apr 10, 2024 
 
 % Revisions
-%
+% Apr 11, 2024 (June)
+%   - Updated to use tags from _config.yml file instead
 % Apr 10, 2024 (June & Zoran)
 %   - the function was not using getAllTags so the standard tags were not used.
 %     Fixed it by calling getAllTags.
@@ -18,7 +19,7 @@ function returnInd = ta_get_index_traceList(trc_names,list_of_traces)
 %   - symplified the code
 %   - added handling of tags
 %   - implemented a meta tag: "tag_All". More to follow.
-
+    
 returnInd = [];
 if ~exist('trc_names','var') || ~exist('list_of_traces','var') || ...
       isempty(trc_names) || isempty(list_of_traces)
@@ -28,86 +29,47 @@ end
 % should only contain character and underscores):
 trc_names = trc_names(trc_names ~=32 & trc_names ~=9);
 
-% Split comma separated string trc_names into a structure:
-structNamesOfDependants = split(trc_names,',');
+% Split comma separated string trc_names into a cell array:
+namesOfDependants = split(trc_names,',');
 
-% Structure of all trace names
-structAllVariableNames = {list_of_traces.variableName};
+% Cell of all trace names
+allVariableNames = {list_of_traces.variableName};
 
-% Add custom tags from siteID_CustomTags.m file if such file exists
-% under Derived_Variables
-%--- to be implemented -------
-% Should this be calling the get all tags so that it loads default tags
-% regardless?
 siteID = list_of_traces(1).SiteID;
-allTags = getAllTags(siteID);
+% tags are a static value by site, so calling here is ineficient
+% leaving for now as its in line with what was already done
+% in the future it should be put towards the front of the pipeline, when
+% all static configurations are imported
+allTags = getAllTagsYML(siteID);
 
-structNamesOfDependants = convert_tags_to_Traces(list_of_traces,structNamesOfDependants,allTags);
+namesOfDependants = convert_tags_to_Traces(allVariableNames,namesOfDependants,allTags);
 
 % Get the indices of all traces:
-[~, ~, returnInd]=intersect(structNamesOfDependants,structAllVariableNames);
+[~, ~, returnInd]=intersect(namesOfDependants,allVariableNames);
 
 % make sure that returnInd is a row vector
 returnInd = returnInd(:)';
 
-function structNamesOfDependants = convert_tags_to_Traces(list_of_traces,structNamesOfDependants,customTags)
-    % It converts 
-    % Recursive search through all Tags to convert them to trace names 
-    
-    % Extract field names
-    if ~isempty(customTags)
-        customTagFieldNames = fieldnames(customTags);
-    else
-        customTagFieldNames = [];
-    end
-
-    % Structure of all trace names
-    structAllVariableNames = {list_of_traces.variableName};
-
+function namesOfDependants = convert_tags_to_Traces(allVariableNames,namesOfDependants,allTags)
     % Find if there are any tags (tag_*) in the list of dependents
-    indAllTagsInDependents = startsWith(structNamesOfDependants,'tag_');
-    % move them to structAllTags
-    structAllTags = structNamesOfDependants(indAllTagsInDependents);
-    % and remove them from structNamesOfDependants
-    structNamesOfDependants = structNamesOfDependants(~indAllTagsInDependents);
-
-    % if tags exist, convert them to trace names and add them
-    % to the list of dependants
-    if ~isempty(structAllTags)
-        indTaggedDependants = [];
-        for cntTags = 1:length(structAllTags)
-            cTag = char(structAllTags(cntTags));
-            indField = find(ismember(customTagFieldNames,cTag));
-            if ~isempty(indField)
-                indField = indField(1);   % in case user made a mistake and there a same tag appears twice grab only the first one
-            end
-            % Deal with special tags (tag_ALL, tag_AllMet, tag_AllFlux)        
-            if strcmpi(cTag,'tag_All')
-                % tag_All affects all traces
-                indTaggedDependants = 1:length(list_of_traces);
-            elseif indField ~= 0
-                % if cTag is memeber of customTags than add those trace names
-                structCustomTagTraces = strtrim(split(customTags.(char(customTagFieldNames(indField))),','))';
-                structNamesOfDependants = [structNamesOfDependants structCustomTagTraces]; %#ok<AGROW>
-                % recursive call to check if there are more tag_ fields
-                structNamesOfDependants = convert_tags_to_Traces(list_of_traces,structNamesOfDependants,customTags);
+    ixDepTags = startsWith(namesOfDependants,'tag_');
+    for i=1:numel(namesOfDependants)
+        if ixDepTags(i)==1
+            if isfield(allTags,namesOfDependants(i))
+                tag_traces = allTags.(char(namesOfDependants(i)));
+                namesOfDependants(i) = {convertStringsToChars(tag_traces)};
             else
-                % loop through all the traces and find all the ones that have this tag
-                for cntTraces = 1:length(list_of_traces)
-                    if isfield(list_of_traces(cntTraces).ini,'tag') && contains(list_of_traces(cntTraces).ini.tag,cTag)
-                        %fprintf('%d found tag\n',cntTraces);
-                        indTaggedDependants = [indTaggedDependants cntTraces];   %#ok<AGROW>
-                    end
-                end
+                fprintf('%s is not valid tag',char(namesOfDependants(i)))
+                namesOfDependants(i) = {['']};
             end
         end
-    
-        % remove tags from structTraceName 
-        structNamesOfDependants = structNamesOfDependants(~startsWith(structNamesOfDependants,'tag_'));
-        % and replace them with unique trace names
-        nDep = length(structNamesOfDependants);
-        for cnt = 1:length(indTaggedDependants)
-            structNamesOfDependants{cnt+nDep} = char(structAllVariableNames(indTaggedDependants(cnt)));
-        end
-        structNamesOfDependants = unique(structNamesOfDependants);
     end
+    % Concatenate the valid tags
+    namesOfDependants = namesOfDependants(~cellfun(@isempty,namesOfDependants));
+    namesOfDependants = strjoin(namesOfDependants,",");
+    namesOfDependants = unique(split(namesOfDependants,','));
+end
+
+
+
+end
