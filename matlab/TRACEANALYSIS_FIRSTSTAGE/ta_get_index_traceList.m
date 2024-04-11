@@ -35,13 +35,16 @@ structAllVariableNames = {list_of_traces.variableName};
 % Add custom tags from siteID_CustomTags.m file if such file exists
 % under Derived_Variables
 %--- to be implemented -------
+% Should this be calling the get all tags so that it loads default tags
+% regardless?
 siteID = list_of_traces(1).SiteID;
-fileName = [siteID '_CustomTags'];
-if exist(fileName,'file')
-    customTags = eval(fileName);   
-else
-    customTags = [];
-end
+% fileName = [siteID '_CustomTags'];
+% if exist(fileName,'file')
+%     customTags = eval(fileName);   
+% else
+%     customTags = [];
+% end
+customTags = getAllTags(siteID);
 
 structNamesOfDependants = convert_tags_to_Traces(list_of_traces,structNamesOfDependants,customTags);
 

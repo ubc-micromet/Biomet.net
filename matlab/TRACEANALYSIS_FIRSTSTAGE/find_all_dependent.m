@@ -29,7 +29,7 @@ trace_str(1).ind_depend = [];
 list_dep = [];
 for ind=1:length(trace_str)   
    trc = trace_str(ind);
-   if isfield(trc.ini,'dependent') & ~isempty(trc.ini.dependent)       %#ok<*AND2>
+   if isfield(trc.ini,'dependent') & ~isempty(trc.ini.dependent)
       trc.ind_depend = ta_get_index_traceList(trc.ini.dependent, trace_str);     
       list_dep = [list_dep ind]; %#ok<*AGROW>
    end
