@@ -49,14 +49,50 @@ structNamesOfDependants = convert_tags_to_Traces(list_of_traces,structNamesOfDep
 % make sure that returnInd is a row vector
 returnInd = returnInd(:)';
 
+% function structNamesOfDependants = convert_tags_to_Traces(list_of_traces,structNamesOfDependants,allTags)
+%     while contains(dependent,'tag_')
+%         cellList = split(dependent,',');
+%         newDependent = [];
+%         for cntList=1:length(cellList)
+%             depName = strtrim(char(cellList(cntList)));
+%             if ~isempty(depName)
+%                 if contains(depName,'tag_')
+%                     % first remove "tagsOut." from depName
+%                     % ind = strfind(depName,'tagsOut.');
+%                     % if ind>0
+%                     %     depName = depName(9:end);
+%                     % end
+%                     if isfield(tagsOut,depName)
+%                         newDependent = [newDependent  strtrim(tagsOut.(depName)) ','];
+%                     elseif strcmpi(depName,'tag_All')
+%                     else
+%                         fprintf(2,'Tag: %s does not exist in standard or custom tags.',depName)
+%                     end
+%                 else
+%                     newDependent = [newDependent  depName ','];
+%                 end
+%             end
+%         end
+%         dependent = newDependent;
+%     end
+%     % there could still be some white spaces in the names. Trim them.
+%     cellList = split(dependent,',');
+%     for cntList=1:length(cellList)
+%         cellList(cntList) = strtrim(cellList(cntList));
+%     end
+%     % Keep only unique and non-empty traces
+%     cellList = unique(cellList);
+%     cellList = cellList(~cellfun(@isempty,cellList) );
 
-function structNamesOfDependants = convert_tags_to_Traces(list_of_traces,structNamesOfDependants,customTags)
+
+
+function structNamesOfDependants = convert_tags_to_Traces(list_of_traces,structNamesOfDependants,allTags)
     % It converts 
     % Recursive search through all Tags to convert them to trace names 
-    
+
     % Extract field names
-    if ~isempty(customTags)
-        customTagFieldNames = fieldnames(customTags);
+    if ~isempty(allTags)
+        customTagFieldNames = fieldnames(allTags);
     else
         customTagFieldNames = [];
     end
@@ -87,10 +123,10 @@ function structNamesOfDependants = convert_tags_to_Traces(list_of_traces,structN
                 indTaggedDependants = 1:length(list_of_traces);
             elseif indField ~= 0
                 % if cTag is memeber of customTags than add those trace names
-                structCustomTagTraces = strtrim(split(customTags.(char(customTagFieldNames(indField))),','))';
+                structCustomTagTraces = strtrim(split(allTags.(char(customTagFieldNames(indField))),','))';
                 structNamesOfDependants = [structNamesOfDependants structCustomTagTraces]; %#ok<AGROW>
                 % recursive call to check if there are more tag_ fields
-                structNamesOfDependants = convert_tags_to_Traces(list_of_traces,structNamesOfDependants,customTags);
+                structNamesOfDependants = convert_tags_to_Traces(list_of_traces,structNamesOfDependants,allTags);
             else
                 % loop through all the traces and find all the ones that have this tag
                 for cntTraces = 1:length(list_of_traces)
@@ -101,7 +137,7 @@ function structNamesOfDependants = convert_tags_to_Traces(list_of_traces,structN
                 end
             end
         end
-    
+
         % remove tags from structTraceName 
         structNamesOfDependants = structNamesOfDependants(~startsWith(structNamesOfDependants,'tag_'));
         % and replace them with unique trace names
