@@ -19,7 +19,6 @@ function returnInd = ta_get_index_traceList(trc_names,list_of_traces)
 %   - added handling of tags
 %   - implemented a meta tag: "tag_All". More to follow.
 
-
 returnInd = [];
 if ~exist('trc_names','var') || ~exist('list_of_traces','var') || ...
       isempty(trc_names) || isempty(list_of_traces)
@@ -50,7 +49,6 @@ structNamesOfDependants = convert_tags_to_Traces(list_of_traces,structNamesOfDep
 
 % make sure that returnInd is a row vector
 returnInd = returnInd(:)';
-
 
 function structNamesOfDependants = convert_tags_to_Traces(list_of_traces,structNamesOfDependants,customTags)
     % It converts 
