@@ -6,3 +6,4 @@ end
 close all;
 clear all;
 set(0,'ShowHiddenHandles','off')
+fclose all;
