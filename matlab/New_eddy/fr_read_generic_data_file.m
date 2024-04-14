@@ -282,7 +282,7 @@ function [varNames, unitsOut] = GHG_sep_var_names(orgVarsAndUnits)
         %renField = renameFields(varFieldName);
         varUnits = char(tmpUnits(cntVars));
         if isempty(varUnits)
-            % otherwise it returns [1×0 char] which just looks ugly. 
+            % otherwise it returns [1�0 char] which just looks ugly. 
             varUnits = '';
         end
         if     (startsWith(renField,'CO2_') && ~strcmp('CO2_dry',renField)) ...
