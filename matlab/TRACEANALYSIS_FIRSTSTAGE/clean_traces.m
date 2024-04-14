@@ -13,6 +13,9 @@ function data_out = clean_traces(trace_str,interp_flag)
 
 % Revisions:
 %
+% Apr 8, 2024 (Zoran)
+%  - fixed a bug where the function didn't test if a field was empty before trying to 
+%    access it as an array. It affected "clampedMinMax".
 % Apr 5, 2024 (Zoran)
 %  - edited header by removing old definitions of Input:
 %  - Improved handling of the current year future dates
@@ -205,7 +208,7 @@ if isfield(trace_in.ini,'hhourCalibration')
 end
 
 %Replace points outside limits indicated in the ini_file with NaN's.
-if isfield(trace_in.ini,'minMax')
+if isfield(trace_in.ini,'minMax') && ~isempty(trace_in.ini.minMax)
    indmin = find(trace_in.data < trace_in.ini.minMax(1));
    OutsideMin = length(indmin);  
    indmax = find(trace_in.data > trace_in.ini.minMax(2));
@@ -218,7 +221,7 @@ end
 
 %Replace points that are not NaNs, and fall outside the clamped parameters, with
 %the clamped values:
-if isfield(trace_in.ini,'clamped_minMax')
+if isfield(trace_in.ini,'clamped_minMax') && ~isempty(trace_in.ini.clamped_minMax)
    clm_indmin = find(trace_in.data < trace_in.ini.clamped_minMax(1));
    clm_indmax = find(trace_in.data > trace_in.ini.clamped_minMax(2));
    trace_in.data(clm_indmin) = trace_in.ini.clamped_minMax(1);

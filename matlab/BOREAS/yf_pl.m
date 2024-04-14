@@ -6,12 +6,15 @@ function [t,x] = yf_pl(ind, year, select, fig_num_inc,pause_flag)
 %   the UBC data-base formated files.
 %
 % (c) Elyn Humphreys         File created:       Sept 6, 2001      
-%                            Last modification:  Dec 31, 2022
+%                            Last modification:  Mar  3, 2024
 % (c) Nesic Zoran           
 %
 
 % Revisions:
 %
+% Mar 3, 2024 (Zoran)
+%   - added Gen Temp Max
+%   - changed temp range for Hut temps ([-10 Inf])
 % Dec 31, 2022 (Zoran)
 %   - It now uses 'yyyy' when creating paths instad of year. 
 %   - Prevented program from trying to plot data past "now". 
@@ -212,11 +215,12 @@ if pause_flag == 1;pause;end
 %----------------------------------------------------------
 trace_name  = 'Climate/Diagnostics: Generator Hut Temperature';
 trace_path  = str2mat(fr_logger_to_db_fileName(ini_climMain, 'T_Soil_10_AVG', pth),...
+                      fr_logger_to_db_fileName(ini_clim2, 'T_Soil_10_MAX', pth),...
                       fr_logger_to_db_fileName(ini_climMain, 'Main_V_Avg', pth),...
                       fr_logger_to_db_fileName(ini_climMain, 'HMP_T_1_AVG', pth));
-trace_legend = str2mat('Hut Temp.','MainBatt Avg.','Air Temp.');
+trace_legend = str2mat('Hut Temp. Avg','Hut Temp. Max','MainBatt Avg.','Air Temp.');
 trace_units = '(degC) and V';
-y_axis      = [0 35] - WINTER_TEMP_OFFSET;
+y_axis      = [-10 Inf];
 fig_num = fig_num + fig_num_inc;
 x = plt_msig( trace_path, ind, trace_name, trace_legend, year, trace_units, y_axis, t, fig_num );
 indAxes = indAxes+1; allAxes(indAxes) = gca;
