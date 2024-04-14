@@ -1,10 +1,7 @@
 # Written to gap-fill FCH4 (and/or other fluxes or long gaps in fluxes)
-# By Sara Knox, adapted from the code by Kim et al., 2019 
-# https://github.com/yeonukkim/EC_FCH4_gapfilling/blob/master/rf_run_for_public.R
-# Aug 11, 2022
+# By Sara Knox March 2024, adapted from the code by Gavin McNicol & June Skeeter
 
-# Updated June Skeeter March 2019
-# Adjustments to line with streamline third stage procedures
+# RF algorithm is trained ranger package in R (R Core Team, 2019; Wright & Ziegler, 2017) 
 
 # Inputs 
 # df <- input data frame with columns in this order:
@@ -14,13 +11,14 @@
 #install.packages('tidyverse') # for data wrangling 
 #install.packages('caret') # for machine learning run and tuning
 #install.packages('randomForest') # randomforest model
+#install.packages('ranger')
 
 RandomForestModel <- function(df,fill_name,plot_results=0) {
   
   # load libraries
   library(tidyverse)
+  library(ranger)
   library(caret)
-  
   
   # Truncate data set to remove all NA values at the start
   # Find first non-NA data point
@@ -60,9 +58,6 @@ RandomForestModel <- function(df,fill_name,plot_results=0) {
     mutate(s = sin((df$DoY-1)/365*2*pi), # Sine function to represent the seasonal cycle
            c = cos((df$DoY-1)/365*2*pi)) # cosine function to represent the seasonal cycle
   
-  # # Apply gap-filling function
-  # predictor_vars <- c(predictor_vars,"c","s") # Add sine and cosine to predictor list
-  
   # period when dep var is not missing
   obs_only <- ML.df[!is.na(ML.df[, 1]), ]
   
@@ -71,47 +66,37 @@ RandomForestModel <- function(df,fill_name,plot_results=0) {
   train_set <- obs_only[index,]
   test_set <- obs_only[-index,]
   
-  ############### Random forest run
-  
-  #### option 1. random forest model with mtry tuning - IF USING THIS OPTION, NEED TO UPDATE THE CODE (this is the original code from Kim et al. 2019)
-  # tgrid <- data.frame(mtry = c(3,6,9,12))
-  # #Add parallel processing for the fast processing if you want to
-  # library(parallel)
-  # library(doParallel)
-  # cluster <- makeCluster(6)
-  # registerDoParallel(cluster)
-  # RF_FCH4 <- train(FCH4 ~ ., data = train_set[,predictors],
-  # 								 method = "rf",
-  # 								 preProcess = c("medianImpute"),                #impute missing met data with median
-  # 								 trControl=trainControl(method = "repeatedcv",   #three-fold cross-validation for model parameters 3 times
-  # 								 											number = 3,                #other option: "cv" without repetition
-  # 								 											repeats = 3),
-  # 								 tuneGrid = tgrid,
-  # 								 na.action = na.pass,
-  # 								 allowParallel=TRUE, # This requires parallel packages. Otherwise you can choose FALSE.
-  # 								 ntree=400, # can generate more trees
-  # 								 importance = TRUE)
-  # RF_FCH4$bestTune
-  # RF_FCH4$results
-  
-  #### option 2. random forest model without tuning. 
-  # (when mtry value is already tunned or using squre root of the number of predictor)
-
   var_dep <- colnames(df)[1]
   predictor_vars <- colnames(df[ , -which(names(df) %in% c("DateTime","DoY"))])
-
-  RF <- train(as.formula(paste(var_dep, "~.")), train_set[,predictor_vars],
-              method = "rf",
-              preProcess = c("medianImpute"),  # impute missing met data with median (but it will not be applied since we used gap-filled predictors)
-              trControl = trainControl(method = "none"),
-              tuneGrid=data.frame(mtry=9), # use known mtry value.
-              na.action = na.pass,
-              allowParallel=FALSE,
-              ntree=400, # can generate more trees
-              importance = TRUE)
+  
+  ## Create tune-grid (all combinations of hyper-parameters)
+  tgrid <- expand.grid(
+    mtry = c(1:length(predictor_vars)-1), # since mtry can not be larger than number of variables in data, could add parameter in function for step so doesn't default increment by 1
+    splitrule = "variance", 
+    min.node.size = c(5, 50, 100)
+  )
+  
+  ## Create trainControl object (other)
+  myControl <- trainControl(
+    method = "cv",
+    allowParallel = TRUE,
+    verboseIter = TRUE,  
+    returnData = FALSE,
+  )
+  
+  ## train RF 
+  RF <- train(
+    as.formula(paste(var_dep, "~.")), 
+    data = train_set[,predictor_vars],
+    num.trees = 500, # start at 10xn_feat, maintain at 100 below 10 feat
+    method = 'ranger',
+    trControl = myControl,
+    tuneGrid = tgrid,
+    importance = 'permutation',  ## or 'impurity'
+    metric = "MAE" ## or 'rmse'
+  )
   
   ############### Results
-  
   # whole dataset
   result <- subset(ML.df,select = var_dep)
   
@@ -122,12 +107,14 @@ RandomForestModel <- function(df,fill_name,plot_results=0) {
   names(result)[2:4] <- c(paste(fill_name,'_RF_model',sep=""),paste(fill_name,'_RF_filled',sep=""),paste(fill_name,'_RF_residual',sep=""))
   
   result$DateTime <- ML.df$DateTime
-
+  
+  # Do we want to add more statistic of model fit/results?
+  
   if (plot_results == 1) {
     # variable importance
     plot(varImp(RF, scale = FALSE), main="variable importance")
     
-    #generate rf predictions for testset
+    #generate rf predictions for test set
     test_set$rf <- predict(RF, test_set, na.action = na.pass)
     regrRF <- lm(test_set$rf ~ test_set[,var_dep]); 
     print(summary(regrRF))
@@ -151,9 +138,10 @@ RandomForestModel <- function(df,fill_name,plot_results=0) {
   df.out <- data.frame(df[,1]) 
   # Make sure output data frame is the same length as the input data
   df.out[ind_start:ind_end, ] <- result[,3] #RF_filled
-  names(df.out) <- paste(fill_name,'_f_RF',sep="")
+  names(df.out) <- paste(fill_name,sep="")
   df.out$RF_filled <- NA
   df.out$RF_filled[ind_start:ind_end] <- result[,2] #RF_model
-  names(df.out)[2] <- paste(fill_name,'_fall_RF',sep="")  
+  names(df.out)[2] <- paste(fill_name,"_all",sep="")  
   return(df.out)
+  
 }
