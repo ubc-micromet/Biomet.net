@@ -11,11 +11,13 @@ function tagsOut = tags_Standard
 %		Dependent = 'tag_LI7200'
 %
 % Zoran Nesic           File created        Mar 30, 2024
-%                       Last modification:  Apr  5, 2024
+%                       Last modification:  Apr 14, 2024
 % 
 
 % Revisions
 %
+% Apr 14, 2024 (Zoran)
+%   - added CH4_MIXING_RATIO to tag_7700
 % Apr 10, 2024 (Zoran)
 %  - added the missing tagsOut.tag_CH4_fluxes
 %  - found that when defining tags I used tagsOut.tag_* instead of just tag_*
@@ -102,6 +104,7 @@ tagsOut.tag_EC_Anemometer = [ ...
 %% LI-7700
 tagsOut.tag_LI7700 =        [ ...
                             'CH4,'...
+                            'CH4_MIXING_RATIO,'...
                             'ch4_var,'...
                             'tag_CH4_fluxes,'...
                             ];
