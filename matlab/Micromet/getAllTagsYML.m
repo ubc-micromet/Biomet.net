@@ -1,8 +1,12 @@
 function tagsOut = getAllTagsYML(siteID)
 
-% Perhaps default configurations (should stay in Biomet.Net?)
-calc_prodecures = fullfile(biomet_database_default,'Calculation_Procedures\TraceAnalysis_ini');
+% % Should be stored in a config file, a standalone file
+% calc_prodecures = fullfile(biomet_database_default,'Calculation_Procedures\TraceAnalysis_ini');
+% config_file = fullfile(calc_prodecures,'_config.yml');
+
+path,name,ext = matlab.desktop.editor.getActiveFilename
 config_file = fullfile(calc_prodecures,'_config.yml');
+
 % Load default tags from the config file
 % Will crash if does not exit, but everyone shoud obtain the default config
 % if they don't already have it.  Will also crash if user doesn't have yaml

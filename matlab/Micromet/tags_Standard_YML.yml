@@ -1,0 +1,55 @@
+tag_EC_Vars:
+  tag_LowFreq: >
+      CO2_MIXING_RATIO
+      H2O_MIXING_RATIO
+      CH4_MIXING_RATIO
+      T_SONIC
+  tag_HighFreq:
+    tag_LI7X00:
+      tag_CO2: >
+        FC
+        SC
+        co2_var
+        un_co2_flux
+        w_co2_cov
+      tag_H2O: >
+        LE
+        SLE
+        h2o_flux
+        ET
+        un_h2o_flux
+        un_LE
+        h2o_var
+        w_h2o_cov
+        h2o_strg
+    tag_LI770: >
+      FCH4
+      SFCH4
+      ch4_var
+      un_ch4_flux
+      w_ch4_cov
+    tag_CSAT3: >
+      u_mean
+      u_unrot
+      u_var
+      u_rot
+      v_mean
+      v_unrot
+      v_var
+      v_rot
+      w_mean
+      w_unrot
+      w_var
+      w_rot
+      wind_speed
+      WS_MAX
+      ts
+      ts_var,
+      H
+      w_ts_cov
+      SH
+      un_H
+      USTAR
+      TKE
+      TAU
+      T_SONIC

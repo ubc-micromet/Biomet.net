@@ -22,7 +22,8 @@ function returnInd = ta_get_index_traceList(dependent_names,trace_str_all)
 %   - symplified the code
 %   - added handling of tags
 %   - implemented a meta tag: "tag_All". More to follow.
-    
+
+
 returnInd = [];
 if ~exist('dependent_names','var') || ~exist('trace_str_all','var') || ...
       isempty(dependent_names) || isempty(trace_str_all)
