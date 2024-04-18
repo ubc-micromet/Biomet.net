@@ -92,7 +92,7 @@ configure <- function(siteID){
   dbase_config = yaml.load_file(filename)
   
   # Read a the site specific configuration
-  fn <- sprintf('%s_ThirdStage.yml',siteID)
+  fn <- sprintf('%s_config.yml',siteID)
   filename <- file.path(db_root,'Calculation_Procedures/TraceAnalysis_ini',siteID,fn)
   site_config <- yaml.load_file(filename)
   # merge the config files
