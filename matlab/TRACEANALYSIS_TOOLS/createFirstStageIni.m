@@ -23,13 +23,19 @@ function createFirstStageIni(structSetup)
 % structSetup.outputPath = []; % keep it in the local directory
 %
 % Zoran Nesic               File created:           Mar 20, 2024
-%                           Last modification:      Mar 26, 2024
+%                           Last modification:      Apr 19, 2024
 
 % Revisions:
 %
+% Apr 19, 2024 (Zoran)
+%   - Bug fix: LoggedCalibrations and CurrentCalibrations did not have span and offset include. ([1 0]).
+%   - Added proper handling of the quality control traces (minMax and dependent fields).
+
 
 
 outputIniFileName = fullfile(structSetup.outputPath, [structSetup.SiteID '_FirstStage_Template.ini']);
+fprintf('---------------------------\n');
+fprintf('Creating template file: %s\n',outputIniFileName);
 fid = fopen(outputIniFileName,'w');
 
 % Header output
@@ -44,6 +50,7 @@ for cntMeasurementTypes = 1:length(structSetup.allMeasurementTypes)
 
     inputFolder = biomet_path(structSetup.startYear,structSetup.SiteID,measurementType);
     allFiles = dir(inputFolder);
+    fprintf('Processing %d traces in: %s\n',length(allFiles),inputFolder)
     
     for cntFiles = 1:length(allFiles)
         if ~allFiles(cntFiles).isdir
@@ -71,10 +78,29 @@ for cntMeasurementTypes = 1:length(structSetup.allMeasurementTypes)
                                                         structSetup.startYear,structSetup.startMonth,structSetup.startDay,...
                                                         structSetup.endYear,structSetup.endMonth,structSetup.endDay);
                 fprintf(fid,'    comments             = ''''\n');
-                fprintf(fid,'    minMax               = [-Inf,Inf]\n');
-                fprintf(fid,'    zeroPt               = -9999\n');
-                fprintf(fid,'    dependent            = ''''\n');
-        
+                % If this is a standard QC variable, then create known minMax and dependency fields
+                % Otherwise use defaults
+                switch upper(variableName)
+                    case {'FC_SSITC_TEST','QC_CO2_FLUX'}                
+                        fprintf(fid,'    minMax               = [0,1]\n');
+                        fprintf(fid,'    dependent            = ''FC,rand_err_co2_flux''\n');
+                    case {'FCH4_SSITC_TEST','QC_CH4_FLUX'}
+                        fprintf(fid,'    minMax               = [0,1]\n');
+                        fprintf(fid,'    dependent            = ''FCH4,rand_err_co2_flux''\n');
+                    case {'H_SSITC_TEST','QC_H'}
+                        fprintf(fid,'    minMax               = [0,1]\n');
+                        fprintf(fid,'    dependent            = ''H,rand_err_H''\n');
+                    case {'LE_SSITC_TEST','QC_LE'}
+                        fprintf(fid,'    minMax               = [0,1]\n');
+                        fprintf(fid,'    dependent            = ''LE,rand_err_LE''\n');
+                    case {'TAU_SSITC_TEST','QC_TAU'}
+                        fprintf(fid,'    minMax               = [0,1]\n');
+                        fprintf(fid,'    dependent            = ''TAU,rand_err_Tau''\n');
+                    otherwise
+                        fprintf(fid,'    minMax               = [-Inf,Inf]\n');
+                        fprintf(fid,'    dependent            = ''''\n');
+                end
+                fprintf(fid,'    zeroPt               = -9999\n');   
                 fprintf(fid,'[End]\n\n');
             catch ME
             end
@@ -82,5 +108,6 @@ for cntMeasurementTypes = 1:length(structSetup.allMeasurementTypes)
     end
 end
 fclose all;
+fprintf('Template created: %s\n',outputIniFileName);
 end
 
