@@ -285,7 +285,7 @@ ThirdStage_REddyProc <- function() {
   # Write all REddyProc outputs to intermediate folder
   # Update names for subset and save to main third stage folder
   update_names <- config$Processing$ThirdStage$AmeriFlux_Names
-  input_data <- write_traces(REddyOutput,update_names)
+  input_data <- write_traces(REddyOutput,update_names,unlink = TRUE)
 
   return(input_data)
 }
@@ -316,7 +316,7 @@ RF_GapFilling <- function(){
   return(input_data)
 }
 
-write_traces <- function(data,update_names){
+write_traces <- function(data,update_names,unlink=FALSE){
   yrs <- config$yrs 
   siteID <- config$Metadata$siteID
   level_in <- config$Database$Paths$SecondStage
@@ -335,9 +335,11 @@ write_traces <- function(data,update_names){
   for (j in 1:length(yrs)){
     # Create new directory, or clear existing directory
     dpath <- file.path(db_root,as.character(yrs[j]),siteID) 
-        
-    dir.create(file.path(dpath,intermediate_out), showWarnings = FALSE)
-    unlink(file.path(dpath,intermediate_out,'*'))
+    
+    if (unlink == TRUE || !dir.exists(file.path(dpath,intermediate_out))) {
+      dir.create(file.path(dpath,intermediate_out), showWarnings = FALSE)
+      unlink(file.path(dpath,intermediate_out,'*'))
+    }
     
     # Copy tv from stage 2 to intermediate stage 3
     file.copy(file.path(dpath,level_in,tv_input),
