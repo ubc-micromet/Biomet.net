@@ -34,6 +34,9 @@ function trace_str_out = read_ini_file(fid,yearIn,fromRootIniFile)
 
 % Revisions
 %
+% Apr 27, 2024 (Zoran)
+%   - Fixed a bug in the stage detection (iniFileType). Previously the program would not
+%     properly detect the stage (first, second) if the siteID had an "_" in the name.
 % Apr 9, 2024 (Zoran)
 %   - added processing of global instrument-specific and trace-specific variables used
 %     for overwriting the default parameters from the templates used with #include.
@@ -77,8 +80,12 @@ end
 
 % Extract the ini file type ('first','second','third')
 [iniFilePath,iniFileType,~] = fileparts(iniFileName);
-iniFileType = split(iniFileType,{'_','Stage'});
-iniFileType = lower(char(iniFileType(2)));
+[~,iniFileType,~] = fileparts(iniFileType);
+if endsWith(iniFileType,'FirstStage','ignorecase',true)
+    iniFileType = 'first';
+elseif endsWith(iniFileType,'SecondStage','ignorecase',true)
+    iniFileType = 'second';  
+end
 
 trace_str = [];
 
