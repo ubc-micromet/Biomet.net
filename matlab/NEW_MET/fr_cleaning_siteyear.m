@@ -32,6 +32,10 @@ function data_cleaned = fr_cleaning_siteyear(Year,SiteId,stage,db_ini)
 %
 % Revisions:
 %
+% Apr 14, 2024 (Zoran)
+%   - added ind_parents to each trace. This indexes should be useful 
+%     for troubleshooting of why certain data points were removed by
+%     find which parent caused that.
 % Apr 11, 2022 (Zoran)
 %   - added call to setFolderSeparator() to deal with MacOS paths.
 % Apr 22, 2020 (Zoran)
@@ -91,11 +95,14 @@ if stage == 1
     
     data_raw    = read_data(Year(1),SiteId,ini_file_first);
     
-    % Clean and find dependents to clean
+    % find dependents to clean
     [data_auto,ct] = find_all_dependent(data_raw);
+    % add the field ind_parents to each trace in data_auto
+    data_auto = find_all_parents(data_auto);
+    % clean dependents
     data_depend = clean_all_dependents(data_auto,[],ct);
     
-    % Clean dependents 
+    % Clean traces 
     data_depend   = clean_traces( data_depend );
     
     if ~isempty(mat)
