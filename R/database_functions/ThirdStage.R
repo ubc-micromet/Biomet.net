@@ -9,15 +9,22 @@
 # lastYear years run will be: c(startYear:lastYear)
 
 
+# Note: this currently assumes that "pathTo/yourProject"
+# Third stage procedures assumes that pathTo/yourProject contains a matlab file:
+#  * pathTo/yourProject/Matlab/biomet_database_default.m
+#    * This file defines the path to the version of the biomet database that you are working with
+
 # Example call from command line (assumes R is added to your PATH variable)
-# Rscript --vanilla C:/Biomet.net/R/database_functions/ThirdStage.R BBS 2023 2024
+# cd pathTo/yourProject
+# Rscript --vanilla C:/Biomet.net/R/database_functions/ThirdStage.R siteID startYear endYear
 
 # Example call from R terminal
-# args <- c("BBS",2023,2024)
+# setwd(pathTo/yourProject)
+# args <- c("siteID",startYear,endYear)
 # source("C:/Biomet.net/R/database_functions/ThirdStage.R")
 
 # # Install on first run
-# install.packages(c('rs','yaml','rlist','dplyr','lubridate','data.table','tidyverse','caret','ranger'))
+# install.packages(c('REddyProc','rs','yaml','rlist','dplyr','lubridate','data.table','tidyverse','caret','ranger'))
 
 # Load libraries
 library('fs')
