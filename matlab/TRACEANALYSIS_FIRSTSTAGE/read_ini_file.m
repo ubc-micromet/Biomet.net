@@ -81,9 +81,9 @@ end
 % Extract the ini file type ('first','second','third')
 [iniFilePath,iniFileType,~] = fileparts(iniFileName);
 [~,iniFileType,~] = fileparts(iniFileType);
-if endsWith(iniFileType,'FirstStage','ignorecase',true)
+if endsWith(iniFileType,'FirstStage','ignorecase',true) || endsWith(iniFileType,'FirstStage_include','IgnoreCase',true)
     iniFileType = 'first';
-elseif endsWith(iniFileType,'SecondStage','ignorecase',true)
+elseif endsWith(iniFileType,'SecondStage','ignorecase',true)|| endsWith(iniFileType,'SecondStage_include','IgnoreCase',true)
     iniFileType = 'second';  
 end
 
@@ -338,7 +338,7 @@ try
                         stage = 'first';
                         trace_str(countTraces).stage = 'first';
                     else
-                        error('Ini file is for the stage: %s but the stage: % is detected based on the required field names. Line: %d',iniFileType,stage,countLines);
+                        error('Ini file is for the stage: %s but the stage: %s is detected based on the required field names. Line: %d',iniFileType,stage,countLines);
                     end
                 end
                 if all(chck_second_stage)
@@ -346,7 +346,8 @@ try
                         stage = 'second';
                         trace_str(countTraces).stage = 'second';
                     else
-                        error('Ini file is for the stage: %s but the stage: % is detected based on the required field names. Line: %d',iniFileType,stage,countLines);
+                        fprintf(2,'Ini file is for the stage: *%s* but the *second* stage is detected based on the required field names. Line: %d\n',iniFileType,countLines);
+                        error('');
                     end
                 end
             else
@@ -443,7 +444,8 @@ try
         countLines = countLines + 1;
     end
 catch ME
-    error('Error while processing: \n%s\n on line:%d:(%s)\nExiting read_ini_file() ...\n',iniFileName,countLines,tm_line);
+    rethrow(ME);
+    %error('Error while processing: \n%s\n on line:%d:(%s)\nExiting read_ini_file() ...\n',iniFileName,countLines,tm_line);
 end
 
 %--------------------- Global variables -------------------------------------
