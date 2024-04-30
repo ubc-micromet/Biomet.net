@@ -17,6 +17,8 @@ function trace_str = read_data(yearIn, SiteID, ini_file)
 
 % revisions:
 %
+% Apr 30, 2024 (Zoran)
+%   - Removed the orphan input parameter "countTraces" from the call to evaluate_trace. 
 % Apr 29, 2024 (Zoran)
 %   - reformated file and remove lines that were not used
 %   - some syntax improvements
@@ -246,7 +248,7 @@ for countTraces = 1:numberTraces
         end
         % Run evaluate statement for the current trace
         if isfield(trace_str(countTraces).ini,'Evaluate1')       %if the data needs to be evaluated
-            trace_out = evaluate_trace( trace_out, countTraces );	  %evaluate the trace (second stage only)
+            trace_out = evaluate_trace( trace_out );	  %evaluate the trace (second stage only)
         end
     end
 
