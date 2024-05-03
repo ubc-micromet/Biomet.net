@@ -307,14 +307,16 @@ RF_GapFilling <- function(){
   # Check if dependent variable is available and run RF gap filling if it is
   for (fill_name in names(RFConfig)){
     if (RFConfig[[fill_name]]$var_dep %in% colnames(input_data)){
-      var_dep <- unlist(RFConfig[[fill_name]]$var_dep)
-      predictors <- unlist(strsplit(RFConfig[[fill_name]]$Predictors, split = ","))
-      vars_in <- c(var_dep,predictors,"DateTime","DoY")
-      gap_filled <- RandomForestModel(input_data[,vars_in],fill_name)
-      gap_filled = dplyr::bind_cols(input_data[c("DateTime","Year","DoY","Hour")],gap_filled)
-      update_names <- list(fill_name)
-      names(update_names) <- c(fill_name)
-      input_data <- write_traces(gap_filled,update_names)
+      try({
+        var_dep <- unlist(RFConfig[[fill_name]]$var_dep)
+        predictors <- unlist(strsplit(RFConfig[[fill_name]]$Predictors, split = ","))
+        vars_in <- c(var_dep,predictors,"DateTime","DoY")
+        gap_filled <- RandomForestModel(input_data[,vars_in],fill_name)
+        gap_filled = dplyr::bind_cols(input_data[c("DateTime","Year","DoY","Hour")],gap_filled)
+        update_names <- list(fill_name)
+        names(update_names) <- c(fill_name)
+        input_data <- write_traces(gap_filled,update_names)
+      })
 
     }else{
       print(sprintf('%s Not present, RandomForest will not process',RFConfig[[fill_name]]$var_dep))
