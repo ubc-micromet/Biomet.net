@@ -12,6 +12,8 @@ function db_update_all(runCleaning,local_export)
 
 % Revisions:
 %
+% May 6, 2024 (Zoran)
+%   - removed (finally) decommissioned sites:  'LGR1' 'LGR1_UPPER' 'LGR2'
 % Jan 4, 2022 (Zoran)
 %   - added try-catch around the entire function
 %   - improved handling of diary function to better coexists with the
@@ -121,7 +123,10 @@ try
             %sites = {'BS' 'CR' 'FEN' 'HJP02' 'HJP75' 'JP'  'OY' 'PA' 'YF' 'UBC_TOTEM'...
             %         'MPB1' 'MPB2' 'MPB3'};
 
-            sites = {'YF' 'UBC_TOTEM' 'MPB1' 'LGR1' 'LGR1_UPPER' 'LGR2'}; 
+            sites = {'YF' 'UBC_TOTEM' 'MPB1'}; 
+                                            % removed decommissioned sites:
+                                            % 'LGR1' 'LGR1_UPPER' 'LGR2'
+                                            % May 6, 2024
                                             % removed decommissioned site MPB3: Aug 21, 2014 
                                             % remove MPB2, HDF11 Jan 19, 2015
                                             % remove HP09, Sept 22, 2015
