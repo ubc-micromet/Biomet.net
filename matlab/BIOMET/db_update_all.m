@@ -12,6 +12,9 @@ function db_update_all(runCleaning,local_export)
 
 % Revisions:
 %
+% May 6, 2024 (Zoran)
+%   - removed (finally) decommissioned sites:  'LGR1' 'LGR1_UPPER' 'LGR2'
+%   - removed eval_wrapper('CCRN data export','fr_automated_cleaning(yy(1)-1:yy(1),{''bs'',''pa''},4)');
 % Jan 4, 2022 (Zoran)
 %   - added try-catch around the entire function
 %   - improved handling of diary function to better coexists with the
@@ -121,7 +124,10 @@ try
             %sites = {'BS' 'CR' 'FEN' 'HJP02' 'HJP75' 'JP'  'OY' 'PA' 'YF' 'UBC_TOTEM'...
             %         'MPB1' 'MPB2' 'MPB3'};
 
-            sites = {'YF' 'UBC_TOTEM' 'MPB1' 'LGR1' 'LGR1_UPPER' 'LGR2'}; 
+            sites = {'YF' 'UBC_TOTEM' 'MPB1'}; 
+                                            % removed decommissioned sites:
+                                            % 'LGR1' 'LGR1_UPPER' 'LGR2'
+                                            % May 6, 2024
                                             % removed decommissioned site MPB3: Aug 21, 2014 
                                             % remove MPB2, HDF11 Jan 19, 2015
                                             % remove HP09, Sept 22, 2015
@@ -146,7 +152,7 @@ try
             % (Jan 8, 2013) removed DIS file export, now maintain .csv files right up to present
             % May 15, 2014: reactivated monthly export to
             % \\annex001\FTP_FLUXNET (Nick)
-            eval_wrapper('CCRN data export','fr_automated_cleaning(yy(1)-1:yy(1),{''bs'',''pa''},4)'); % removed hjp02: July 20, 2011
+            %eval_wrapper('CCRN data export','fr_automated_cleaning(yy(1)-1:yy(1),{''bs'',''pa''},4)'); % removed hjp02: July 20, 2011
             %eval_wrapper('Search for and report missing hhour
             %files','run_hhour_file_search([],[],1)'); % Nick added 10/02/2007,
             %and removed July 20, 2011.
