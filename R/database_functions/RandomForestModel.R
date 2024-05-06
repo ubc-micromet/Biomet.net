@@ -13,51 +13,32 @@
 #install.packages('randomForest') # randomforest model
 #install.packages('ranger')
 
-RandomForestModel <- function(df,fill_name,plot_results=0) {
+RandomForestModel <- function(df,fill_name,plot_results=0,save_name=c('RF_model.RData')) {
   
   # load libraries
   library(tidyverse)
   library(ranger)
   library(caret)
-  
+
+  # This is a pretty hacked up approach assuming a specific order, should update to be more explicit
+  var_dep <- colnames(df)[1]
+  predictor_vars <- colnames(df[ , -which(names(df) %in% c(var_dep,"DateTime"))])
+
   # Truncate data set to remove all NA values at the start
-  # Find first non-NA data point
-  data_first <- sapply(df, function(x) x[min(which(!is.na(x)))])
-  
-  # See what index that corresponds too
-  ind_first <- rep(NA, length(data_first))
-  for (i in 1:length(data_first)) {
-    ind_first[i] <- head(which(df[,i] == data_first[[i]]),n=1)
-  }
-  
-  # Why is this in here?
-  # # Find last first-NaN data point but exclude USTAR
-  # ind_USTAR <- which(vars_reorder == 'USTAR')
-  ind_start <- min(ind_first)
-  
-  # Truncate data set to remove future time steps
-  # Find last non-NA data point
-  data_last <- sapply(df, function(x) x[max(which(!is.na(x)))])
-  
-  # See what index that corresponds too
-  ind_last <- rep(NA, length(data_last))
-  for (i in 1:length(data_last)) {
-    ind_last[i] <- tail(which(df[,i] == data_last[[i]]),n=1)
-  }
-  
-  # Find last non-NaN data point
-  ind_end <- max(ind_last)
-  
+  # Find full rows (non-NA predictors, excluding date based variables)
+  pred_ix = which(rowSums(!is.na(df[predictor_vars]))==length(predictor_vars))
+
   # create subset of data excluding NAs at the end of the time series
-  ML.df <- df[ind_start:ind_end, ] 
+  ML.df <- df[pred_ix, ] 
   
+  # Create time variables & sine and cosine functions (carryover from previous version)
   # Would it be more appropriate to use a physically based function like solar declination?
-  # Create time variables & sine and cosine functions
-  df <- df[ind_start:ind_end, ]
   ML.df <- ML.df %>%
-    mutate(s = sin((df$DoY-1)/365*2*pi), # Sine function to represent the seasonal cycle
-           c = cos((df$DoY-1)/365*2*pi)) # cosine function to represent the seasonal cycle
+    mutate(sin_curve = sin((ML.df$DoY-1)/365*2*pi), # Sine function to represent the seasonal cycle
+           cos_curve = cos((ML.df$DoY-1)/365*2*pi)) # cosine function to represent the seasonal cycle
   
+  predictor_vars = c(predictor_vars,"sin_curve","cos_curve")
+
   # period when dep var is not missing
   obs_only <- ML.df[!is.na(ML.df[, 1]), ]
   
@@ -65,10 +46,7 @@ RandomForestModel <- function(df,fill_name,plot_results=0) {
   index <- createDataPartition(obs_only[, 1], p=0.75, list=F) 
   train_set <- obs_only[index,]
   test_set <- obs_only[-index,]
-  
-  var_dep <- colnames(df)[1]
-  predictor_vars <- colnames(df[ , -which(names(df) %in% c("DateTime","DoY"))])
-  
+    
   ## Create tune-grid (all combinations of hyper-parameters)
   tgrid <- expand.grid(
     mtry = c(1:length(predictor_vars)-1), # since mtry can not be larger than number of variables in data, could add parameter in function for step so doesn't default increment by 1
@@ -80,22 +58,36 @@ RandomForestModel <- function(df,fill_name,plot_results=0) {
   myControl <- trainControl(
     method = "cv",
     allowParallel = TRUE,
-    verboseIter = TRUE,  
+    verboseIter = FALSE, ## Set this to FALSE, verbose output is VERY VERBOSE and makes the output log very difficult to read
     returnData = FALSE,
   )
   
   ## train RF 
   RF <- train(
     as.formula(paste(var_dep, "~.")), 
-    data = train_set[,predictor_vars],
+    data = train_set[,c(var_dep,predictor_vars)],
     num.trees = 500, # start at 10xn_feat, maintain at 100 below 10 feat
     method = 'ranger',
     trControl = myControl,
     tuneGrid = tgrid,
     importance = 'permutation',  ## or 'impurity'
-    metric = "MAE" ## or 'rmse'
+    metric = "MAE" ## or 'rmse',
   )
   
+  ## A copy gets saved for each year
+  ## This is a bit redundant, but current procedures could result in divergent models for different years
+  ## So its important to do it this way, unless we will always be running the all years 
+  ## Side note: we should consider ALWAYS training on the all years available
+  for (name in save_name){
+    save(RF,file = name)
+  }
+
+  print(sprintf('RF Training for %s Complete, Normalized Variable Importance:',var_dep))
+  normImp <- (varImp(RF, scale = FALSE)[1]$importance/sum(varImp(RF, scale = FALSE)[1]$importance))
+  normImp$predictor<-rownames(normImp)
+  normImp<-normImp[order(normImp$Overall, decreasing = TRUE),]  
+  rownames(normImp)<-1:nrow(normImp)
+  print(normImp)
   ############### Results
   # whole dataset
   result <- subset(ML.df,select = var_dep)
@@ -133,15 +125,21 @@ RandomForestModel <- function(df,fill_name,plot_results=0) {
     regrRF_whole <- lm(result[,2] ~ result[,1]);
     print(summary(regrRF_whole))
   }
-  
   # Output filled data (including 'var_Ustar_f_RF', 'var_Ustar_fall_RF' -> same naming convention as REddyProc)
   df.out <- data.frame(df[,1]) 
   # Make sure output data frame is the same length as the input data
-  df.out[ind_start:ind_end, ] <- result[,3] #RF_filled
+  df.out[pred_ix, ] <- result[,3] #RF_filled
   names(df.out) <- paste(fill_name,sep="")
   df.out$RF_filled <- NA
-  df.out$RF_filled[ind_start:ind_end] <- result[,2] #RF_model
+  df.out$RF_filled[pred_ix] <- result[,2] #RF_model
   names(df.out)[2] <- paste(fill_name,"_all",sep="")  
+
+  # Get all indicies before present timestamp
+  BP <- which(df$DateTime<Sys.time())
+  
+  print(sprintf('RF Gap-Filling %s Complete, %i missing values remain in the time series',var_dep,sum(is.na(df.out[BP,1]))))
+  print(sprintf('%i of those missing values are between the first and last complete set of predictors',sum(is.na(df.out[pred_ix[1]:pred_ix[length(pred_ix)],1]))))
+  
   return(df.out)
   
 }

@@ -24,13 +24,14 @@
 # source("C:/Biomet.net/R/database_functions/ThirdStage.R")
 
 # # Install on first run
-# install.packages(c('REddyProc','rs','yaml','rlist','dplyr','lubridate','data.table','tidyverse','caret','ranger'))
+# install.packages(c('REddyProc','rs','yaml','rlist','dplyr','lubridate','data.table','tidyverse','caret','ranger','zoo'))
 
 # Load libraries
 library('fs')
 library("yaml")
 library("REddyProc")
 library("rlist")
+library("zoo")
 require("dplyr")
 require("lubridate")
 require("data.table")
@@ -95,7 +96,7 @@ configure <- function(siteID){
   sapply(list.files(pattern="db_root.R", path=fx_path, full.names=TRUE), source)
   
   # Read a the global database configuration
-  filename <- file.path(db_root,'Calculation_Procedures/TraceAnalysis_ini/_config.yml')
+  filename <- file.path(db_root,'Calculation_Procedures/TraceAnalysis_ini/global_config.yml')
   dbase_config = yaml.load_file(filename)
   
   # Read a the site specific configuration
@@ -184,6 +185,16 @@ read_and_copy_traces <- function(){
   return(data)
 }
 
+Met_Gap_Filling <- function(){
+  interpolation = config$Processing$ThirdStage$Met_Gap_Filling$Linear_Interpolation
+  interpolate_vars = unlist(strsplit(interpolation$Fill_Vars, split = ","))
+  input_data[interpolate_vars] = na.approx(
+    input_data[interpolate_vars],
+    maxgap = interpolation$maxgap,
+    na.rm = FALSE)
+  return(input_data)
+}
+
 storage_correction <- function(){
   Storage_Terms <- config$Processing$ThirdStage$Storage$Terms
   terms <- names(Storage_Terms)
@@ -204,7 +215,7 @@ storage_correction <- function(){
   return(input_data)
 }
 
-ThirdStage_REddyProc <- function() {
+Run_REddyProc <- function() {
   
   # Subset just the config info relevant to REddyProc
   REddyConfig <- config$Processing$ThirdStage$REddyProc
@@ -303,7 +314,6 @@ RF_GapFilling <- function(){
   
   # Read function for RF gap-filling data
   p <- sapply(list.files(pattern="RandomForestModel.R", path=config$fx_path, full.names=TRUE), source)
-  # browser()
   # Check if dependent variable is available and run RF gap filling if it is
   for (fill_name in names(RFConfig)){
     if (RFConfig[[fill_name]]$var_dep %in% colnames(input_data)){
@@ -311,7 +321,21 @@ RF_GapFilling <- function(){
         var_dep <- unlist(RFConfig[[fill_name]]$var_dep)
         predictors <- unlist(strsplit(RFConfig[[fill_name]]$Predictors, split = ","))
         vars_in <- c(var_dep,predictors,"DateTime","DoY")
-        gap_filled <- RandomForestModel(input_data[,vars_in],fill_name)
+        
+        # Create list of paths for saving RF models        
+        ## A copy gets saved for each year
+        ## This is a bit redundant, but current procedures could result in divergent models for different years
+        ## So its important to do it this way, unless we will always be running the all years 
+        ## Side note: we should consider ALWAYS training on the all years available
+        
+        save_name = c()
+        for (j in 1:length(config$yrs)){
+          # Create new directory, or clear existing directory
+          dpath <- file.path(db_root,as.character(config$yrs[j]),config$Metadata$siteID,config$Database$Paths$ThirdStage)
+          save_name <- c(save_name,file.path(dpath,paste(var_dep,'_RF_Model.RData',sep="")))
+        }
+
+        gap_filled <- RandomForestModel(input_data[,vars_in],fill_name,save_name = save_name)
         gap_filled = dplyr::bind_cols(input_data[c("DateTime","Year","DoY","Hour")],gap_filled)
         update_names <- list(fill_name)
         names(update_names) <- c(fill_name)
@@ -401,13 +425,15 @@ config <- configure()
 # Read Stage 2 Data
 input_data <- read_and_copy_traces() 
 
+input_data <- Met_Gap_Filling()
+
 # Apply storage correction (if required)
 input_data <- storage_correction()
 
-# Run REddyProc
-if (config$Processing$ThirdStage$REddyProc$Run){
-  input_data <- ThirdStage_REddyProc() 
-}
+# # Run REddyProc
+# if (config$Processing$ThirdStage$REddyProc$Run){
+#   input_data <- Run_REddyProc() 
+# }
 
 # Run RF model
 if (config$Processing$ThirdStage$RF_GapFilling$Run){
