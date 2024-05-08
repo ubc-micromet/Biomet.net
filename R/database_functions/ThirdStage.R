@@ -24,7 +24,7 @@
 # source("C:/Biomet.net/R/database_functions/ThirdStage.R")
 
 # # Install on first run
-# install.packages(c('REddyProc','rs','yaml','rlist','dplyr','lubridate','data.table','tidyverse','caret','ranger','zoo'))
+# install.packages(c('REddyProc','ggplot','fs','yaml','rlist','dplyr','lubridate','data.table','tidyverse','caret','ranger','zoo'))
 
 # Load libraries
 library('fs')
@@ -216,7 +216,6 @@ storage_correction <- function(){
 }
 
 Run_REddyProc <- function() {
-  
   # Subset just the config info relevant to REddyProc
   REddyConfig <- config$Processing$ThirdStage$REddyProc
   
@@ -280,6 +279,7 @@ Run_REddyProc <- function() {
   
   # Create data frame for REddyProc output
   REddyOutput <- EProc$sExportResults()
+
   # Delete uStar dulplicate columns since they are output for each gap-filled variables
   vars_remove <- c(colnames(REddyOutput)[grepl('\\Thres.', colnames(REddyOutput))],
                    colnames(REddyOutput)[grepl('\\_fqc.', colnames(REddyOutput))])
@@ -328,14 +328,9 @@ RF_GapFilling <- function(){
         ## So its important to do it this way, unless we will always be running the all years 
         ## Side note: we should consider ALWAYS training on the all years available
         
-        save_name = c()
-        for (j in 1:length(config$yrs)){
-          # Create new directory, or clear existing directory
-          dpath <- file.path(db_root,as.character(config$yrs[j]),config$Metadata$siteID,config$Database$Paths$ThirdStage)
-          save_name <- c(save_name,file.path(dpath,paste(var_dep,'_RF_Model.RData',sep="")))
-        }
-
-        gap_filled <- RandomForestModel(input_data[,vars_in],fill_name,save_name = save_name)
+        log_file_path = file.path(db_root,'Calculation_Procedures/TraceAnalysis_ini',config$Metadata$siteID,'log')
+        # Calculation_Procedures\TraceAnalysis_ini
+        gap_filled <- RandomForestModel(input_data[,vars_in],fill_name,log = log_file_path)
         gap_filled = dplyr::bind_cols(input_data[c("DateTime","Year","DoY","Hour")],gap_filled)
         update_names <- list(fill_name)
         names(update_names) <- c(fill_name)
@@ -362,13 +357,12 @@ write_traces <- function(data,update_names,unlink=FALSE){
     intermediate_out <- config$Database$Paths$ThirdStage_Advanced
   }
   level_out <- config$Database$Paths$ThirdStage
-  tv_input <- config$Database$datenum$filename
+  tv_input <- config$Database$Timestamp$name
   db_root <- config$Database$db_root
   
   for (j in 1:length(yrs)){
     # Create new directory, or clear existing directory
     dpath <- file.path(db_root,as.character(yrs[j]),siteID) 
-    
     if (unlink == TRUE || !dir.exists(file.path(dpath,intermediate_out))) {
       dir.create(file.path(dpath,intermediate_out), showWarnings = FALSE)
       unlink(file.path(dpath,intermediate_out,'*'))
@@ -398,8 +392,8 @@ write_traces <- function(data,update_names,unlink=FALSE){
 
     # Dump all data provided to intermediate output location
     setwd(file.path(dpath,intermediate_out))
-    for (i in 1:length(cols_out)){
-      writeBin(as.numeric(data[ind,i]), cols_out[i], size = 4)
+    for (col in cols_out){
+      writeBin(as.numeric(data[ind,col]), col, size = 4)
     }
     
     # Copy/rename final outputs
@@ -411,7 +405,7 @@ write_traces <- function(data,update_names,unlink=FALSE){
           overwrite = TRUE)
       }else{
         print(sprintf('%s was not created, cannot copy to final output for %i',update_names[name],yrs[j]))
-      }            
+      }
     }
   } 
   return(input_data)
@@ -430,10 +424,10 @@ input_data <- Met_Gap_Filling()
 # Apply storage correction (if required)
 input_data <- storage_correction()
 
-# # Run REddyProc
-# if (config$Processing$ThirdStage$REddyProc$Run){
-#   input_data <- Run_REddyProc() 
-# }
+# Run REddyProc
+if (config$Processing$ThirdStage$REddyProc$Run){
+  input_data <- Run_REddyProc() 
+}
 
 # Run RF model
 if (config$Processing$ThirdStage$RF_GapFilling$Run){

@@ -13,12 +13,13 @@
 #install.packages('randomForest') # randomforest model
 #install.packages('ranger')
 
-RandomForestModel <- function(df,fill_name,plot_results=0,save_name=c('RF_model.RData')) {
+RandomForestModel <- function(df,fill_name,log_file_path) {
   
   # load libraries
-  library(tidyverse)
-  library(ranger)
-  library(caret)
+  library('tidyverse')
+  library('ranger')
+  library('caret')
+  library('ggplot2')
 
   # This is a pretty hacked up approach assuming a specific order, should update to be more explicit
   var_dep <- colnames(df)[1]
@@ -78,16 +79,11 @@ RandomForestModel <- function(df,fill_name,plot_results=0,save_name=c('RF_model.
   ## This is a bit redundant, but current procedures could result in divergent models for different years
   ## So its important to do it this way, unless we will always be running the all years 
   ## Side note: we should consider ALWAYS training on the all years available
-  for (name in save_name){
-    save(RF,file = name)
-  }
-
+  save(RF,file = file.path(log_file_path,paste(var_dep,"RF_Model.RData",sep="_")))
+  
   print(sprintf('RF Training for %s Complete, Normalized Variable Importance:',var_dep))
-  normImp <- (varImp(RF, scale = FALSE)[1]$importance/sum(varImp(RF, scale = FALSE)[1]$importance))
-  normImp$predictor<-rownames(normImp)
-  normImp<-normImp[order(normImp$Overall, decreasing = TRUE),]  
-  rownames(normImp)<-1:nrow(normImp)
-  print(normImp)
+  
+  print(varImp(RF))
   ############### Results
   # whole dataset
   result <- subset(ML.df,select = var_dep)
@@ -101,32 +97,43 @@ RandomForestModel <- function(df,fill_name,plot_results=0,save_name=c('RF_model.
   result$DateTime <- ML.df$DateTime
   
   # Do we want to add more statistic of model fit/results?
+  png(file.path(log_file_path,paste('RF',var_dep,"Varriable_Importance.png",sep="_")))
+  plot(varImp(RF))
+  dev.off()
+
+  #generate rf predictions for test set
+  test_set$rf <- predict(RF, test_set, na.action = na.pass)
+  regrRF <- lm(test_set$rf ~ test_set[,var_dep]); 
+  print(sprintf('Validation Statistics: %s',var_dep))
+  print(summary(regrRF))
   
-  if (plot_results == 1) {
-    # variable importance
-    plot(varImp(RF, scale = FALSE), main="variable importance")
+  p1 <- test_set  %>% ggplot(aes(x = !!sym(var_dep), y = rf)) + geom_abline(slope = 1, intercept = 0)+
+    geom_point() + ggtitle("testset") + labs(x = var_dep)
+
     
-    #generate rf predictions for test set
-    test_set$rf <- predict(RF, test_set, na.action = na.pass)
-    regrRF <- lm(test_set$rf ~ test_set[,var_dep]); 
-    print(summary(regrRF))
-    test_set  %>% ggplot(aes_string(x=var_dep, y='rf')) + geom_abline(slope = 1, intercept = 0)+
-      geom_point() + geom_smooth(method = "lm") + ggtitle("testset") + labs(x = var_dep)
+  png(file.path(log_file_path,paste('RF',var_dep,"Test_Points.png",sep="_")))
+  print(p1)
+  dev.off()
     
-    result %>% ggplot(aes_string('DateTime',var_dep)) + geom_point() + 
-      theme_bw() + ylab(var_dep)
-    result %>% ggplot(aes_string('DateTime',names(result)[2])) + geom_point(color="red",alpha=0.5) +
-      geom_point(aes_string('DateTime',var_dep),color="black")+
-      theme_bw() + ylab(var_dep)
+  # ggsave(file.path(log_file_path,paste('RF',var_dep,"Test_Points.png",sep="_")))
+
+  # browser()
+  # p2 <- result %>% ggplot(aes_string('DateTime',var_dep)) + geom_point() + 
+  #   theme_bw() + ylab(var_dep)
+
+
+  p2 <- result %>% ggplot(aes_string('DateTime',names(result)[2])) + geom_point(color="red",alpha=0.5) +
+    geom_point(aes_string('DateTime',var_dep),color="black")+
+    theme_bw() + ylab(var_dep)
+
+  png(file.path(log_file_path,paste('RF',var_dep,"Observed_vs_Modeled_TimeSeries.png",sep="_")))
+  print(p2)
+  dev.off()
     
-    # whole data comparison
-    ggplot(result, aes_string(x = var_dep, y =names(result)[2])) + geom_abline(slope = 1, intercept = 0)+
-      geom_point() + geom_smooth(method = "lm") + ggtitle("whole dataset")
-    regrRF_whole <- lm(result[,2] ~ result[,1]);
-    print(summary(regrRF_whole))
-  }
+  # ggsave(file.path(log_file_path,paste('RF',var_dep,"Observed_vs_Modeled_TimeSeries.png",sep="_")))
+
   # Output filled data (including 'var_Ustar_f_RF', 'var_Ustar_fall_RF' -> same naming convention as REddyProc)
-  df.out <- data.frame(df[,1]) 
+  df.out <- data.frame(df[,1])
   # Make sure output data frame is the same length as the input data
   df.out[pred_ix, ] <- result[,3] #RF_filled
   names(df.out) <- paste(fill_name,sep="")
