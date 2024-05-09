@@ -22,25 +22,34 @@ def set_user_configuration(user_defined=[]):
     # Parse the config settings
     with open('config_files/config.yml') as yml:
         config = yaml.safe_load(yml)
-
-    # Append the user path configuration
-    user_defined.append('config_files/user_path_definitions.yml')
+        if os.path.isfile('config_files/user_path_definitions.yml'):
+            with open('config_files/user_path_definitions.yml') as yml:
+                config.update(yaml.safe_load(yml))
+        else:
+            sys.exit(f"Missing {'config_files/user_path_definitions.yml'}")
 
     # Import the user specified configurations (exit if they don't exist)
+    config['requests'] = {}
     for req in user_defined:
         if os.path.isfile(req):
             with open(req) as yml:
-                config.update(yaml.safe_load(yml))
+                config['requests'].update(yaml.safe_load(yml))
         else:
             sys.exit(f"Missing {req}")
+
     return(config)
 
 # Create the csv
-def makeCSV(siteID,dateRange,requests=['csv_requests_template.yml']):
+def makeCSV(siteID,dateRange,requests=['config_files/csv_requests_template.yml'],outputPath=None):
     print(f'Initializing requests for {siteID} over:', dateRange) 
     config = set_user_configuration(requests)
+    print(config)
     Range_index = pd.DatetimeIndex(dateRange)
-     
+    
+    # Use default if user does not provide alternative
+    if outputPath is None:
+        outputPath = config['RootDirs']['Outputs']
+
     # Years to process
     Years = range(Range_index.year.min(),Range_index.year.max()+1)
     # Root directory of the database
@@ -88,13 +97,16 @@ def makeCSV(siteID,dateRange,requests=['csv_requests_template.yml']):
             df.columns = pd.MultiIndex.from_tuples(columns)
         else:
             df.columns = [c[0] for c in columns]
-        # Use specified NaN value
-        df = df.fillna(details['formatting']['na_value'])
+
+        # Set specified NaN value or drop from dataset
+        if details['formatting']['na_value'] == '~drop':
+            df = df.dropna()
+        else:
+            df = df.fillna(details['formatting']['na_value'])
 
         # Format filename and save output
         dates = Range_index.strftime('%Y%m%d%H%M')
         fn = f"{siteID}_{name}_{dates[0]}_{dates[1]}"
-        outputPath = config['RootDirs']['Outputs']
         df.to_csv(f"{outputPath}/{fn}.csv",index=False)
 
         print(f'See output: {outputPath}/{fn}.csv')
@@ -103,7 +115,6 @@ def makeCSV(siteID,dateRange,requests=['csv_requests_template.yml']):
 # If called from command line ...
 if __name__ == '__main__':
     
-    # Parse the arguments
     CLI=argparse.ArgumentParser()
     
     CLI.add_argument(
@@ -126,6 +137,14 @@ if __name__ == '__main__':
     type=str,
     default=['config_files/csv_requests_template.yml'],
     )
+      
+    CLI.add_argument(
+    "--outputPath", 
+    nargs='?',
+    type=str,
+    default=None,
+    )
 
+    # Parse the args and make the call
     args = CLI.parse_args()
-    makeCSV(args.siteID,args.dateRange,args.requests)
+    makeCSV(args.siteID,args.dateRange,args.requests,args.outputPath)
