@@ -1,0 +1,7 @@
+*
+
+# Ignore all configurations except the default config and the template configurations
+!.gitignore
+!config.yml
+!csv_requests_template.yml
+!user_path_definitions_template.yml
