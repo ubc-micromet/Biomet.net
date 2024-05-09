@@ -43,10 +43,15 @@ function [structIn,dbFileNames, dbFieldNames,errCode] = db_struct2database(struc
 %
 %
 % (c) Zoran Nesic               File created:       Sep 28, 2023
-%                               Last modification:  Mar 22, 2024
+%                               Last modification:  May  9, 2024
 
 % Revisions:
 % 
+% May 9, 2024 (Zoran)
+%   - Bug fix. This line was wrong because it worked only for 30-minute tables: 
+%       currentTv = fr_round_time(datetime(currentYear,1,1,0,30,0):fr_timestep(timeUnit):datetime(currentYear+1,1,1,0,0,0))';
+%     correct line is:
+%     currentTv = fr_round_time(datetime(currentYear,1,1,0,0,0)+fr_timestep(timeUnit):fr_timestep(timeUnit):datetime(currentYear+1,1,1,0,0,0),timeUnit)';
 % Mar 22, 2024 (Zoran)
 %   - Bug fix: when the output folder contained ".DS_Store" file saveAll would
 %     crash. Added this line: "&& ~contains(allFiles(cntAllFiles).name,'.DS_Store') ..."
@@ -238,7 +243,7 @@ function [structIn,dbFileNames, dbFieldNames,errCode] = db_struct2database(struc
 
         % First check if working with a full data base (17,520 samples for 365 day in case of 30-min sampling)
         if forceFullDB == 1
-            currentTv = fr_round_time(datetime(currentYear,1,1,0,30,0):fr_timestep(timeUnit):datetime(currentYear+1,1,1,0,0,0))';
+            currentTv = fr_round_time(datetime(currentYear,1,1,0,0,0)+fr_timestep(timeUnit):fr_timestep(timeUnit):datetime(currentYear+1,1,1,0,0,0),timeUnit)';
             % to prevent mistakently overwriting a sparse database, check if TimeVector already exists and it's of
             % different size that currentTv
             if ~(isempty(currentTvfile) | ...
