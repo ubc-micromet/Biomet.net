@@ -1,0 +1,11 @@
+# Information for parsing database files
+dbase_metadata:
+  timestamp: 
+    name: clean_tv
+    dtype: float64
+    precision: 8
+    base: 719529
+    base_unit: D
+  traces:
+    dtype: float32
+    precision: 4
