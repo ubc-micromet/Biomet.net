@@ -47,9 +47,9 @@ fprintf(fid,'Difference_GMT_to_local_time = %d   %% hours\n\n',structSetup.Diffe
 
 for cntMeasurementTypes = 1:length(structSetup.allMeasurementTypes)
     measurementType = char(structSetup.allMeasurementTypes(cntMeasurementTypes));
-    fprintf(fid,'\n\n-----------------------------------------\n');
-    fprintf(fid,'    Measurement type: %s\n',measurementType);
-    fprintf(fid,    '-----------------------------------------\n\n');
+    fprintf(fid,'\n\n%-----------------------------------------\n');
+    fprintf(fid,'%    Measurement type: %s\n',measurementType);
+    fprintf(fid,    '%-----------------------------------------\n\n');
     inputFolder = biomet_path(structSetup.startYear,structSetup.SiteID,measurementType);
     allFiles = dir(inputFolder);
     fprintf('Processing %d traces in: %s\n',length(allFiles),inputFolder)
