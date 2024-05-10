@@ -1,5 +1,6 @@
 # Create a CSV file from the binary database 
 # Written by June Skeeter
+
 # Basic test-call from command line:
     # py csvFromBinary.py --siteID BBS --dateRange "2023-06-01 00:00" "2024-05-31 23:59"
 # Call with user defined request file (s)
@@ -8,6 +9,9 @@
     # import csvFromBinary as cfb
     # cfb.makeCSV(siteID="BBS",dateRange=["2023-06-01 00:00","2024-05-31 23:59"],requests=["config_files/csv_requests_template.yml"])
 
+# Default behavior (for now) is to read second stage files
+
+# Setup the config files for your environment accordingly before running
 
 import os
 import sys
@@ -40,10 +44,10 @@ def set_user_configuration(user_defined=[]):
     return(config)
 
 # Create the csv
-def makeCSV(siteID,dateRange,requests=['config_files/csv_requests_template.yml'],outputPath=None):
+# args with "None" value provide option to overwrite default
+def makeCSV(siteID,dateRange,requests=['config_files/csv_requests_template.yml'],stage=None,outputPath=None):
     print(f'Initializing requests for {siteID} over:', dateRange) 
     config = set_user_configuration(requests)
-    print(config)
     Range_index = pd.DatetimeIndex(dateRange)
     
     # Use default if user does not provide alternative
@@ -55,12 +59,15 @@ def makeCSV(siteID,dateRange,requests=['config_files/csv_requests_template.yml']
     # Root directory of the database
     root = config['RootDirs']['Database']
     for name,details in config['requests'].items():
+
+        if stage is not None:
+            details['stage']=stage
         
         # Create a dict of traces
         traces={}
         # Create a list of column header - unit tuples
         # Only used if units_in_header set to True
-        columns = []
+        columns_tuple = []
         # Create a blank dataframe
         df = pd.DataFrame()
         
@@ -69,37 +76,58 @@ def makeCSV(siteID,dateRange,requests=['config_files/csv_requests_template.yml']
             [np.fromfile(f"{root}{YYYY}/{file}",config['dbase_metadata']['timestamp']['dtype']) for YYYY in Years],
             axis=0)
         DT = pd.to_datetime(tv-config['dbase_metadata']['timestamp']['base'],unit=config['dbase_metadata']['timestamp']['base_unit']).round('S')
-        traces['timestamp'] = DT.floor('Min').strftime(details['formatting']['timestamp']['fmt'])
-        # Add name-unit pairs to column header list
-        columns.append(
-            (details['formatting']['timestamp']['output_name'],
-             details['formatting']['timestamp']['units'])
-             )
+
+        for time_trace,formatting in details['formatting']['time_vectors'].items():
+            traces[time_trace] = DT.floor('Min').strftime(formatting['fmt'])
+            # Add name-unit pairs to column header list
+            columns_tuple.append(
+                (formatting['output_name'],
+                formatting['units'])
+                )
         # Loop through race list for request
         for trace_name,trace_info in details['traces'].items():
             # if exists (over full period) output
             try:
                 file = f"{siteID}/{details['stage']}/{trace_name}"
                 trace = [np.fromfile(f"{root}{YYYY}/{file}",config['dbase_metadata']['traces']['dtype']) for YYYY in Years]
-                traces[trace_info['output_name']]=np.concatenate(trace,axis=0)
+                traces[trace_name]=np.concatenate(trace,axis=0)
             # give NaN if traces does not exist
             except:
                 print(f"{trace_name} missing, outputting NaNs")
-                traces[trace_info['output_name']]=np.empty(tv.shape)*np.nan
+                traces[trace_name]=np.empty(tv.shape)*np.nan
              # Add name-unit pairs to column header list
-            columns.append((trace_info['output_name'],trace_info['units']))
+            columns_tuple.append((trace_info['output_name'],trace_info['units']))
         # dump traces to dataframe
         df = pd.DataFrame(data=traces,index=DT)
         # limit to requested timeframe
         df = df.loc[((df.index>=Range_index.min())&(df.index<= Range_index.max()))]
+
+        # Apply optional resampling 
         # Add units to header (preferred) or exclude (dangerous)
         if details['formatting']['units_in_header'] == True:
-            df.columns = pd.MultiIndex.from_tuples(columns)
+            df.columns = pd.MultiIndex.from_tuples(columns_tuple)
         else:
-            df.columns = [c[0] for c in columns]
+            df.columns = [c[0] for c in columns_tuple]
+
+        if 'resample' in details['formatting']:
+            ### Finish stuff here
+            aggregation = details['formatting']['resample']['agg'].split(',')
+            # Text and numeric data must be treated differently
+            # For text dates, get the first value
+            txt = df.columns[:len(details['formatting']['time_vectors'].keys())]
+            rsmp = df[txt].resample(details['formatting']['resample']['freq']).agg('first')
+            rsmp=rsmp.T.set_index(np.repeat('', rsmp.shape[1]), append=True).T
+
+            # For numeric data, aggregate as desired
+            num = df.columns[len(details['formatting']['time_vectors'].keys()):]
+            rsmp2 = df[num].resample(details['formatting']['resample']['freq']).agg(aggregation)
+            df = rsmp.join(rsmp2)
+            # Drop aggregation defs if excluding units    
+            if details['formatting']['units_in_header'] == False:
+                df.columns = df.columns.get_level_values(0)
 
         # Set specified NaN value or drop from dataset
-        if details['formatting']['na_value'] == '~drop':
+        if details['formatting']['na_value'] is None:
             df = df.dropna()
         else:
             df = df.fillna(details['formatting']['na_value'])
@@ -128,7 +156,8 @@ if __name__ == '__main__':
     "--dateRange", 
     nargs='+', # 1 or more values expected => creates a list
     type=str,
-    default=[],
+    default=[(pd.Timestamp.now()-pd.Timedelta(days=30)).strftime('%Y%m%d'),
+             pd.Timestamp.now().strftime('%Y%m%d')],
     )
         
     CLI.add_argument(
