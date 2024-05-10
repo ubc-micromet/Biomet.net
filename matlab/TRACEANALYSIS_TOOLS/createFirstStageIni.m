@@ -23,10 +23,12 @@ function createFirstStageIni(structSetup)
 % structSetup.outputPath = []; % keep it in the local directory
 %
 % Zoran Nesic               File created:           Mar 20, 2024
-%                           Last modification:      Apr 19, 2024
+%                           Last modification:      May 10, 2024
 
 % Revisions:
 %
+% May 10, 2024 (Zoran)
+%   - Formatting improvements.
 % Apr 19, 2024 (Zoran)
 %   - Bug fix: LoggedCalibrations and CurrentCalibrations did not have span and offset include. ([1 0]).
 %   - Added proper handling of the quality control traces (minMax and dependent fields).
@@ -47,9 +49,9 @@ fprintf(fid,'Difference_GMT_to_local_time = %d   %% hours\n\n',structSetup.Diffe
 
 for cntMeasurementTypes = 1:length(structSetup.allMeasurementTypes)
     measurementType = char(structSetup.allMeasurementTypes(cntMeasurementTypes));
-    fprintf(fid,'\n\n%-----------------------------------------\n');
-    fprintf(fid,'%    Measurement type: %s\n',measurementType);
-    fprintf(fid,    '%-----------------------------------------\n\n');
+    fprintf(fid,'\n\n%%-----------------------------------------\n');
+    fprintf(fid,    '%%    Measurement type: %s\n',measurementType);
+    fprintf(fid,    '%%-----------------------------------------\n\n');
     inputFolder = biomet_path(structSetup.startYear,structSetup.SiteID,measurementType);
     allFiles = dir(inputFolder);
     fprintf('Processing %d traces in: %s\n',length(allFiles),inputFolder)
