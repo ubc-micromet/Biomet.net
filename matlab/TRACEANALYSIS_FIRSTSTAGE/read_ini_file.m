@@ -34,6 +34,8 @@ function trace_str_out = read_ini_file(fid,yearIn,fromRootIniFile)
 
 % Revisions
 %
+% Apr 29, 2024 (Zoran)
+%   - added the ini file stage to the "Reading ini file" message.
 % Apr 27, 2024 (Zoran)
 %   - Fixed a bug in the stage detection (iniFileType). Previously the program would not
 %     properly detect the stage (first, second) if the siteID had an "_" in the name.
@@ -74,10 +76,6 @@ else
 end
 
 iniFileName = char(arrayfun(@fopen, fid, 'UniformOutput', 0));
-if ~flagRecursiveCall
-    fprintf('Reading ini file: \n   %s \n',iniFileName);
-end
-
 % Extract the ini file type ('first','second','third')
 [iniFilePath,iniFileType,~] = fileparts(iniFileName);
 [~,iniFileType,~] = fileparts(iniFileType);
@@ -85,6 +83,10 @@ if endsWith(iniFileType,'FirstStage','ignorecase',true) || endsWith(iniFileType,
     iniFileType = 'first';
 elseif endsWith(iniFileType,'SecondStage','ignorecase',true)|| endsWith(iniFileType,'SecondStage_include','IgnoreCase',true)
     iniFileType = 'second';  
+end
+
+if ~flagRecursiveCall
+    fprintf('Reading %s stage ini file: \n   %s \n',iniFileType, iniFileName);
 end
 
 trace_str = [];

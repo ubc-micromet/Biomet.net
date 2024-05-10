@@ -24,13 +24,14 @@
 # source("C:/Biomet.net/R/database_functions/ThirdStage.R")
 
 # # Install on first run
-# install.packages(c('REddyProc','rs','yaml','rlist','dplyr','lubridate','data.table','tidyverse','caret','ranger'))
+# install.packages(c('REddyProc','ggplot','fs','yaml','rlist','dplyr','lubridate','data.table','tidyverse','caret','ranger','zoo'))
 
 # Load libraries
 library('fs')
 library("yaml")
 library("REddyProc")
 library("rlist")
+library("zoo")
 require("dplyr")
 require("lubridate")
 require("data.table")
@@ -95,7 +96,7 @@ configure <- function(siteID){
   sapply(list.files(pattern="db_root.R", path=fx_path, full.names=TRUE), source)
   
   # Read a the global database configuration
-  filename <- file.path(db_root,'Calculation_Procedures/TraceAnalysis_ini/_config.yml')
+  filename <- file.path(db_root,'Calculation_Procedures/TraceAnalysis_ini/global_config.yml')
   dbase_config = yaml.load_file(filename)
   
   # Read a the site specific configuration
@@ -184,6 +185,16 @@ read_and_copy_traces <- function(){
   return(data)
 }
 
+Met_Gap_Filling <- function(){
+  interpolation = config$Processing$ThirdStage$Met_Gap_Filling$Linear_Interpolation
+  interpolate_vars = unlist(strsplit(interpolation$Fill_Vars, split = ","))
+  input_data[interpolate_vars] = na.approx(
+    input_data[interpolate_vars],
+    maxgap = interpolation$maxgap,
+    na.rm = FALSE)
+  return(input_data)
+}
+
 storage_correction <- function(){
   Storage_Terms <- config$Processing$ThirdStage$Storage$Terms
   terms <- names(Storage_Terms)
@@ -204,8 +215,7 @@ storage_correction <- function(){
   return(input_data)
 }
 
-ThirdStage_REddyProc <- function() {
-  
+Run_REddyProc <- function() {
   # Subset just the config info relevant to REddyProc
   REddyConfig <- config$Processing$ThirdStage$REddyProc
   
@@ -269,6 +279,7 @@ ThirdStage_REddyProc <- function() {
   
   # Create data frame for REddyProc output
   REddyOutput <- EProc$sExportResults()
+
   # Delete uStar dulplicate columns since they are output for each gap-filled variables
   vars_remove <- c(colnames(REddyOutput)[grepl('\\Thres.', colnames(REddyOutput))],
                    colnames(REddyOutput)[grepl('\\_fqc.', colnames(REddyOutput))])
@@ -303,18 +314,28 @@ RF_GapFilling <- function(){
   
   # Read function for RF gap-filling data
   p <- sapply(list.files(pattern="RandomForestModel.R", path=config$fx_path, full.names=TRUE), source)
-  # browser()
   # Check if dependent variable is available and run RF gap filling if it is
   for (fill_name in names(RFConfig)){
     if (RFConfig[[fill_name]]$var_dep %in% colnames(input_data)){
-      var_dep <- unlist(RFConfig[[fill_name]]$var_dep)
-      predictors <- unlist(strsplit(RFConfig[[fill_name]]$Predictors, split = ","))
-      vars_in <- c(var_dep,predictors,"DateTime","DoY")
-      gap_filled <- RandomForestModel(input_data[,vars_in],fill_name)
-      gap_filled = dplyr::bind_cols(input_data[c("DateTime","Year","DoY","Hour")],gap_filled)
-      update_names <- list(fill_name)
-      names(update_names) <- c(fill_name)
-      input_data <- write_traces(gap_filled,update_names)
+      try({
+        var_dep <- unlist(RFConfig[[fill_name]]$var_dep)
+        predictors <- unlist(strsplit(RFConfig[[fill_name]]$Predictors, split = ","))
+        vars_in <- c(var_dep,predictors,"DateTime","DoY")
+        
+        # Create list of paths for saving RF models        
+        ## A copy gets saved for each year
+        ## This is a bit redundant, but current procedures could result in divergent models for different years
+        ## So its important to do it this way, unless we will always be running the all years 
+        ## Side note: we should consider ALWAYS training on the all years available
+        
+        log_file_path = file.path(db_root,'Calculation_Procedures/TraceAnalysis_ini',config$Metadata$siteID,'log')
+        # Calculation_Procedures\TraceAnalysis_ini
+        gap_filled <- RandomForestModel(input_data[,vars_in],fill_name,log = log_file_path)
+        gap_filled = dplyr::bind_cols(input_data[c("DateTime","Year","DoY","Hour")],gap_filled)
+        update_names <- list(fill_name)
+        names(update_names) <- c(fill_name)
+        input_data <- write_traces(gap_filled,update_names)
+      })
 
     }else{
       print(sprintf('%s Not present, RandomForest will not process',RFConfig[[fill_name]]$var_dep))
@@ -336,13 +357,12 @@ write_traces <- function(data,update_names,unlink=FALSE){
     intermediate_out <- config$Database$Paths$ThirdStage_Advanced
   }
   level_out <- config$Database$Paths$ThirdStage
-  tv_input <- config$Database$datenum$filename
+  tv_input <- config$Database$Timestamp$name
   db_root <- config$Database$db_root
   
   for (j in 1:length(yrs)){
     # Create new directory, or clear existing directory
     dpath <- file.path(db_root,as.character(yrs[j]),siteID) 
-    
     if (unlink == TRUE || !dir.exists(file.path(dpath,intermediate_out))) {
       dir.create(file.path(dpath,intermediate_out), showWarnings = FALSE)
       unlink(file.path(dpath,intermediate_out,'*'))
@@ -372,8 +392,8 @@ write_traces <- function(data,update_names,unlink=FALSE){
 
     # Dump all data provided to intermediate output location
     setwd(file.path(dpath,intermediate_out))
-    for (i in 1:length(cols_out)){
-      writeBin(as.numeric(data[ind,i]), cols_out[i], size = 4)
+    for (col in cols_out){
+      writeBin(as.numeric(data[ind,col]), col, size = 4)
     }
     
     # Copy/rename final outputs
@@ -385,7 +405,7 @@ write_traces <- function(data,update_names,unlink=FALSE){
           overwrite = TRUE)
       }else{
         print(sprintf('%s was not created, cannot copy to final output for %i',update_names[name],yrs[j]))
-      }            
+      }
     }
   } 
   return(input_data)
@@ -399,12 +419,14 @@ config <- configure()
 # Read Stage 2 Data
 input_data <- read_and_copy_traces() 
 
+input_data <- Met_Gap_Filling()
+
 # Apply storage correction (if required)
 input_data <- storage_correction()
 
 # Run REddyProc
 if (config$Processing$ThirdStage$REddyProc$Run){
-  input_data <- ThirdStage_REddyProc() 
+  input_data <- Run_REddyProc() 
 }
 
 # Run RF model

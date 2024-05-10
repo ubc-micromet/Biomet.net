@@ -1,6 +1,7 @@
 .DS_Store
 R/.DS_Store
 R/database_functions/.DS_Store
+R/database_functions/Test.R
 R/data_visualization/.Rhistory
 R/database_functions/.Rhistory
 .lintr
