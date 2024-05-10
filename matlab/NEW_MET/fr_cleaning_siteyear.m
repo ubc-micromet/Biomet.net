@@ -32,6 +32,9 @@ function data_cleaned = fr_cleaning_siteyear(Year,SiteId,stage,db_ini)
 %
 % Revisions:
 %
+% May 10, 2024 (Zoran)
+%   - Removed some legacy code used to find Database path
+%   - Syntax cleanup
 % Apr 14, 2024 (Zoran)
 %   - added ind_parents to each trace. This indexes should be useful 
 %     for troubleshooting of why certain data points were removed by
@@ -49,17 +52,10 @@ function data_cleaned = fr_cleaning_siteyear(Year,SiteId,stage,db_ini)
 % Sep 09, 2004
 % Implemented db_out and db_ini option and use of db_dir_ini
 
-Year_cur = datevec(now);
-if strcmp(fr_get_pc_name,'PAOA001')
- %   db_pth = 'y:\database';
-     db_pth = db_pth_root;
-else
-    db_pth = biomet_path('1111','xx');
-    ind = find(db_pth == filesep);
-    db_pth = db_pth(1:ind(end-2));
-end
-
+Year_cur = year(datetime);
 arg_default('Year',Year_cur(1));
+db_pth = db_pth_root;
+
 % Make sure SiteId input exists
 arg_default('SiteId','')
 if isempty(SiteId)
@@ -87,7 +83,7 @@ if stage == 1
     % Load first stage manual cleaning results
     mat_file = fullfile(pth_proc,...
         [SiteId '_' num2str(yy_str) '_FirstStage.mat']);
-    if exist(mat_file)==2
+    if exist(mat_file,"file")==2
         mat = load(mat_file);
     else
         mat = [];
