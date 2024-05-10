@@ -34,6 +34,8 @@ function trace_str_out = read_ini_file(fid,yearIn,fromRootIniFile)
 
 % Revisions
 %
+% May 10, 2024 (Zoran)
+%   - Bug fix. Used exists() instead of exist() when looking for a template ini file.
 % Apr 29, 2024 (Zoran)
 %   - added the ini file stage to the "Reading ini file" message.
 % Apr 27, 2024 (Zoran)
@@ -149,7 +151,7 @@ try
                 end
             else
                 % maybe the file name does not give the full path. Use the same path as for the current ini file
-                if exists(fullfile(iniFilePath,includeFileName),'file')
+                if exist(fullfile(iniFilePath,includeFileName),'file')
                     fidInclude = fopen(fullfile(iniFilePath,includeFileName),'r');
                     if fidInclude < 1
                         error('Could not open #include file: %s. Line: %d',includeFileName,countLines);
