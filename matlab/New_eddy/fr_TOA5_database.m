@@ -30,13 +30,17 @@ function [numOfFilesProcessed,numOfDataPointsProcessed] = fr_TOA5_database(wildC
 %       missingPointValue       - Values that indicate missing data (default = NaN)
 %
 % Zoran Nesic                   File Created:      May  9, 2024
-%                               Last modification: May  9, 2024
+%                               Last modification: May 10, 2024
 
 % Created based on fr_EddyPro_database.m
 
 %
 % Revisions:
 %
+%  May 10, 2024 (Zoran)
+%   -Bug fix: fr_read_generic_file was called with [4 Inf] instead of 
+%     [2  Inf]. That caused it to skipp two columns from csv files (RECORD
+%     and whatever the first variable was)
 
 
 arg_default('time_shift',0);
@@ -92,7 +96,7 @@ for i=1:length(h)
             fileName = fullfile(pth,h(i).name);
             [~,~,tv,outStruct] = fr_read_generic_data_file(fileName,...
                                            'caller',...
-                                            [], 1,timeInputFormat,[4 Inf],1,'delimitedtext',0,2);
+                                            [], 1,timeInputFormat,[2 Inf],1,'delimitedtext',0,2);
             tv = tv + time_shift;
             db_struct2database(outStruct,databasePath,0,[],timeUnit,missingPointValue,structType,1);         
 
