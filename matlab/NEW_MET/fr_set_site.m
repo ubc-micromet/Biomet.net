@@ -17,10 +17,12 @@ function x = fr_set_site(SiteID,Locality)
 %   NETWORK - use setup files from the network location(\\paoa001\Sites\xxxx\UBC_PC_Setup\Site_Specific)
 %
 % (c) Zoran Nesic           File created:             ,2001
-%                           Last modification:  May 10, 2024
+%                           Last modification:  May 13, 2024
 
 % Revisions
 % 
+% May 13, 2024 (Zoran)
+%   - Bug fix: used exist("networkPth".. instead of exist(networkPth...
 % May 10, 2024 (Zoran)
 %   - blocked this function from running on any PC that cannot see the
 %     Biomet \\paoa001. This way we keep this functionallity for Biomet
@@ -46,7 +48,7 @@ function x = fr_set_site(SiteID,Locality)
 
 
 networkPth = '\\PAOA001\Sites\';
-if exist("networkPth",'dir')
+if exist(networkPth,'dir')
     destinationPth = 'c:\UBC_PC_Setup\Site_Specific\';
     filesToCopy = str2mat('fr_current_siteID.m');
     
