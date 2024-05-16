@@ -36,6 +36,12 @@ function trace_str_out = read_ini_file(fid,yearIn,fromRootIniFile)
 %
 % May 10, 2024 (Zoran)
 %   - Bug fix. Used exists() instead of exist() when looking for a template ini file.
+%   - Bug fix related to Matlab 2024a. Matlab 2024a gave a warning about this being an error in
+%     future releases.
+%     Needed to replace:
+%       curr_line(1:posEq-1...
+%     with:
+%       curr_line(1:posEq(1)-1...
 % Apr 29, 2024 (Zoran)
 %   - added the ini file stage to the "Reading ini file" message.
 % Apr 27, 2024 (Zoran)
@@ -313,8 +319,8 @@ try
                                 curr_line = curr_line(curr_line~=32 & curr_line~=9);
                             end
                             posEq = strfind(curr_line,'=');                         % Find where "=" is
-                            newFieldName = strtrim(curr_line(1:posEq-1));
-                            temp_var.(newFieldName) = eval(curr_line(posEq+1:end)); % assign the value
+                            newFieldName = strtrim(curr_line(1:posEq(1)-1));
+                            temp_var.(newFieldName) = eval(curr_line(posEq(1)+1:end)); % assign the value
                             %eval(['temp_var.' curr_line ';']);
                         catch ME
                             %Any error's are caught in the try-catch block:

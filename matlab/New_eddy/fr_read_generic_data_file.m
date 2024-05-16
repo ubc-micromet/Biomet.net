@@ -43,11 +43,15 @@ function [EngUnits,Header,tv,outStruct] = fr_read_generic_data_file(fileName,ass
 %                          
 %
 % (c) Zoran Nesic                   File created:       Dec 20, 2023
-%                                   Last modification:  Mar 25, 2024
+%                                   Last modification:  May 10, 2024
 %
 
 % Revisions (last one first):
 %
+% May 10, 2024 (Zoran)
+%   - Fixed a bug where the program didn't handle properly a special
+%     variable name (z-d)/L. It was being converted to z_d instead of
+%     zdL.
 % Mar 25, 2024 (Zoran)
 %   - added '.' to the list of characters that need to be replaced if they
 %     appear in the variable names. Replace with '_'
@@ -245,7 +249,11 @@ function [varNames, unitsOut] = GHG_sep_var_names(orgVarsAndUnits)
     % separate variable names from the units
     for cntVars = 1:length(orgVarsAndUnits)
         cVarAndUnits = char(orgVarsAndUnits{cntVars});
-        x=regexp(cVarAndUnits,'[^()]*','match');
+        if contains(cVarAndUnits,'(z-d)/L')
+            x = {cVarAndUnits,''};
+        else
+            x=regexp(cVarAndUnits,'[^()]*','match');
+        end
         varNames{cntVars} = renameFields(deblank(char(x(1))));
         if length(x)>1
             tmpUnits{cntVars} = deblank(char(x(2)));
