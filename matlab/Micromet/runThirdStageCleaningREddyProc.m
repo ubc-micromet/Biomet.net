@@ -57,7 +57,7 @@ function runThirdStageCleaningREddyProc(yearIn,siteID,yearsToProcess)
     % run the command line argument
     fprintf('Running the following command: %s\n', CLI_args);
     fprintf('Start time: %s\n\n',datetime)
-    [statusR,cmdOutput] = system(CLI_args,'-echo');
+    [statusR,cmdOutput] = system(CLI_args);
     fprintf('End time: %s\n\n',datetime)
     % When R is finished, print cmdOutput and the footer in the log file
     fidLog = fopen(pthLogFile,'w');      
