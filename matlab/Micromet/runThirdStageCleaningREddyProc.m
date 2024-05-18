@@ -11,12 +11,12 @@ function runThirdStageCleaningREddyProc(yearIn,siteID,yearsToProcess)
 %                     for gap-filling even when outputing one year only
 %
 % Zoran Nesic               File created:       Oct 25, 2022
-%                           Last modification:  May 16, 2024
+%                           Last modification:  May 17, 2024
 %
 
 % Revisions
 %
-% May 16, 2024 (Zoran)
+% May 17, 2024 (Zoran)
 %   - Major change to match the new R function ThirdStage.R. 
 %   - Different input parameters.
 %   - Moved the old revision notes to the bottom of the file because
@@ -54,13 +54,14 @@ function runThirdStageCleaningREddyProc(yearIn,siteID,yearsToProcess)
     % Run RScript
     % concatenate the command line argument
     CLI_args = sprintf('"%s" --vanilla %s %s %i %i',pthRbin,pthThirdStageR ,siteID,startYear,endYear);
+    CLI_args = [CLI_args ' 2> "' pthLogFile '" 1>&2'];
     % run the command line argument
     fprintf('Running the following command: %s\n', CLI_args);
     fprintf('Start time: %s\n\n',datetime)
     [statusR,cmdOutput] = system(CLI_args);
     fprintf('End time: %s\n\n',datetime)
     % When R is finished, print cmdOutput and the footer in the log file
-    fidLog = fopen(pthLogFile,'w');      
+    fidLog = fopen(pthLogFile,'a');      
     if fidLog > 0    
         fprintf(fidLog,'=============================================================\n');
         if statusR == 0
@@ -74,6 +75,7 @@ function runThirdStageCleaningREddyProc(yearIn,siteID,yearsToProcess)
         fprintf(fidLog,'\n\n\n\n');
         fprintf(fidLog,'=============================================================\n');
         fprintf(fidLog,'Rscript:      %s\n',pthRbin);
+        fprintf(fidLog,'Command line: %s\n',CLI_args);
         fprintf(fidLog,'Start:        %s\n',datestr(tv_start)); %#ok<DATST>
         fprintf(fidLog,'End:          %s\n',datestr(now)); %#ok<TNOW1,DATST>
         fprintf(fidLog,'Elapsed time: %6.1f min\n',toc/60);
