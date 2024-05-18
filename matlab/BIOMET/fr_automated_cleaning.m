@@ -39,10 +39,15 @@ function fr_automated_cleaning(Years,Sites,stages,db_out,db_ini)
 %    to use a local copy of the database.
 
 
-% kai* Feb 12, 2003                     Last modified: Mar 22, 2024
+% kai* Feb 12, 2003                     Last modified: May 17, 2024
 %
 % Revisions:
 % 
+% May 17, 2027 (Zoran)
+%   - adjusted the call to the 3rd stage cleaning (option #7) to match
+%     the new runThirdStageCleaningREddyProc functions
+%   - Added a test if Derived_Variables need to be removed from the path
+%     before exiting the function.
 % Mar 22, 2024 (Zoran)
 %   - renamed SiteId to siteID
 %   - removed Derived_Variables from the path when processing of a siteID is finished.
@@ -318,7 +323,7 @@ for cntSites = 1:numOfSites
             stage_str = '7-th';
             disp(['============== ' stage_str ' stage cleaning ' siteID ' ' yy_str ' ==============']);
             db_dir_ini(yy(1),siteID,db_out,3);
-            runThirdStageCleaningREddyProc(yy(1),siteID,'fast',2);  % use only 2 years for gap filling
+            runThirdStageCleaningREddyProc(yy(1),siteID,1);  % use only 1 year for gap filling
             fprintf('============== End of cleaning stage 7 =============\n');
         end
         
@@ -335,8 +340,12 @@ for cntSites = 1:numOfSites
         end          
         clear data_* ini_* pth_* mat_*
     end
+
     % Remove Derived_Variables path from the path
-    rmpath( biomet_path('Calculation_Procedures\TraceAnalysis_ini',siteID,'Derived_Variables'))
+    derVarPth = biomet_path('Calculation_Procedures\TraceAnalysis_ini',siteID,'Derived_Variables');
+    if contains(path,derVarPth,'IgnoreCase',true)
+        rmpath( derVarPth)
+    end
 
     fprintf('============== End of cleaning Site: %s, year: %d ===========\n',siteID,yy(1));
     
