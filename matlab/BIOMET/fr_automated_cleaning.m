@@ -39,11 +39,15 @@ function fr_automated_cleaning(Years,Sites,stages,db_out,db_ini)
 %    to use a local copy of the database.
 
 
-% kai* Feb 12, 2003                     Last modified: May 17, 2024
+% kai* Feb 12, 2003                     Last modified: May 20, 2024
 %
 % Revisions:
 % 
-% May 17, 2027 (Zoran)
+% May 20, 2024 (Zoran)
+%   - Bug fix:
+%     removed trailing filesep from derVarPth. Without this step the folder
+%     "Derived_Variables" would not be removed from the path.
+% May 17, 2024 (Zoran)
 %   - adjusted the call to the 3rd stage cleaning (option #7) to match
 %     the new runThirdStageCleaningREddyProc functions
 %   - Added a test if Derived_Variables need to be removed from the path
@@ -343,6 +347,10 @@ for cntSites = 1:numOfSites
 
     % Remove Derived_Variables path from the path
     derVarPth = biomet_path('Calculation_Procedures\TraceAnalysis_ini',siteID,'Derived_Variables');
+    if strcmp(derVarPth(end),filesep)
+        % remove trailing filesep. "path" does not contain those
+        derVarPth = derVarPth(1:end-1);
+    end
     if contains(path,derVarPth,'IgnoreCase',true)
         rmpath( derVarPth)
     end
