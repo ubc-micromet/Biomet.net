@@ -3,11 +3,13 @@ function run_BB_db_update(yearIn,sites)
 %
 %
 % Zoran Nesic           File created:               2019
-%                       Last modification:  Feb 26, 2024
+%                       Last modification:  May 21, 2024
 
 %
 % Revisions:
 %
+% May 21, 2024 (Zoran)
+%   - Removed BBS site from the defaults
 % Feb 26, 2024 (Zoran)
 %   - Fixed a bug when the program run EddyPro database on BBS only twice
 %     per day. The idea was to avoid running BBS fr_automated_cleaning all the 
@@ -34,7 +36,7 @@ function run_BB_db_update(yearIn,sites)
 
 startTime = datetime;
 arg_default('yearIn',year(startTime));                                  % default - current year
-arg_default('sites',{'BB','BB2','DSM','RBM','Young','Hogg','OHM','BBS'}); % default - all sites
+arg_default('sites',{'BB','BB2','DSM','RBM','Young','Hogg','OHM'}); % default - all sites (removed ,'BBS')
 
 fprintf('============================\n');
 fprintf('**** run_BB_db_update ******\n');
