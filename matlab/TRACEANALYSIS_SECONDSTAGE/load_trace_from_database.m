@@ -12,6 +12,11 @@ function trace_out = load_trace_from_database(trace_in)
 
 % Revisions: 
 %
+% May 24, 2024 (Zoran)
+%   - Bug fix. The function was not able to read traces that had multiple
+%     inputFileNames since introduction of special case inputFileNames
+%     (clean_tv and TimeVector). This line was added to kill the 
+%     bug: length(trace_in.ini.inputFileName)==1 && (... check clean_tv...)
 % Apr 10, 2024 (Zoran)
 %  - made sure that the program checks if "&& ~isempty(trace_in.ini.inputFileName_dates)" before
 %    trying to deal with the inputFileName_dates information. Otherwise bad things happen 
@@ -62,8 +67,10 @@ pth = biomet_path(Year,SiteID, trace_in.ini.measurementType);		%find path in dat
 
 % if trace name is 'clean_tv' or 'TimeVector' then load it up as a special case
 % Load it up using read_bor and skip all the other tests.
-% 
-if strcmpi(trace_in.ini.inputFileName,'clean_tv') || strcmpi(trace_in.ini.inputFileName,'TimeVector')
+% First check if inputFileName has only one entry, otherwise it's not
+% loading time vector.
+if length(trace_in.ini.inputFileName)==1 && ... 
+    (length(trace_in.ini.inputFileName)==1 && strcmpi(trace_in.ini.inputFileName,'clean_tv') || strcmpi(trace_in.ini.inputFileName,'TimeVector'))
     temp_data = read_bor(fullfile(pth, char(trace_in.ini.inputFileName)),8);			%read tv from database
     timeVector = temp_data;
 else
