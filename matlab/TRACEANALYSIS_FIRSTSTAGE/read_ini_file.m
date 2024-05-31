@@ -34,6 +34,9 @@ function trace_str_out = read_ini_file(fid,yearIn,fromRootIniFile)
 
 % Revisions
 %
+% May 24, 2024 (Zoran)
+%   - Made sure that both SecondStage.ini and ThirdStage.ini assign: iniFileType = 'second';
+%     otherwise bad things happen.
 % May 10, 2024 (Zoran)
 %   - Bug fix. Used exists() instead of exist() when looking for a template ini file.
 %   - Bug fix related to Matlab 2024a. Matlab 2024a gave a warning about this being an error in
@@ -91,6 +94,9 @@ if endsWith(iniFileType,'FirstStage','ignorecase',true) || endsWith(iniFileType,
     iniFileType = 'first';
 elseif endsWith(iniFileType,'SecondStage','ignorecase',true)|| endsWith(iniFileType,'SecondStage_include','IgnoreCase',true)
     iniFileType = 'second';  
+elseif endsWith(iniFileType,'ThirdStage','ignorecase',true)|| endsWith(iniFileType,'ThirdStage_include','IgnoreCase',true)
+    % 'second' is NOT a bug. Let it be.
+    iniFileType = 'second';    
 end
 
 if ~flagRecursiveCall
