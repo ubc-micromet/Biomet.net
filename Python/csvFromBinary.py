@@ -8,9 +8,6 @@
 # Can also call from other python scripts, using this general syntax:
     # import csvFromBinary as cfb
     # cfb.makeCSV(siteID="BBS",dateRange=["2023-06-01 00:00","2024-05-31 23:59"],requests=["config_files/csv_requests_template.yml"])
-
-# Default behavior (for now) is to read second stage files
-
 # Setup the config files for your environment accordingly before running
 
 import os
@@ -47,6 +44,8 @@ def set_user_configuration(user_defined=[]):
 # args with "None" value provide option to overwrite default
 def makeCSV(siteID,dateRange,requests=['config_files/csv_requests_template.yml'],stage=None,outputPath=None):
     print(f'Initializing requests for {siteID} over:', dateRange) 
+    if isinstance(requests,str):
+        requests=[requests]
     config = set_user_configuration(requests)
     Range_index = pd.DatetimeIndex(dateRange)
     
@@ -58,6 +57,8 @@ def makeCSV(siteID,dateRange,requests=['config_files/csv_requests_template.yml']
     Years = range(Range_index.year.min(),Range_index.year.max()+1)
     # Root directory of the database
     root = config['RootDirs']['Database']
+
+    results = {}
     for name,details in config['requests'].items():
 
         if stage is not None:
@@ -135,10 +136,13 @@ def makeCSV(siteID,dateRange,requests=['config_files/csv_requests_template.yml']
         # Format filename and save output
         dates = Range_index.strftime('%Y%m%d%H%M')
         fn = f"{siteID}_{name}_{dates[0]}_{dates[1]}"
-        df.to_csv(f"{outputPath}/{fn}.csv",index=False)
+        dout = f"{outputPath}/{fn}.csv"
+        df.to_csv(dout,index=False)
 
-        print(f'See output: {outputPath}/{fn}.csv')
+        print(f'See output: {dout}')
+        results[name]=dout
     print('All requests completed successfully')
+    return(results)
 
 # If called from command line ...
 if __name__ == '__main__':
