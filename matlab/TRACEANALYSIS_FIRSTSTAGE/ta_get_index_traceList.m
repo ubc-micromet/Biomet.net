@@ -8,10 +8,17 @@ function returnInd = ta_get_index_traceList(dependent_names,trace_str_all)
 %   Output:	
 %           returnInd			    -contains indices of trc_names within list_of_traces.
 %
-% Last modification:    Apr 11, 2024 
+% Last modification:    June 5, 2024 
 
 % Revisions
 % 
+% Jun 5, 2024 (Paul and Zoran)
+%   - Bug fix: the local function convert_tags_to_Traces would not convert tags 
+%     properly if the list of dependents had a mix of tags and vars {'tag_EC','TA_1_1_1'}
+%     The line: 
+%           while contains(cellNamesOfDependantsIn,'tag_') 
+%     was changed to:
+%           while any(contains(cellNamesOfDependantsIn,'tag_'));
 % Apr 11, 2024 (Zoran)
 %   - changed the algorithm for expanding tags. Much simpler.
 % Apr 10, 2024 (June & Zoran)
@@ -54,7 +61,7 @@ cellNamesOfDependants = convert_tags_to_Traces(trace_str_all,cellNamesOfDependan
 returnInd = returnInd(:)';
 
 function cellNamesOfDependants = convert_tags_to_Traces(trace_str_all,cellNamesOfDependantsIn,allTags)
-    while contains(cellNamesOfDependantsIn,'tag_')
+    while any(contains(cellNamesOfDependantsIn,'tag_'))
         cellList = split(cellNamesOfDependantsIn,',');
         newDependent = [];
         for cntList=1:length(cellList)
