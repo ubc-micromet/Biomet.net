@@ -34,6 +34,10 @@ function trace_str_out = read_ini_file(fid,yearIn,fromRootIniFile)
 
 % Revisions
 %
+% June 5, 2024 (Zoran)
+%   - Bug fix: the function would not work with the ini files that didn't have 
+%     the new variable "globalVars" defined. The program now tests the existance of the variable
+%     before trying to use it.
 % June 3, 2024 (Zoran)
 %   - changed naming of global variables. Introduced globalVars.Instrument and globalVars.Trace. 
 %     having a prefix "globalVars" made it easier to create dynamically any instruments that are
@@ -497,7 +501,7 @@ if ~flagRecursiveCall
         if isfield(trace_str(cntTrace).ini,'instrumentType') && ~isempty(trace_str(cntTrace).ini.instrumentType)
             instrumentType = trace_str(cntTrace).ini.instrumentType;
             % Proces global variable if enabled
-            if isfield(globalVars.Instrument.otherTraces,'Enable') && globalVars.Instrument.(instrumentType).Enable == 1
+            if isfield(globalVars.Instrument.(instrumentType),'Enable') && globalVars.Instrument.(instrumentType).Enable == 1
                 fNames = fieldnames(globalVars.Instrument.(instrumentType));
                 for cntFields = 1:length(fNames)
                     curName = char(fNames(cntFields));
@@ -508,7 +512,8 @@ if ~flagRecursiveCall
             end
         else
             % Process all defaults (instrumentType ='') using otherTraces variables    
-            if isfield(globalVars.Instrument.otherTraces,'Enable') && globalVars.Instrument.otherTraces.Enable == 1
+            if exist('globalVars','var') && isfield(globalVars,'Instrument') && isfield(globalVars.Instrument,'otherTraces') ...
+               && isfield(globalVars.Instrument.otherTraces,'Enable') && globalVars.Instrument.otherTraces.Enable == 1
                 fNames = fieldnames(globalVars.Instrument.otherTraces);
                 for cntFields = 1:length(fNames)
                     curName = char(fNames(cntFields));
@@ -524,7 +529,7 @@ if ~flagRecursiveCall
     % The ini file could have a set of global variables that are used
     % to populate (and overwrite if needed) the existing Trace definitions
     % for individual traces
-    if isfield(globalVars,'Trace')
+    if exist('globalVars','var') && isfield(globalVars,'Trace')
         % Find all traces that need to be overwritten
         tracesToOverwrite = fieldnames(globalVars.Trace);
         for cntTrace = 1:length(trace_str)
