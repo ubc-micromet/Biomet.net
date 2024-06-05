@@ -37,8 +37,8 @@ function trace_str_out = read_ini_file(fid,yearIn,fromRootIniFile)
 % June 3, 2024 (Zoran)
 %   - changed naming of global variables. Introduced globalVars.Instrument and globalVars.Trace. 
 %     having a prefix "globalVars" made it easier to create dynamically any instruments that are
-%     needed. The original version had instruments (LI7200, LI7700, Anemometer, EC) hard coded.
-%     Not anymore
+%     needed. The original version had the instruments hard coded (LI7200, LI7700, Anemometer, EC).
+%     Not anymore.
 %   - introduced parameter Timezone. For PST the Timezone == 8. 
 %       if Timezone == 0 then the database is in UTC/GMT 
 %       if Timezone == Difference_GMT_to_local_time then the database is in local standard time.
