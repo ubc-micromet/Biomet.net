@@ -24,7 +24,7 @@
 # source("C:/Biomet.net/R/database_functions/ThirdStage.R")
 
 # # Install on first run
-# install.packages(c('REddyProc','ggplot','fs','yaml','rlist','dplyr','lubridate','data.table','tidyverse','caret','ranger','zoo'))
+# install.packages(c('REddyProc','ggplot','fs','yaml','rlist','dplyr','lubridate','data.table','tidyverse','caret','ranger','zoo','reshape2','stringr'))
 
 # Load libraries
 library('fs')
@@ -35,6 +35,12 @@ library("zoo")
 require("dplyr")
 require("lubridate")
 require("data.table")
+library("reshape2")
+library("stringr")
+library("tidyverse")
+library("ranger")
+library("caret")
+library("ggplot2")
 
 merge_nested_lists = function(...) {
 # Modified from: https://gist.github.com/joshbode/ed70291253a4b4412026
@@ -88,10 +94,7 @@ configure <- function(siteID){
     # 'source'd via R console
     fx_path<- path_dir(normalizePath(sys.frames()[[1]]$ofile))
   }
-  
-  siteID <- args[1]
-  yrs <- c(args[2]:args[length(args)])
-  
+    
   # Read function to get db_root variable
   sapply(list.files(pattern="db_root.R", path=fx_path, full.names=TRUE), source)
   
@@ -99,18 +102,38 @@ configure <- function(siteID){
   filename <- file.path(db_root,'Calculation_Procedures/TraceAnalysis_ini/global_config.yml')
   dbase_config = yaml.load_file(filename)
   
-  # Read a the site specific configuration
+  # Get the siteID argument and read the site-specific configuration
+  siteID <- args[1]
   fn <- sprintf('%s_config.yml',siteID)
   filename <- file.path(db_root,'Calculation_Procedures/TraceAnalysis_ini',siteID,fn)
   site_config <- yaml.load_file(filename)
   # merge the config files
   config <- merge_nested_lists(site_config,dbase_config)
-  
-  # Add the relevant paths
+
+  # Add the relevant paths to the config
   config$Database$db_root <- db_root
   config$fx_path <- fx_path
-  config$yrs <- yrs
 
+  # Fin all site-years in database
+  yearsAll = suppressWarnings(as.numeric(list.dirs(db_root, recursive = FALSE,full.names = FALSE)))
+  yearsAll = yearsAll[!sapply(yearsAll, is.na)]
+  siteYearsAll = file.path(db_root,as.character(yearsAll),siteID)
+  yearsAll = yearsAll[sapply(siteYearsAll,file.exists)]
+  siteYearsAll = siteYearsAll[sapply(siteYearsAll,file.exists)]
+  
+  # Determine site years to output
+  if (length(args)>1){
+    years <- c(args[2]:args[length(args)])
+    siteYearsOut = file.path(db_root,as.character(years),siteID)
+  } else {
+     siteYearsOut = siteYearsAll
+     years <- yearsAll
+  }
+
+  config$siteYearsAll <- siteYearsAll
+  config$siteYearsOut <- siteYearsOut
+  config$years <- years
+    
   # Set procedures to run by default unless specified otherwise in site-specific files
   # Can update to have user overrides by command line as well if desired
   # For now, just apply the overrides in site-specific config files
@@ -126,47 +149,81 @@ configure <- function(siteID){
   return(config)
 }
 
+read_database <- function(input_paths,vars) {
+    # remove from memory if 
+    if (exists('data_out')) {rm(data_out)}
+    # simplified version of database read function
+    for (input_path in input_paths){
+      # Convert Matlab timevector to POSIXct
+      tv <- readBin(paste0(input_path,"/",config$Database$Timestamp$name,sep=""), double(), n = 18000)
+      datetime <- as.POSIXct((tv - 719529) * 86400, origin = "1970-01-01", tz = "UTC")
+      # Round to nearest 30 min
+      datetime <- lubridate::round_date(datetime, "30 minutes")
+      df <- data.frame(datetime)
+      # Read any variable that exists and is not empty
+      for (var in vars) {
+        dpath = file.path(input_path,var)
+        if (file.exists(dpath)) {
+          data <- data.frame(readBin(dpath, numeric(), n = 18000, size = 4))
+          colnames(data) <- var
+          if (nrow(data) == nrow(df)){
+            df <- cbind(df, data)
+          } else {
+            print(sprintf('Empty file or incorrect number of records, skipping: %s', dpath))
+          }
+        } else {
+          print(sprintf('Does not exist: %s', dpath))
+        }
+      }
+      if (exists('data_out')){data_out <- bind_rows(data_out,df)}
+      else {data_out <- df}
+    }
+    return(data_out)
+}
+
 read_and_copy_traces <- function(){
   # Read function for loading data
   # Read all traces from stage 2, copy to stage 3 and also dump to dataframe for stage 3 processing
   # Any modified traces can be overwritten when dumping final stage 3 outputs
-  sapply(list.files(pattern="read_database.R", path=config$fx_path, full.names=TRUE), source)
-  
-  siteID <- config$Metadata$siteID
-  yrs <- config$yrs
-  db_root <- config$Database$db_root
-  data <- data.frame()
   
   # Copy files from second stage to third stage, copies everything by default  
   level_in <- config$Database$Paths$SecondStage
   level_out <- config$Database$Paths$ThirdStage
 
-  tv_input <- config$Database$Timestamp$name
-  for (j in 1:length(yrs)) {
-    in_path <- file.path(db_root,as.character(yrs[j]),siteID,level_in)
-    out_path <- file.path(db_root,as.character(yrs[j]),siteID,level_out)
+  input_paths <- file.path(config$siteYearsAll,level_in)
+  copy_vars <- unique(list.files(input_paths))
+  copy_vars <- copy_vars[! copy_vars %in% config$Database$Timestamp$name]
+
+  # read all site-years 
+  data <- read_database(input_paths,copy_vars)
   
-    dir.create(out_path, showWarnings = FALSE)
-    unlink(file.path(out_path,'*'))
+  # Only copy data as specified
+  for (siteYearIn in config$siteYearsAll) {
+    in_path <- file.path(siteYearIn,level_in)
+    out_path <- file.path(siteYearIn,level_out)
 
-    # First copy time-vector
-    file.copy(file.path(in_path,tv_input),
-              file.path(out_path,tv_input))
+    if (siteYearIn %in% config$siteYearsOut){
+      dir.create(out_path, showWarnings = FALSE)
+      unlink(file.path(out_path,'*'))
 
-    copy_vars <- list.files(in_path)
-    copy_vars <- copy_vars[! copy_vars %in% c(config$Metadata$tv_input)]
-    for (filename in copy_vars){
+      # First copy time-vector
+      file.copy(file.path(in_path,config$Database$Timestamp$name),
+                file.path(out_path,config$Database$Timestamp$name))
+
       # Now copy traces
-      file.copy(file.path(in_path,filename),
-                file.path(out_path,filename))
+      for (filename in copy_vars){
+        if (file.exists(file.path(in_path,filename))){
+          file.copy(file.path(in_path,filename),file.path(out_path,filename))
+        }
+      }
+      
+      # Save the config in the output folder (one copy per-year)
+      write_yaml(
+        config$Processing, 
+        file.path(out_path,'ProcessingSettings.yml'),
+        fileEncoding = "UTF-8")
     }
-    data.now <- read_database(db_root,yrs[j],siteID,level_in,copy_vars,tv_input,0)
-    data <- dplyr::bind_rows(data,data.now)
-    # Save the config in the output folder (one copy per-year)
-    write_yaml(
-      config$Processing, 
-      file.path(out_path,'ProcessingSettings.yml'),
-      fileEncoding = "UTF-8")
+    
   }
   # Create time variables
   data <- data %>%
@@ -232,6 +289,16 @@ Run_REddyProc <- function() {
   # Rename column names to variable names in REddyProc
   colnames(data_REddyProc)<-c(names(REddyConfig$vars_in),"DateTime","Year","DoY","Hour")
   
+  # Limit to default REddyProc season-years bounding the site-years requested
+  start_time <- paste(as.character(min(config$years)-1),"-12-01 00:00:00",sep='')
+  end_time <- paste(as.character(max(config$years)+1),"-03-01 00:00:00",sep='')
+  data_REddyProc <- data_REddyProc %>% filter(
+    DateTime > as.POSIXct(start_time, tz = "UTC") & DateTime < as.POSIXct(end_time, tz = "UTC"))
+
+  # Joined to ReddProc Output after processing
+  time_cols <- input_data[c("DateTime","Year","DoY","Hour")] %>% filter(
+    DateTime > as.POSIXct(start_time, tz = "UTC") & DateTime < as.POSIXct(end_time, tz = "UTC"))
+
   # Run REddyProc
   # Following "https://cran.r-project.org/web/packages/REddyProc/vignettes/useCase.html" This is more up to date than the Wutzler et al. paper
   # NOTE: skipped loading in txt file since alread have data in data frame
@@ -295,9 +362,8 @@ Run_REddyProc <- function() {
     uNames <- lapply(colnames(REddyOutput), function(x) if (startsWith(x,rep)) {sub(rep,sub,x)} else {x})
     colnames(REddyOutput) <- uNames
   }
-  
   REddyOutput = dplyr::bind_cols(
-    input_data[c("DateTime","Year","DoY","Hour")],REddyOutput
+    time_cols,REddyOutput
   )
 
   # Write all REddyProc outputs to intermediate folder
@@ -311,41 +377,35 @@ Run_REddyProc <- function() {
 RF_GapFilling <- function(){
   
   RFConfig <- config$Processing$ThirdStage$RF_GapFilling$Models
-  
+  retrain_interval <- config$Processing$ThirdStage$RF_GapFilling$retrain_every_n_months
   # Read function for RF gap-filling data
   p <- sapply(list.files(pattern="RandomForestModel.R", path=config$fx_path, full.names=TRUE), source)
   # Check if dependent variable is available and run RF gap filling if it is
   for (fill_name in names(RFConfig)){
+    print(fill_name)
     if (RFConfig[[fill_name]]$var_dep %in% colnames(input_data)){
       try({
         var_dep <- unlist(RFConfig[[fill_name]]$var_dep)
         predictors <- unlist(strsplit(RFConfig[[fill_name]]$Predictors, split = ","))
         vars_in <- c(var_dep,predictors,"DateTime","DoY")
-        
-        # Create list of paths for saving RF models        
-        ## A copy gets saved for each year
-        ## This is a bit redundant, but current procedures could result in divergent models for different years
-        ## So its important to do it this way, unless we will always be running the all years 
-        ## Side note: we should consider ALWAYS training on the all years available
-        
-        log_file_path = file.path(db_root,'Calculation_Procedures/TraceAnalysis_ini',config$Metadata$siteID,'log')
-        # Calculation_Procedures\TraceAnalysis_ini
-        gap_filled <- RandomForestModel(input_data[,vars_in],fill_name,log = log_file_path)
-        gap_filled = dplyr::bind_cols(input_data[c("DateTime","Year","DoY","Hour")],gap_filled)
+        log_path = file.path(db_root,'Calculation_Procedures/TraceAnalysis_ini',config$Metadata$siteID,'log')
+        output <- RandomForestModel(input_data[,vars_in],fill_name,log = log_path,retrain_every_n_months = retrain_interval)
+        use_existing_model <- output[2]
+        gap_filled = dplyr::bind_cols(input_data[c("DateTime","Year","DoY","Hour")],output[1])
         update_names <- list(fill_name)
         names(update_names) <- c(fill_name)
         input_data <- write_traces(gap_filled,update_names)
       })
 
     }else{
+      print('!!!! Warning !!!!')
       print(sprintf('%s Not present, RandomForest will not process',RFConfig[[fill_name]]$var_dep))
     }
   }
   return(input_data)
 }
 
-write_traces <- function(data,update_names,unlink=FALSE){
-  yrs <- config$yrs 
+write_traces <- function(data,update_names,unlink=FALSE){ 
   siteID <- config$Metadata$siteID
   level_in <- config$Database$Paths$SecondStage
   # Set intermediary output depending on ustar scenario
@@ -360,9 +420,9 @@ write_traces <- function(data,update_names,unlink=FALSE){
   tv_input <- config$Database$Timestamp$name
   db_root <- config$Database$db_root
   
-  for (j in 1:length(yrs)){
+  for (year in config$years){
     # Create new directory, or clear existing directory
-    dpath <- file.path(db_root,as.character(yrs[j]),siteID) 
+    dpath <- file.path(db_root,as.character(year),siteID) 
     if (unlink == TRUE || !dir.exists(file.path(dpath,intermediate_out))) {
       dir.create(file.path(dpath,intermediate_out), showWarnings = FALSE)
       unlink(file.path(dpath,intermediate_out,'*'))
@@ -372,23 +432,26 @@ write_traces <- function(data,update_names,unlink=FALSE){
     file.copy(file.path(dpath,level_in,tv_input),
               file.path(dpath,intermediate_out,tv_input))
     
-    ind_s <- which(data$Year == yrs[j] & data$DoY == 1 & data$Hour == 0.5)
-    ind_e <- which(data$Year == yrs[j]+1 & data$DoY == 1 & data$Hour == 0)
+    ind_s <- which(data$Year == year & data$DoY == 1 & data$Hour == 0.5)
+    ind_e <- which(data$Year == year+1 & data$DoY == 1 & data$Hour == 0)
     ind <- seq(ind_s,ind_e)
     
     # Dumping everything by default into stage 3
     # Can parse down later as desired
     cols_out <- colnames(data)
-    cols_out <- cols_out[! cols_out %in% c("DateTime","Year","DoY","Hour")]
+    cols_out <- cols_out[! cols_out %in% c("Year","DoY","Hour")]
+  
+    # Drop incoming data from input data (simplifies join procedures)
+    input_data <- input_data[,!(names(input_data) %in% names(update_names))]
 
+    # add DateTime to use as join key
+    update_names <- c('DateTime'='DateTime',update_names)
     # Subset of traces can get appended to the input_data frame for use in subsequent steps if needed
     append_cols <- data[unlist(update_names[update_names %in% cols_out])]
     colnames(append_cols) <- names(update_names[update_names %in% cols_out])
     
-    # Any columns to be added to input_data, that already exist within input data, will be overwritten with new incoming data to avoid confusion
-    input_data = dplyr::bind_cols(
-      input_data[!colnames(input_data) %in% colnames(append_cols)],
-      append_cols)
+    # Join the incoming data to the inputs incase needed for future use (e.g., ReddyPro outputs in RF)
+    input_data <- input_data %>% left_join(., append_cols, by = c('DateTime' = 'DateTime'))
 
     # Dump all data provided to intermediate output location
     setwd(file.path(dpath,intermediate_out))
@@ -404,7 +467,7 @@ write_traces <- function(data,update_names,unlink=FALSE){
           file.path(dpath,level_out,name),
           overwrite = TRUE)
       }else{
-        print(sprintf('%s was not created, cannot copy to final output for %i',update_names[name],yrs[j]))
+        print(sprintf('%s was not created, cannot copy to final output for %i',update_names[name],year))
       }
     }
   } 
