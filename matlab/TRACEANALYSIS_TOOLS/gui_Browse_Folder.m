@@ -8,10 +8,13 @@ function gui_Browse_Folder(pathIn)
 %
 %
 % Zoran Nesic                   File created:       May 26, 2023
-%                               Last modifications: Jul 31, 2023
+%                               Last modifications: Jun  3, 2024
 
 % Revisions:
 %
+% June 3, 2024 (Zoran)
+%   - Plotting improvements. Conversion from uifigure to uicontrol. 
+%     Sizing up the figure to match the screen size.
 % July 31, 2023 (Zoran)
 %   - added "TimeVector" to the list of varibles that should not be
 %   plotted.
@@ -31,7 +34,7 @@ function gui_Browse_Folder(pathIn)
     tv_dt = datetime(tv,'convertfrom','datenum');
 
 
-    fig = [];
+    figNum = [];
 
     % find all the files in the current folder
     s_all = dir(pathIn);                    % find all files in the old folder
@@ -61,31 +64,45 @@ function gui_Browse_Folder(pathIn)
         %---------------------
         % Data plotting
         %---------------------
-        if isempty(fig)
+        if isempty(figNum)
             % Create figure
-            fig = uifigure;
+            figNum = figure;
+
+            % Position the figure to be about 1/2 of screen height and stretched almost all the width
+            sSize = get(0,'ScreenSize');
+            sSize(4) = sSize(4)-30;     % account for the Windows toolbar at the bottom
+            sLength = sSize(3)-100;
+            sHeight = round(sSize(4)/2);
+            sXpos = 50;
+            sYpos = round(sSize(4)/2-100);
+            figure(figNum)
+            set(figNum,'outerpos',[sXpos sYpos sLength sHeight]);    
+
+
             UserData.cnt = 0;
             UserData.next=0;
-            set(fig,'UserData',UserData);
-            ah = axes(fig); %#ok<LAXES>
-            hExitButton = uibutton(fig,'push',...
-                'Text','Exit',...
+            set(figNum,'UserData',UserData);
+            ah = axes(figNum); %#ok<LAXES>
+            hExitButton = uicontrol(figNum,'style','pushbutton',...
+                'String','Exit',...
                 'Position',[20, 60, 100, 40],...
-                'ButtonPushedFcn', @(hExitButton,event) exitButtonPushed(hExitButton,fig)); %#ok<NASGU>
-            hNextButton = uibutton(fig,'push',...
-                'Text','>>',...
+                'Callback', @(hExitButton,event) exitButtonPushed(hExitButton,figNum)); %#ok<NASGU>
+            hNextButton = uicontrol(figNum,'style','pushbutton',...
+                'String','>>',...
                 'Position',[70, 184, 50, 40],...
-                'ButtonPushedFcn', @(hNextButton,event) nextButtonPushed(hNextButton,fig)); %#ok<NASGU>
-            hPreviousButton = uibutton(fig,'push',...
-                'Text','<<',...
+                'Callback', @(hNextButton,event) nextButtonPushed(hNextButton,figNum)); %#ok<NASGU>
+            hPreviousButton = uicontrol(figNum,'style','pushbutton',...
+                'String','<<',...
                 'Position',[20, 184,50, 40],...
-                'ButtonPushedFcn', @(hPreviousButton,event) previousButtonPushed(hPreviousButton,fig)); %#ok<NASGU>
-            hDropDown = uidropdown(fig,...
-                    'Editable','on',...
-                    'Position',[550,450,800,25],...
-                    'Items',{s_all(:).name},...
-                    'ItemsData',1:length(s_all),...
-                    'Value',s_all(1).name,'ValueChangedFcn',@(hDropDown,event) optionSelected(hDropDown,fig)); 
+                'Callback', @(hPreviousButton,event) previousButtonPushed(hPreviousButton,figNum)); %#ok<NASGU>
+
+            axPos = get(ah,'Position');
+
+            hDropDown = uicontrol(figNum,'Style','popupmenu',...
+                    'Units','normalized',...
+                    'Position',[axPos(1),axPos(2)+axPos(4)+0.005,axPos(3)/4,0.05],...
+                    'String',{s_all(:).name},...
+                    'Callback',@(hDropDown,event) optionSelected(hDropDown,figNum)); 
 
         else
             % every time drop down is used the UserData.cnt goes to -1
@@ -93,11 +110,11 @@ function gui_Browse_Folder(pathIn)
             % but with different view (Time Plot or 1:1)
             % default is to advance to the next plot(cnt = 0)
             UserData.next=0;
-            set(fig,'UserData',UserData);
+            set(figNum,'UserData',UserData);
         end
         
         %currentFile = fullfile(pathIn,s_all(cntFiles).name);            
-        currentFile = fullfile(pathIn,char(hDropDown.Items(hDropDown.Value)));
+        currentFile = fullfile(pathIn,char(hDropDown.String(hDropDown.Value)));
         x_new = read_bor(currentFile);
 
         plot(ah,tv_dt,x_new,'color','#0072BD','marker','o','linestyle','none')
@@ -107,7 +124,7 @@ function gui_Browse_Folder(pathIn)
         while UserData.next==0
             % loop here until user request re-plot by changing the
             % plot type or by clicking on the "Next" button 
-            UserData = get(fig,'UserData');
+            UserData = get(figNum,'UserData');
             drawnow
         end
         switch UserData.next
@@ -126,7 +143,7 @@ function gui_Browse_Folder(pathIn)
             case 2
                 % if the button that was pressed was "Exit"                    
                 fprintf('User stopped program. Exiting...\n');
-                close(fig)
+                close(figNum)
                 return
             case 3
                 % Just plot the selected trace

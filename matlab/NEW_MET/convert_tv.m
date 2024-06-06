@@ -26,10 +26,18 @@ function [converted_tv,year,day,hhmm] = convert_tv(tv,output_format,gmt_shift,..
 %                          here the time vector is first rounded to seconds.
 %
 % (C) Kai Morgenstern				File created:  09.09.00
-%											Last modified: 09.09.00
+%								    Last modified: May 13, 2024
 %
 
-% Revision: none
+% Revision: 
+%
+% May 13, 2024 (Zoran)
+%   - Bug fix: Matlab versions before 2024a accepted vectors 
+%     where there should have been scalars. Not any more. 
+%     Replaced:
+%       year_beginning  = datevec(tv(1));
+%     With:
+%       [year_beginning,~]  = datevec(tv(1));
 
 %
 % Remark on order of conversion:
@@ -133,10 +141,10 @@ end
 %
 % Convert to requested format
 %
-year_beginning = datevec(tv(1));
-year_end       = datevec(tv(end));
-year           = zeros(size(tv));
-TimeOffset     = zeros(size(tv));
+[year_beginning,~]  = datevec(tv(1));       % ~ is there to make sure year is a scalar
+[year_end,~]        = datevec(tv(end));     % ~ is there to make sure year is a scalar
+year                = zeros(size(tv));
+TimeOffset          = zeros(size(tv));
 for i=year_beginning:year_end
    new_year_current = datenum(i  ,1,1);
    new_year_next   = datenum(i+1,1,1);

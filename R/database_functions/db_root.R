@@ -9,8 +9,26 @@ library("yaml")
 # Generic configuration option
 # Not yet implemented but could be later
 config_fn = '_config.yml'
+user_paths = 'user_path_definitions.yml'
 # Default matlab option, following current procedures
 matlab_fn = 'biomet_database_default.m'
+
+# Multiple possible configuration file names for now
+# should be streamlined later
+possible_config_files = c(user_paths,config_fn,matlab_fn)
+
+# Subfolders to search for configuration file
+roots = c('.','Matlab')
+
+
+# Search environment variables for UBC_PC_Setup
+# To be removed later once properly flushed out procedure is worked out
+A <- 'UBC_PC_Setup'
+B <- unname(Sys.getenv(names='True'))
+pth <- setNames(lapply(A, function(x) grep(x, B, value = TRUE)), A)
+if (!identical(unname(pth)[[1]], character(0))){
+    roots = c(roots,pth)
+}
 
 # To find database_default from inside (the root) of a project folder
 get_biomet_default <- function(fn){
@@ -33,41 +51,28 @@ get_biomet_default <- function(fn){
     return(x)
 }
         
-get_config <- function(fn='_config.yml'){
+get_config <- function(fn){
     config <- yaml.load_file(fn)
     return(config$RootDirs$Database)
     }
 
-{
-# 1 Search for _config.yml in root of Project Folder
-if (file.exists(config_fn)){
-    db_root <- get_config(config_fn)
-}
-# 2 Search for matalab default in root of current folder
-else if (file.exists(matlab_fn)) {
-    db_root <- get_biomet_default(matlab_fn)
-}
-# 3 Search for Matlabl folder in root of project folder
-else if (file.exists(file.path('Matlab/',matlab_fn))) {
-    db_root <- get_biomet_default(file.path('Matlab/',matlab_fn))
-}
-# 4 Search environment variables for UBC_PC_Setup
-# Repeat 1 & 2, prompt for input as last resort
-else {
-    A <- 'UBC_PC_Setup'
-    B <- unname(Sys.getenv(names='True'))
-    pth <- setNames(lapply(A, function(x) grep(x, B, value = TRUE)), A)
-    if (!identical(unname(pth)[[1]], character(0))){
-        if (file.exists(file.path(pth,config_fn))){
-            db_root <- get_config(file.path(pth,config_fn))
-        }else if (file.exists(file.path(pth,'PC_specific',matlab_fn))) {
-            db_root <- get_biomet_default(file.path(pth,'PC_specific',matlab_fn))
+
+success = 0
+for(file in possible_config_files){
+    for(root in roots){
+        config_file = file.path(root,file)
+        if (file.exists(config_file)){
+            db_root <- get_config(config_file)
+            success = 1
+            break
         }
-    }else{
-        print('Default database path not identified!  Ensure you have the configuration setup properly')
     }
-}
+    if (success == 1) break
 }
 
-db_ini = file.path(db_root[1],'Calculation_Procedures/TraceAnalysis_ini/')
-
+if (success  == 0){
+    print('Default database path not identified!  Ensure you have the configuration setup properly')
+    } else {
+    db_ini = file.path(db_root[1],'Calculation_Procedures/TraceAnalysis_ini/')
+    print(sprintf('Initialized db_root: %s',db_root))
+}

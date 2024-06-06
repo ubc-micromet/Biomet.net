@@ -34,6 +34,30 @@ function trace_str_out = read_ini_file(fid,yearIn,fromRootIniFile)
 
 % Revisions
 %
+% June 5, 2024 (Zoran)
+%   - Bug fix: the function would not work with the ini files that didn't have 
+%     the new variable "globalVars" defined. The program now tests the existance of the variable
+%     before trying to use it.
+% June 3, 2024 (Zoran)
+%   - changed naming of global variables. Introduced globalVars.Instrument and globalVars.Trace. 
+%     having a prefix "globalVars" made it easier to create dynamically any instruments that are
+%     needed. The original version had the instruments hard coded (LI7200, LI7700, Anemometer, EC).
+%     Not anymore.
+%   - introduced parameter Timezone. For PST the Timezone == 8. 
+%       if Timezone == 0 then the database is in UTC/GMT 
+%       if Timezone == Difference_GMT_to_local_time then the database is in local standard time.
+%     To keep legacy software working, the default Timezone==0 (UTC).
+% May 24, 2024 (Zoran)
+%   - Made sure that both SecondStage.ini and ThirdStage.ini assign: iniFileType = 'second';
+%     otherwise bad things happen.
+% May 10, 2024 (Zoran)
+%   - Bug fix. Used exists() instead of exist() when looking for a template ini file.
+%   - Bug fix related to Matlab 2024a. Matlab 2024a gave a warning about this being an error in
+%     future releases.
+%     Needed to replace:
+%       curr_line(1:posEq-1...
+%     with:
+%       curr_line(1:posEq(1)-1...
 % Apr 29, 2024 (Zoran)
 %   - added the ini file stage to the "Reading ini file" message.
 % Apr 27, 2024 (Zoran)
@@ -69,11 +93,18 @@ arg_default('yearIn',[])
 % If this is not a recursive call to this function the set this parameter to []
 arg_default('fromRootIniFile',[])
 
+% Check if this is a recursive call
 if isempty(fromRootIniFile)
     flagRecursiveCall = false;
 else
     flagRecursiveCall = true;
 end
+
+% Legacy issue. The old ini files didn't have Timezone parameter and it was assumed that
+% data base is always kept in GMT/UTC. So, just in case, set Timezone to 0.
+% All the new ini files will have this parameters included so this value will
+% be overwriten
+Timezone = 0;
 
 iniFileName = char(arrayfun(@fopen, fid, 'UniformOutput', 0));
 % Extract the ini file type ('first','second','third')
@@ -83,6 +114,9 @@ if endsWith(iniFileType,'FirstStage','ignorecase',true) || endsWith(iniFileType,
     iniFileType = 'first';
 elseif endsWith(iniFileType,'SecondStage','ignorecase',true)|| endsWith(iniFileType,'SecondStage_include','IgnoreCase',true)
     iniFileType = 'second';  
+elseif endsWith(iniFileType,'ThirdStage','ignorecase',true)|| endsWith(iniFileType,'ThirdStage_include','IgnoreCase',true)
+    % 'second' is NOT a bug. Let it be.
+    iniFileType = 'second';    
 end
 
 if ~flagRecursiveCall
@@ -149,7 +183,7 @@ try
                 end
             else
                 % maybe the file name does not give the full path. Use the same path as for the current ini file
-                if exists(fullfile(iniFilePath,includeFileName),'file')
+                if exist(fullfile(iniFilePath,includeFileName),'file')
                     fidInclude = fopen(fullfile(iniFilePath,includeFileName),'r');
                     if fidInclude < 1
                         error('Could not open #include file: %s. Line: %d',includeFileName,countLines);
@@ -161,6 +195,7 @@ try
             fromRootIniFile.Site_name               = Site_name;
             fromRootIniFile.SiteID                  = SiteID;
             fromRootIniFile.Diff_GMT_to_local_time  = Difference_GMT_to_local_time;
+            fromRootIniFile.Timezone                = Timezone;
             fprintf('   Reading included file: %s. \n',fopen(fidInclude));
             trace_str_inlude = read_ini_file(fidInclude,yearIn,fromRootIniFile);
             for cntIncludeTraces = 1:length(trace_str_inlude)
@@ -311,8 +346,8 @@ try
                                 curr_line = curr_line(curr_line~=32 & curr_line~=9);
                             end
                             posEq = strfind(curr_line,'=');                         % Find where "=" is
-                            newFieldName = strtrim(curr_line(1:posEq-1));
-                            temp_var.(newFieldName) = eval(curr_line(posEq+1:end)); % assign the value
+                            newFieldName = strtrim(curr_line(1:posEq(1)-1));
+                            temp_var.(newFieldName) = eval(curr_line(posEq(1)+1:end)); % assign the value
                             %eval(['temp_var.' curr_line ';']);
                         catch ME
                             %Any error's are caught in the try-catch block:
@@ -368,6 +403,7 @@ try
                 Site_name                       = fromRootIniFile.Site_name;
                 SiteID                          = fromRootIniFile.SiteID;
                 Difference_GMT_to_local_time    = fromRootIniFile.Diff_GMT_to_local_time;
+                Timezone                        = fromRootIniFile.Timezone;
             end
             %**** Trace structure defined for each itteration of the array ******
             trace_str(countTraces).Error = 0;
@@ -391,6 +427,7 @@ try
             switch trace_str(countTraces).stage
                 case 'first'
                     trace_str(countTraces).Diff_GMT_to_local_time = Difference_GMT_to_local_time;
+                    trace_str(countTraces).Timezone = Timezone;
                     trace_str(countTraces).Last_Updated = char(datetime("now"));
 
                 case 'second'
@@ -455,79 +492,56 @@ end
 % to populate (and overwrite if needed) the existing Trace definitions
 % that belong to large groups of traces:
 % instrumentTypes: LI7200, LI7700, Anemometer, EC
-for cntTrace = 1:length(trace_str)
-    % go one trace at the time and see if anything needs to be overwritten
-    if isfield(trace_str(cntTrace).ini,'instrumentType')
-        instrumentType = trace_str(cntTrace).ini.instrumentType;
-        if ~isempty(instrumentType)
-            % Process all LI7200 variables
-            if strcmpi(instrumentType,'LI7200') && exist('LI7200','var') && LI7200.Enable == 1
-                fNames = fieldnames(LI7200);
+
+% Global variables will be processed only in the main body of the ini file, 
+% skip if this is a recursive call.
+if ~flagRecursiveCall   
+    for cntTrace = 1:length(trace_str)
+        % go one trace at the time and see if anything needs to be overwritten
+        if isfield(trace_str(cntTrace).ini,'instrumentType') && ~isempty(trace_str(cntTrace).ini.instrumentType)
+            instrumentType = trace_str(cntTrace).ini.instrumentType;
+            % Proces global variable if enabled
+            if isfield(globalVars.Instrument.(instrumentType),'Enable') && globalVars.Instrument.(instrumentType).Enable == 1
+                fNames = fieldnames(globalVars.Instrument.(instrumentType));
                 for cntFields = 1:length(fNames)
                     curName = char(fNames(cntFields));
                     if ~strcmpi(curName,'Enable')
-                        trace_str(cntTrace).ini.(curName) = LI7200.(curName);
+                        trace_str(cntTrace).ini.(curName) = globalVars.Instrument.(instrumentType).(curName);
                     end
                 end
-            % Process all LI7700 variables
-            elseif strcmpi(instrumentType,'LI7700') && exist('LI7700','var') && LI7700.Enable == 1
-                fNames = fieldnames(LI7700);
-                for cntFields = 1:length(fNames)
-                    curName = char(fNames(cntFields));
-                    if ~strcmpi(curName,'Enable')
-                        trace_str(cntTrace).ini.(curName) = LI7700.(curName);
-                    end
-                end                
-            % Process all Anemometer variables
-            elseif strcmpi(instrumentType,'Anemometer') && exist('Anemometer','var') && Anemometer.Enable == 1
-                fNames = fieldnames(Anemometer);
-                for cntFields = 1:length(fNames)
-                    curName = char(fNames(cntFields));
-                    if ~strcmpi(curName,'Enable')
-                        trace_str(cntTrace).ini.(curName) = Anemometer.(curName);
-                    end
-                end
-            % Process all EC variables    
-            elseif strcmpi(instrumentType,'EC') && exist('EC','var') && EC.Enable == 1
-                fNames = fieldnames(EC);
-                for cntFields = 1:length(fNames)
-                    curName = char(fNames(cntFields));
-                    if ~strcmpi(curName,'Enable')
-                        trace_str(cntTrace).ini.(curName) = EC.(curName);
-                    end
-                end  
             end
         else
             % Process all defaults (instrumentType ='') using otherTraces variables    
-            if exist('otherTraces','var') && otherTraces.Enable == 1
-                fNames = fieldnames(otherTraces);
+            if exist('globalVars','var') && isfield(globalVars,'Instrument') && isfield(globalVars.Instrument,'otherTraces') ...
+               && isfield(globalVars.Instrument.otherTraces,'Enable') && globalVars.Instrument.otherTraces.Enable == 1
+                fNames = fieldnames(globalVars.Instrument.otherTraces);
                 for cntFields = 1:length(fNames)
                     curName = char(fNames(cntFields));
                     if ~strcmpi(curName,'Enable')
-                        trace_str(cntTrace).ini.(curName) = otherTraces.(curName);
+                        trace_str(cntTrace).ini.(curName) = globalVars.Instrument.otherTraces.(curName);
                     end
                 end                    
-            end  
+            end
         end
     end
-end
-
-%--------------------- Trace variables -------------------------------------
-% The ini file could have a set of global variables that are used
-% to populate (and overwrite if needed) the existing Trace definitions
-% for individual traces
-if exist('Trace','var')
-    % Find all traces that need to be overwritten
-    tracesToOverwrite = fieldnames(Trace);
-    for cntTrace = 1:length(trace_str)
-        % go one trace at the time and see if anything needs to be overwritten
-        variableName = trace_str(cntTrace).variableName;
-        indTrace = ismember(tracesToOverwrite,variableName);
-        if any(indTrace)
-            allFieldsToOverwrite = fieldnames(Trace.(variableName));
-            for cntOverwrite = 1:length(allFieldsToOverwrite)
-                fieldToOverwrite = char(allFieldsToOverwrite(cntOverwrite));
-                trace_str(cntTrace).ini.(fieldToOverwrite) = Trace.(variableName).(fieldToOverwrite);
+    
+    %--------------------- Trace variables -------------------------------------
+    % The ini file could have a set of global variables that are used
+    % to populate (and overwrite if needed) the existing Trace definitions
+    % for individual traces
+    if exist('globalVars','var') && isfield(globalVars,'Trace')
+        % Find all traces that need to be overwritten
+        tracesToOverwrite = fieldnames(globalVars.Trace);
+        for cntTrace = 1:length(trace_str)
+            % go one trace at the time and see if anything needs to be overwritten
+            variableName = trace_str(cntTrace).variableName;
+            indTrace = ismember(tracesToOverwrite,variableName);
+            if any(indTrace)
+                allFieldsToOverwrite = fieldnames(globalVars.Trace.(variableName));
+                for cntOverwrite = 1:length(allFieldsToOverwrite)
+                    fieldToOverwrite = char(allFieldsToOverwrite(cntOverwrite));
+                    trace_str(cntTrace).ini.(fieldToOverwrite) = globalVars.Trace.(variableName).(fieldToOverwrite);
+                end
             end
         end
     end
