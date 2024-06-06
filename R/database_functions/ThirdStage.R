@@ -216,13 +216,14 @@ read_and_copy_traces <- function(){
           file.copy(file.path(in_path,filename),file.path(out_path,filename))
         }
       }
+      
+      # Save the config in the output folder (one copy per-year)
+      write_yaml(
+        config$Processing, 
+        file.path(out_path,'ProcessingSettings.yml'),
+        fileEncoding = "UTF-8")
     }
     
-    # Save the config in the output folder (one copy per-year)
-    write_yaml(
-      config$Processing, 
-      file.path(out_path,'ProcessingSettings.yml'),
-      fileEncoding = "UTF-8")
   }
   # Create time variables
   data <- data %>%
@@ -291,9 +292,12 @@ Run_REddyProc <- function() {
   # Limit to default REddyProc season-years bounding the site-years requested
   start_time <- paste(as.character(min(config$years)-1),"-12-01 00:00:00",sep='')
   end_time <- paste(as.character(max(config$years)+1),"-03-01 00:00:00",sep='')
-  data_REddyProc <- data_REddyProc %>%
-  filter(DateTime >= as.POSIXct(start_time, tz = "UTC") &
-         DateTime < as.POSIXct(end_time, tz = "UTC"))
+  data_REddyProc <- data_REddyProc %>% filter(
+    DateTime > as.POSIXct(start_time, tz = "UTC") & DateTime < as.POSIXct(end_time, tz = "UTC"))
+
+  # Joined to ReddProc Output after processing
+  time_cols <- input_data[c("DateTime","Year","DoY","Hour")] %>% filter(
+    DateTime > as.POSIXct(start_time, tz = "UTC") & DateTime < as.POSIXct(end_time, tz = "UTC"))
 
   # Run REddyProc
   # Following "https://cran.r-project.org/web/packages/REddyProc/vignettes/useCase.html" This is more up to date than the Wutzler et al. paper
@@ -358,9 +362,6 @@ Run_REddyProc <- function() {
     uNames <- lapply(colnames(REddyOutput), function(x) if (startsWith(x,rep)) {sub(rep,sub,x)} else {x})
     colnames(REddyOutput) <- uNames
   }
-  time_cols <- input_data[c("DateTime","Year","DoY","Hour")] %>%
-    filter(DateTime >= as.POSIXct(start_time, tz = "UTC") &
-          DateTime < as.POSIXct(end_time, tz = "UTC"))
   REddyOutput = dplyr::bind_cols(
     time_cols,REddyOutput
   )
