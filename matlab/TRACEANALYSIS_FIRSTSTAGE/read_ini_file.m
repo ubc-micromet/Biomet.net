@@ -34,6 +34,9 @@ function trace_str_out = read_ini_file(fid,yearIn,fromRootIniFile)
 
 % Revisions
 %
+% June 7, 2024 (Zoran)
+%   - Removed the warning message saying that the first stage ini file should be second stage.
+%     This warning/error was introduced when "Evaluate" option was added to the first stage.
 % June 5, 2024 (Zoran)
 %   - Bug fix: the function would not work with the ini files that didn't have 
 %     the new variable "globalVars" defined. The program now tests the existance of the variable
@@ -383,8 +386,8 @@ try
                         stage = 'second';
                         trace_str(countTraces).stage = 'second';
                     else
-                        fprintf(2,'Ini file is for the stage: *%s* but the *second* stage is detected based on the required field names. Line: %d\n',iniFileType,countLines);
-                        error('');
+                        %fprintf('*Warning: Ini file is for the stage: *%s* but the *second* stage is detected based on the required field names. Line: %d\n',iniFileType,countLines);
+                        %error('');
                     end
                 end
             else
