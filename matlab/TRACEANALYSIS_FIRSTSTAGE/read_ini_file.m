@@ -34,9 +34,14 @@ function trace_str_out = read_ini_file(fid,yearIn,fromRootIniFile)
 
 % Revisions
 %
-% June 7, 2024 (Zoran)
+% June 7/8, 2024 (Zoran)
 %   - Removed the warning message saying that the first stage ini file should be second stage.
 %     This warning/error was introduced when "Evaluate" option was added to the first stage.
+%   - Set the search path for include files to be 1-current folder, 2-fullpath, 3-TraceAnalisys_ini,
+%           4-TraceAnalisys_ini\siteID 
+%     The idea is that the global include files like EC_FirstStage_include.ini will be in 3.
+%   - Added some code in an attempt to enable using #include with the second stage files but
+%     that needs more work. Currently #include in 2nd stage does not work!
 % June 5, 2024 (Zoran)
 %   - Bug fix: the function would not work with the ini files that didn't have 
 %     the new variable "globalVars" defined. The program now tests the existance of the variable
@@ -175,9 +180,9 @@ try
         if isempty(temp) | strcmp(tm_line(temp(1)),'%')
             % if tm_line is empty or a comment line, do nothing
         elseif startsWith(tm_line,'#include ','IgnoreCase',1)
-            % this is an #include statement. Load the new ini file. 
-            % If the file path is not included in the name assume the same location
-            % as the original ini file
+            % this is an #include statement. Load the new ini file.
+            % First check if the include file is either in the current Matlab folder
+            % or given with a full path.
             includeFileName = tm_line(10:end);
             if exist(includeFileName,'file')
                 fidInclude = fopen(includeFileName,'r');
@@ -185,20 +190,45 @@ try
                     error('Could not open #include file: %s. Line: %d',includeFileName,countLines);
                 end
             else
-                % maybe the file name does not give the full path. Use the same path as for the current ini file
-                if exist(fullfile(iniFilePath,includeFileName),'file')
-                    fidInclude = fopen(fullfile(iniFilePath,includeFileName),'r');
+                % 
+                % Then assume that the include file is in directly under TraceAnalysis_ini folder
+                % and it's common for all sites
+                indSep = find(iniFilePath==filesep);
+                if indSep(end) == length(iniFilePath)
+                    % There is an extra filesep at the end of the path. Remove
+                    iniFilePath = iniFilePath(1:end-1);
+                    newPath = iniFilePath(1:indSep(end-1)-1);
+                else
+                    newPath = iniFilePath(1:indSep(end)-1);
+                end
+                if exist(fullfile(newPath,includeFileName),'file')
+                    fidInclude = fopen(fullfile(newPath,includeFileName),'r');
                     if fidInclude < 1
                         error('Could not open #include file: %s. Line: %d',includeFileName,countLines);
                     end
-                end
+                else
+                    % If the full file path is not given
+                    % maybe the file name does not give the full path. Use the same path as for the current ini file
+                    if exist(fullfile(iniFilePath,includeFileName),'file')
+                        fidInclude = fopen(fullfile(iniFilePath,includeFileName),'r');
+                        if fidInclude < 1
+                            error('Could not open #include file: %s. Line: %d',includeFileName,countLines);
+                        end
+                    else
+                        error('The #include file: %s does not exist. Line: %d',includeFileName,countLines);
+                    end
+                end                
+
             end
             % Call this function recursively to extract the new traces
             % but first the variables below will need to be passed to the function
             fromRootIniFile.Site_name               = Site_name;
             fromRootIniFile.SiteID                  = SiteID;
-            fromRootIniFile.Diff_GMT_to_local_time  = Difference_GMT_to_local_time;
-            fromRootIniFile.Timezone                = Timezone;
+            if strcmpi(iniFileType,'first')
+                % Only load these two if doing the first stage ini file
+                fromRootIniFile.Diff_GMT_to_local_time  = Difference_GMT_to_local_time;
+                fromRootIniFile.Timezone                = Timezone;
+            end
             fprintf('   Reading included file: %s. \n',fopen(fidInclude));
             trace_str_inlude = read_ini_file(fidInclude,yearIn,fromRootIniFile);
             for cntIncludeTraces = 1:length(trace_str_inlude)
@@ -405,8 +435,11 @@ try
             if ~isempty(fromRootIniFile)
                 Site_name                       = fromRootIniFile.Site_name;
                 SiteID                          = fromRootIniFile.SiteID;
-                Difference_GMT_to_local_time    = fromRootIniFile.Diff_GMT_to_local_time;
-                Timezone                        = fromRootIniFile.Timezone;
+                if strcmpi(iniFileType,'first')
+                    % Only load these two if doing the first stage ini file
+                    Difference_GMT_to_local_time    = fromRootIniFile.Diff_GMT_to_local_time;
+                    Timezone                        = fromRootIniFile.Timezone;
+                end
             end
             %**** Trace structure defined for each itteration of the array ******
             trace_str(countTraces).Error = 0;
