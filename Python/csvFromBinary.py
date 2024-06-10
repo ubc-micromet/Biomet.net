@@ -136,6 +136,8 @@ def makeCSV(siteID,dateRange,requests=['config_files/csv_requests_template.yml']
         # Format filename and save output
         dates = Range_index.strftime('%Y%m%d%H%M')
         fn = f"{siteID}_{name}_{dates[0]}_{dates[1]}"
+        if os.path.isdir(outputPath) == False:
+            os.makedirs(outputPath)
         dout = f"{outputPath}/{fn}.csv"
         df.to_csv(dout,index=False)
 
