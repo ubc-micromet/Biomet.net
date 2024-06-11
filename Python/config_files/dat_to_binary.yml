@@ -1,0 +1,258 @@
+
+# Adapt this template file for other needs
+# Then define the requests accordingly
+# Each to level key is one request
+
+BBS_met_dat:
+  site: 
+    ID: BBS
+    lat_lon: [49.12930679,-122.9849701]
+  stage: Met
+  recursiveSearch:
+    # RootDir is **user specific** defined in user_path_definitions.yml
+    # Will be concatenated as as RootDir/subDir
+    # if fileNameMatch: is specified, will only process filenames containing that pattern and fileExension
+    # if not specified will match all files with given extension
+    rootDir: Datadump
+    subDir: BBS/EC_Station
+    fileNameMatch: BBS.MET
+    fileExtension: dat
+  # fileList:
+  # # Specify a file list if recursive search is not required, e.g.,
+  # - X:\BBS\EC_Station\2024\20240510\TOA5_BBS.MET_2024_04_18_1300.dat
+  # - X:\BBS\EC_Station\2024\20240516\TOA5_BBS.MET_2024_04_18_1300.dat
+  formatting:
+    header: [1,2,3]
+    autoDate: TIMESTAMP
+  exclude:
+  - RECORD
+
+BBS_PSW_S_soil_dat:
+  site: 
+    ID: BBS
+    prefix: PSW_S_
+    lat_lon: [49.12930679,-122.9849701]
+  stage: Met
+  recursiveSearch:
+    rootDir: Datadump
+    subDir: BBS/Chamberdata/Loggerdata
+    fileNameMatch: CR10X_PSW_S
+    fileExtension: dat
+  formatting:
+    header: None
+    timestamp:
+      zFillDates: True
+      date_cols:
+      # For CR10X files, the dates are compressed (leading zeros dropped)
+      # Need to specify date columns using column names that match the expected lenght of the date column (with padded zeros)
+      # Simple (if ugly) hack to parse correctly
+      - YYYY
+      - DOY
+      - HHMM
+      format: '%Y%j%H%M'
+  subtables:
+    HH:
+      ID: 121
+      columns:
+      - subtable
+      - YYYY
+      - DOY
+      - HHMM
+      - PannelTemp
+      - TSoil_5cm
+      - TSoil_10cm
+      - TSoil_30cm
+      - VWC
+      - PA_uS
+      - WTH
+      - TWater
+    Daily:
+      ID: 122
+      columns:
+      - subtable
+      - YYYY
+      - DOY
+      - HHMM
+      - BattV_MIN
+  exclude: 
+  - subtable
+
+BBS_PSW_R_soil_dat:
+  site: 
+    ID: BBS
+    prefix: PSW_R_
+    lat_lon: [49.12930679,-122.9849701]
+  stage: Met
+  recursiveSearch:
+    rootDir: Datadump
+    subDir: BBS/Chamberdata/Loggerdata
+    fileNameMatch: CR10X_PSW_R
+    fileExtension: dat
+  formatting:
+    header: None
+    timestamp:
+      zFillDates: True
+      date_cols:
+      - YYYY
+      - DOY
+      - HHMM
+      format: '%Y%j%H%M'
+  subtables:
+    HH:
+      ID: 131
+      columns:
+      - subtable
+      - YYYY
+      - DOY
+      - HHMM
+      - PannelTemp
+      - TSoil_5cm
+      - TSoil_10cm
+      - TSoil_30cm
+      - VWC
+      - PA_uS
+    Daily:
+      ID: 132
+      columns:
+      - subtable
+      - YYYY
+      - DOY
+      - HHMM
+      - BattV_MIN
+  exclude: 
+  - subtable
+  
+BBS_PSTS_soil_dat:
+  site: 
+    ID: BBS
+    prefix: PSTS_
+    lat_lon: [49.12930679,-122.9849701]
+  stage: Met
+  recursiveSearch:
+    rootDir: Datadump
+    subDir: BBS/Chamberdata/Loggerdata
+    fileNameMatch: CR10X_PSTS
+    fileExtension: dat
+  formatting:
+    header: None
+    timestamp:
+      zFillDates: True
+      date_cols:
+      - YYYY
+      - DOY
+      - HHMM
+      format: '%Y%j%H%M'
+  subtables:
+    HH:
+      ID: 111
+      columns:
+      - subtable
+      - YYYY
+      - DOY
+      - HHMM
+      - PannelTemp
+      - S_TSoil_5cm
+      - S_TSoil_10cm
+      - S_TSoil_30cm
+      - R_TSoil_5cm
+      - R_TSoil_10cm
+      - R_TSoil_30cm
+    Daily:
+      ID: 112
+      columns:
+      - subtable
+      - YYYY
+      - DOY
+      - HHMM
+      - BattV_MIN
+  exclude: 
+  - subtable
+  
+BBS_PSLS_soil_dat:
+  site: 
+    ID: BBS
+    prefix: PSLS_
+    lat_lon: [49.12930679,-122.9849701]
+  stage: Met
+  recursiveSearch:
+    rootDir: Datadump
+    subDir: BBS/Chamberdata/Loggerdata
+    fileNameMatch: CR10X_PSLS
+    fileExtension: dat
+  formatting:
+    header: None
+    timestamp:
+      zFillDates: True
+      date_cols:
+      - YYYY
+      - DOY
+      - HHMM
+      format: '%Y%j%H%M'
+  subtables:
+    HH:
+      ID: 101
+      columns:
+      - subtable
+      - YYYY
+      - DOY
+      - HHMM
+      - PannelTemp
+      - S_old_TSoil_5cm
+      - S_old_TSoil_10cm
+      - S_old_TSoil_30cm
+      - R_TSoil_5cm
+      - R_TSoil_10cm
+      - R_TSoil_30cm
+    Daily:
+      ID: 102
+      columns:
+      - subtable
+      - YYYY
+      - DOY
+      - HHMM
+      - BattV_MIN
+  exclude: 
+  - subtable
+  
+BBS_PSLS_S_soil_dat:
+  site: 
+    ID: BBS
+    prefix: PSLS_S_
+    lat_lon: [49.12930679,-122.9849701]
+  stage: Met
+  recursiveSearch:
+    rootDir: Datadump
+    subDir: BBS/Chamberdata/Loggerdata
+    fileNameMatch: CR10X_PSLS_S
+    fileExtension: dat
+  formatting:
+    header: None
+    timestamp:
+      zFillDates: True
+      date_cols:
+      - YYYY
+      - DOY
+      - HHMM
+      format: '%Y%j%H%M'
+  subtables:
+    HH:
+      ID: 141
+      columns:
+      - subtable
+      - YYYY
+      - DOY
+      - HHMM
+      - PannelTemp
+      - TSoil_5cm
+      - TSoil_10cm
+      - TSoil_30cm
+    Daily:
+      ID: 142
+      columns:
+      - subtable
+      - YYYY
+      - DOY
+      - HHMM
+      - BattV_MIN
+  exclude: 
+  - subtable
