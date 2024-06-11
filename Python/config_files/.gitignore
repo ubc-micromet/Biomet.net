@@ -3,5 +3,7 @@
 # Ignore all configurations except the default config and the template configurations
 !.gitignore
 !config.yml
-!csv_requests_template.yml
+!csv_from_binary.yml
+!gsheet_to_binary.yml
+!dat_to_binary.yml
 !user_path_definitions_template.yml
