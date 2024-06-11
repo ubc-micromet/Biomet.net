@@ -1,0 +1,79 @@
+
+# Adapt this template file for other needs
+# Then define the requests accordingly
+# Each to level key is one request, if it ends in "_gsheet" it will be read as a google sheet, ending in "_dat" would read as .dat, etc.
+
+BB_WT_gsheet:
+  site: 
+    ID: BB
+    lat_lon: [49.12940598,-122.9849319]
+  stage: Manual
+  link: https://docs.google.com/spreadsheets/d/e/2PACX-1vQPareyDN7uQ6Jxq5aOJG0lGvVnIZHrkrzX10JBuCEX_6Xe1Y-yIuHBa_hSfaMSGs4kJed0fB5MWKb9/pubhtml
+  subtable_id: 0
+  formatting:
+    header: [1]
+    timestamp:
+      date_cols:
+      - Year
+      - Month
+      - Day
+      - Hour
+      - Minute
+      is_dst: True
+    
+BB2_WT_gsheet:
+  site: 
+    ID: BB2
+    lat_lon: [49.11903,-122.9951477]
+  stage: Manual
+  link: https://docs.google.com/spreadsheets/d/e/2PACX-1vQPareyDN7uQ6Jxq5aOJG0lGvVnIZHrkrzX10JBuCEX_6Xe1Y-yIuHBa_hSfaMSGs4kJed0fB5MWKb9/pubhtml
+  subtable_id: 1
+  formatting:
+    header: [1]
+    timestamp:
+      date_cols:
+      - Year
+      - Month
+      - Day
+      - Hour
+      - Minute
+      is_dst: True
+
+BBS_WT_gsheet:
+  site: 
+    ID: BBS
+    lat_lon: [49.12930679,-122.9849701]
+  stage: Manual
+  link: https://docs.google.com/spreadsheets/d/e/2PACX-1vQPareyDN7uQ6Jxq5aOJG0lGvVnIZHrkrzX10JBuCEX_6Xe1Y-yIuHBa_hSfaMSGs4kJed0fB5MWKb9/pubhtml
+  subtable_id: 2
+  formatting:
+    header: [1]
+    timestamp:
+      date_cols:
+      - Year
+      - Month
+      - Day
+      - Hour
+      - Minute
+      is_dst: True
+
+BBS_CH_gsheet:
+  site: 
+    ID: BBS
+    lat_lon: [49.12930679,-122.9849701]
+  stage: Manual
+  link: https://docs.google.com/spreadsheets/d/e/2PACX-1vQgO2_oo1MH_kgFqz_-nxjQoYOL9myNclFjN8yhDJ8EmniA1LNC3-5fymUXQ3lK7coP8TISGXD-06Us/pubhtml
+  subtable_id: 0
+  formatting:
+    header: [1]
+    timestamp:
+      date_cols:
+      - Year
+      - Month
+      - Day
+      is_dst: False
+  aggregate:
+    variable_name: CH
+    statistics:
+    - mean
+    - std

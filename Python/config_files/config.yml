@@ -6,24 +6,18 @@ dbase_metadata:
     precision: 8
     base: 719529
     base_unit: D
+    resolution: 30min
   traces:
     dtype: float32
     precision: 4
-relative_paths:
+stage:
   # All paths assumed to be relative to Database/YYYY/SiteID/ e.g., C:/Users/User/Database/YYYY/SiteID/
   # (see by "user_path_definitions_template.yml")
-  SecondStage: Clean/SecondStage
-  ThirdStage: Clean/ThirdStage
-  ThirdStage_Default: Clean/ThirdStage_Default_Ustar
-  ThirdStage_Advanced: Clean/ThirdStage_Full_Ustar_Uncertainty
-  FirstStage:
-    Met:
-      raw: Met
-      clean: Met/clean
-    Flux:
-      raw: Flux
-      clean: Flux/clean
-    Manual: 
-      raw: Met/Manual
-      clean: Met/clean
+  Second: Clean/SecondStage
+  Third: Clean/ThirdStage
+  Third_Default: Clean/ThirdStage_Default_Ustar
+  Third_Advanced: Clean/ThirdStage_Full_Ustar_Uncertainty
+  Met: Met
+  Flux: Flux
+  Manual: Met/Manual
 
