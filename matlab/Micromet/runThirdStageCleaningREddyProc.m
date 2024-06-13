@@ -19,6 +19,7 @@ function runThirdStageCleaningREddyProc(yearIn,siteID,yearsToProcess)
 % Jun 13, 2024 (Zoran)
 %   - The function now passes the path to the database to the ThirdStage.R script
 %     as the first argument. 
+%   - Replaced all "\" with "/" when calling R script.
 % May 17, 2024 (Zoran)
 %   - Major change to match the new R function ThirdStage.R. 
 %   - Different input parameters.
@@ -56,7 +57,7 @@ function runThirdStageCleaningREddyProc(yearIn,siteID,yearsToProcess)
 
     % Run RScript
     % concatenate the command line argument
-    CLI_args = sprintf('"%s" --vanilla %s %s %s %i %i',pthRbin,pthThirdStageR ,pthDatabase,siteID,startYear,endYear);
+    CLI_args = sprintf('"%s" --vanilla %s %s %s %i %i',pthRbin,pthThirdStageR ,strrep(pthDatabase,'\','/'),siteID,startYear,endYear);
     CLI_args = [CLI_args ' 2> "' pthLogFile '" 1>&2'];
     % run the command line argument
     fprintf('Running the following command: %s\n', CLI_args);
