@@ -146,10 +146,13 @@ configure <- function(siteID){
   # Fin all site-years in database
   yearsAll = suppressWarnings(as.numeric(list.dirs(db_root, recursive = FALSE,full.names = FALSE)))
   yearsAll = yearsAll[!sapply(yearsAll, is.na)]
-  siteYearsAll = file.path(db_root,as.character(yearsAll),siteID)
+  level_in <- config$Database$Paths$SecondStage
+  tv <- config$Database$Timestamp$name
+  siteYearsAll = file.path(db_root,as.character(yearsAll),siteID,level_in,tv)
   yearsAll = yearsAll[sapply(siteYearsAll,file.exists)]
   siteYearsAll = siteYearsAll[sapply(siteYearsAll,file.exists)]
-  
+  siteYearsAll = gsub(tv,'',siteYearsAll)
+  siteYearsAll = gsub(config$Database$Paths$SecondStage,'',siteYearsAll)
   # Determine site years to output
   if (length(args)>2){
     years <- c(args[3]:args[length(args)])
@@ -404,7 +407,7 @@ Run_REddyProc <- function() {
 }
 
 RF_GapFilling <- function(){
-  
+  db_root <- config$Database$db_root
   RFConfig <- config$Processing$ThirdStage$RF_GapFilling$Models
   retrain_interval <- config$Processing$ThirdStage$RF_GapFilling$retrain_every_n_months
   # Read function for RF gap-filling data
@@ -511,21 +514,21 @@ config <- configure()
 # Read Stage 2 Data
 input_data <- read_and_copy_traces() 
 
-input_data <- Met_Gap_Filling()
+# input_data <- Met_Gap_Filling()
 
-# Apply storage correction (if required)
-input_data <- storage_correction()
+# # Apply storage correction (if required)
+# input_data <- storage_correction()
 
-# Run REddyProc
-if (config$Processing$ThirdStage$REddyProc$Run){
-  input_data <- Run_REddyProc() 
-}
+# # Run REddyProc
+# if (config$Processing$ThirdStage$REddyProc$Run){
+#   input_data <- Run_REddyProc() 
+# }
 
-# Run RF model
-if (config$Processing$ThirdStage$RF_GapFilling$Run){
-  input_data <- RF_GapFilling()
-} 
+# # Run RF model
+# if (config$Processing$ThirdStage$RF_GapFilling$Run){
+#   input_data <- RF_GapFilling()
+# } 
 
-end.time <- Sys.time()
-print('Stage 3 Complete, total run time:')
-print(end.time - start.time)
+# end.time <- Sys.time()
+# print('Stage 3 Complete, total run time:')
+# print(end.time - start.time)
