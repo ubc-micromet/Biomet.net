@@ -107,7 +107,7 @@ configure <- function(siteID){
     # 'source'd via R console
     fx_path<- path_dir(normalizePath(sys.frames()[[1]]$ofile))
   }
-  db_root <- args[1]
+  db_root <- file.path(args[1])
   db_ini <- file.path(db_root,'Calculation_Procedures/TraceAnalysis_ini/')
   
   if (dir.exists(db_root) && !dir.exists(db_ini)){
