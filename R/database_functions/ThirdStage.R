@@ -14,12 +14,24 @@
 #  * pathTo/yourProject/Matlab/biomet_database_default.m
 #    * This file defines the path to the version of the biomet database that you are working with
 
-# Example call from command line (assumes R is added to your PATH variable)
+# # Call from command line (assuming R is added to your PATH variable)
+
+# # giving database as an input
+# Rscript --vanilla C:/Biomet.net/R/database_functions/ThirdStage.R C:/Database siteID startYear endYear
+
+# # If current directory is the the root of a database
 # cd pathTo/yourProject
 # Rscript --vanilla C:/Biomet.net/R/database_functions/ThirdStage.R siteID startYear endYear
 
-# Example call from R terminal
-# setwd(pathTo/yourProject)
+
+## Call from R terminal
+
+# # Giving database as an input
+# args <- c("C:/Database","siteID",startYear,endYear)
+# source("C:/Biomet.net/R/database_functions/ThirdStage.R")
+
+# # If current directory is the the root of a database
+# setwd(C:/Database)
 # args <- c("siteID",startYear,endYear)
 # source("C:/Biomet.net/R/database_functions/ThirdStage.R")
 
@@ -95,16 +107,32 @@ configure <- function(siteID){
     # 'source'd via R console
     fx_path<- path_dir(normalizePath(sys.frames()[[1]]$ofile))
   }
-    
-  # Read function to get db_root variable
-  sapply(list.files(pattern="db_root.R", path=fx_path, full.names=TRUE), source)
+  db_root <- args[1]
+  db_ini <- file.path(db_root,'Calculation_Procedures/TraceAnalysis_ini/')
   
+  if (dir.exists(db_root) && !dir.exists(db_ini)){
+    print(sprintf("%s does not exist, cannot proceed",db_ini))
+    exit()
+  } else if(!dir.exists(db_root)){
+    print('database path not provided, checking if current directory is a database')
+    db_root = getwd()
+    db_ini <- file.path(db_root,'Calculation_Procedures/TraceAnalysis_ini/')
+    args <- c(db_root,args)
+    if (!dir.exists(db_ini)){
+      print(sprintf("%s does not exist, cannot proceed",db_ini))
+      print('Input a valid database path or set your working directory to a database to proceed')
+      exit()
+    }
+  }
+  print(sprintf('Third stage run initialized for %s data in %s',args[2],db_root))
+  
+
   # Read a the global database configuration
   filename <- file.path(db_root,'Calculation_Procedures/TraceAnalysis_ini/global_config.yml')
   dbase_config = yaml.load_file(filename)
   
   # Get the siteID argument and read the site-specific configuration
-  siteID <- args[1]
+  siteID <- args[2]
   fn <- sprintf('%s_config.yml',siteID)
   filename <- file.path(db_root,'Calculation_Procedures/TraceAnalysis_ini',siteID,fn)
   site_config <- yaml.load_file(filename)
@@ -123,8 +151,8 @@ configure <- function(siteID){
   siteYearsAll = siteYearsAll[sapply(siteYearsAll,file.exists)]
   
   # Determine site years to output
-  if (length(args)>1){
-    years <- c(args[2]:args[length(args)])
+  if (length(args)>2){
+    years <- c(args[3]:args[length(args)])
     siteYearsOut = file.path(db_root,as.character(years),siteID)
   } else {
      siteYearsOut = siteYearsAll
