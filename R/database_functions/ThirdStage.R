@@ -514,21 +514,21 @@ config <- configure()
 # Read Stage 2 Data
 input_data <- read_and_copy_traces() 
 
-# input_data <- Met_Gap_Filling()
+input_data <- Met_Gap_Filling()
 
-# # Apply storage correction (if required)
-# input_data <- storage_correction()
+# Apply storage correction (if required)
+input_data <- storage_correction()
 
-# # Run REddyProc
-# if (config$Processing$ThirdStage$REddyProc$Run){
-#   input_data <- Run_REddyProc() 
-# }
+# Run REddyProc
+if (config$Processing$ThirdStage$REddyProc$Run){
+  input_data <- Run_REddyProc() 
+}
 
-# # Run RF model
-# if (config$Processing$ThirdStage$RF_GapFilling$Run){
-#   input_data <- RF_GapFilling()
-# } 
+# Run RF model
+if (config$Processing$ThirdStage$RF_GapFilling$Run){
+  input_data <- RF_GapFilling()
+} 
 
-# end.time <- Sys.time()
-# print('Stage 3 Complete, total run time:')
-# print(end.time - start.time)
+end.time <- Sys.time()
+print('Stage 3 Complete, total run time:')
+print(end.time - start.time)
