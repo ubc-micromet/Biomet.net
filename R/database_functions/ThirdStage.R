@@ -14,13 +14,25 @@
 #  * pathTo/yourProject/Matlab/biomet_database_default.m
 #    * This file defines the path to the version of the biomet database that you are working with
 
-# Example call from command line (assumes R is added to your PATH variable)
-# cd pathTo/yourProject
-# Rscript --vanilla C:/Biomet.net/R/database_functions/ThirdStage.R Path/To/Database siteID startYear endYear
+# # Call from command line (assuming R is added to your PATH variable)
 
-# Example call from R terminal
-# setwd(pathTo/yourProject)
-# args <- c("Path/To/Database","siteID",startYear,endYear)
+# # giving database as an input
+# Rscript --vanilla C:/Biomet.net/R/database_functions/ThirdStage.R C:/Database siteID startYear endYear
+
+# # If current directory is the the root of a database
+# cd pathTo/yourProject
+# Rscript --vanilla C:/Biomet.net/R/database_functions/ThirdStage.R siteID startYear endYear
+
+
+## Call from R terminal
+
+# # Giving database as an input
+# args <- c("C:/Database","siteID",startYear,endYear)
+# source("C:/Biomet.net/R/database_functions/ThirdStage.R")
+
+# # If current directory is the the root of a database
+# setwd(C:/Database)
+# args <- c("siteID",startYear,endYear)
 # source("C:/Biomet.net/R/database_functions/ThirdStage.R")
 
 # # Install on first run
