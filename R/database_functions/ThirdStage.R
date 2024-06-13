@@ -20,7 +20,7 @@
 
 # Example call from R terminal
 # setwd(pathTo/yourProject)
-# args <- c("Path/To/Databas","siteID",startYear,endYear)
+# args <- c("Path/To/Database","siteID",startYear,endYear)
 # source("C:/Biomet.net/R/database_functions/ThirdStage.R")
 
 # # Install on first run
@@ -108,6 +108,7 @@ configure <- function(siteID){
     args <- c(db_root,args)
     if (!dir.exists(db_ini)){
       print(sprintf("%s does not exist, cannot proceed",db_ini))
+      print('Input a valid database path or set your working directory to a database to proceed')
       exit()
     }
   }
