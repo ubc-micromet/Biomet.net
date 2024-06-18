@@ -1,15 +1,18 @@
 function [data_out,Flag]=SpikeFilter(data_in,tv_in,order,thresh,thresh_type,window)
+    % By June Skeeter
+    % October 2023?
+
     % This function filters outliers using a z-scorealized moving window
     % It filters the data by deviation from mean, slope (first derivative), and curvature (second derivative), etc.
     
     % Parameters:
     % data_in - the trace to be filtered
     % tv_in - the time vector of the trace to be filtered
-    % order - order of derivatives to be calculated; 0 (raw data, i.e., no derivative), 1,2, ... are 1st, 2nd, etc.
+    % order - nth order of derivatives to be calculated; 0 (raw data, i.e., no derivative), 1,2, ... are 1st, 2nd, etc.
     % thresh - threhold for filtering of length 1 (symmetrical) or 2 (asymmetrical) - given as either a z-score or natural units
     % thresh_type - "z-score" or "natural"
     %   "z-score" - filters out by z-score using either the full dataset or a moving window
-    %   "natural" - filters by natural usings - makes most sense in the context of a first derivative
+    %   "natural" - filters by natural units - makes most sense in the context of a first derivative
     %             - e.g., if working with Water Table Height thresh = [-0.5,2] would apply an asymmetric filter removing drops < 0.5 cm/half-hour or jumps > 2 cm/half-hour
     % window - optional rolling window if thresh_type is "z-score" over which to apply the filter (defaults to 0, i.e., no moving window)
 
@@ -40,7 +43,6 @@ function [data_out,Flag]=SpikeFilter(data_in,tv_in,order,thresh,thresh_type,wind
         else
             flag = ZFilter(y,tv_in(ix),thresh,window);
         end
-
         
         Keep(ix,i) = flag;
         Drop(ix,i) = ~flag;

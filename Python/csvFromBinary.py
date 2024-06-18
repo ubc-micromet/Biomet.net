@@ -15,6 +15,7 @@ import argparse
 import numpy as np
 import pandas as pd
 import readConfig as rCfg
+from datetime import datetime,date
 
 os.chdir(os.path.split(__file__)[0])
 
@@ -22,12 +23,16 @@ template = 'config_files/csv_from_binary.yml'
 
 # Create the csv
 # args with "None" value provide option to overwrite default
-def makeCSV(siteID,dateRange,tasks=[template],stage=None,outputPath=None):
+def makeCSV(siteID,dateRange=None,tasks=[template],stage=None,outputPath=None):
     print(f'Initializing tasks for {siteID} over:', dateRange) 
     if isinstance(tasks,str):
         tasks=[tasks]
     config = rCfg.set_user_configuration(tasks)
-    Range_index = pd.DatetimeIndex(dateRange)
+    if dateRange is not None:
+        Range_index = pd.DatetimeIndex(dateRange)
+    else:
+        Range_index = pd.DatetimeIndex([date(datetime.now().year,1,1),datetime.now()])
+    # Range_index = pd.DatetimeIndex(dateRange)
     
     # Use default if user does not provide alternative
     if outputPath is None:
