@@ -17,10 +17,15 @@ def set_user_configuration(user_defined=[]):
             with open('config_files/user_path_definitions.yml') as yml:
                 config.update(yaml.safe_load(yml))
         else:
-            sys.exit(f"Missing {'config_files/user_path_definitions.yml'}")
+            with open('config_files/user_path_definitions_template.yml') as yml:
+                config.update(yaml.safe_load(yml))
+            print(f"WARNING: missing {'config_files/user_path_definitions.yml'}")
+            print("Proceeding with template paths from {'config_files/user_path_definitions_template.yml'}")
+            print("These are likely to cause issues, please create your own path definition file")
 
     # Import the user specified configurations (exit if they don't exist)
     config['tasks'] = {}
+    if isinstance(user_defined,str):user_defined=[user_defined]
     for req in user_defined:
         if os.path.isfile(req):
             with open(req) as yml:

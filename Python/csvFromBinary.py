@@ -23,31 +23,49 @@ template = 'config_files/csv_from_binary.yml'
 
 # Create the csv
 # args with "None" value provide option to overwrite default
-def makeCSV(siteID,dateRange=None,tasks=[template],stage=None,outputPath=None):
-    print(f'Initializing tasks for {siteID} over:', dateRange) 
-    if isinstance(tasks,str):
-        tasks=[tasks]
+# def makeCSV(siteID,dateRange=None,tasks=[template],stage=None,outputPath=None):
+def makeCSV(siteID,**kwargs):
+    # Default arguments
+    defaultKwargs = {
+        'dateRange':None,
+        'Database':None,
+        'outputPath':None,
+        'tasks':[template],
+        'stage':None
+        }
+    
+    # Apply defaults where not defined
+    kwargs = defaultKwargs | kwargs
+    
+    tasks = kwargs['tasks']
     config = rCfg.set_user_configuration(tasks)
-    if dateRange is not None:
-        Range_index = pd.DatetimeIndex(dateRange)
+
+    # Use default if user does not provide alternative
+    if kwargs['outputPath'] is None:
+        print(config)
+        outputPath = config['rootDir']['Outputs']
+    else: outputPath = kwargs['outputPath']
+
+    # Root directory of the database
+    if kwargs['Database'] is None:
+        root = config['rootDir']['Database']
+    else: root = kwargs['Database']
+
+    if kwargs['dateRange'] is not None:
+        Range_index = pd.DatetimeIndex(kwargs['dateRange'])
     else:
         Range_index = pd.DatetimeIndex([date(datetime.now().year,1,1),datetime.now()])
-    # Range_index = pd.DatetimeIndex(dateRange)
-    
-    # Use default if user does not provide alternative
-    if outputPath is None:
-        outputPath = config['rootDir']['Outputs']
 
+    print(f'Initializing tasks for {siteID} over:', f"{Range_index.strftime(date_format='%Y-%m-%d %H:%M').values}") 
+    
     # Years to process
     Years = range(Range_index.year.min(),Range_index.year.max()+1)
-    # Root directory of the database
-    root = config['rootDir']['Database']
 
     results = {}
     for name,task in config['tasks'].items():
 
-        if stage is not None:
-            task['stage']=config['stage'][stage]
+        if kwargs['stage'] is not None:
+            task['stage']=config['stage'][kwargs['stage']]
         else:
             task['stage']=config['stage'][task['stage']]
         # Create a dict of traces
