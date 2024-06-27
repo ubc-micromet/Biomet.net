@@ -11,11 +11,13 @@ function tagsOut = tags_Standard
 %		Dependent = 'tag_LI7200'
 %
 % Zoran Nesic           File created        Mar 30, 2024
-%                       Last modification:  May  3, 2024
+%                       Last modification:  May 11, 2024
 % 
 
 % Revisions
 %
+% May 11, 2024 (Zoran)
+%   - added tag_EC_fluxes
 % May 3, 2024 (Zoran)
 %   - Moved CO2 and H2O variances from HF to _All tags.
 % Apr 14, 2024 (Zoran)
@@ -23,7 +25,24 @@ function tagsOut = tags_Standard
 % Apr 10, 2024 (Zoran)
 %  - added the missing tagsOut.tag_CH4_fluxes
 %  - found that when defining tags I used tagsOut.tag_* instead of just tag_*
-%
+% June 14, 2024 (June)
+%  - added a tag for fitering incoming radiative traces
+
+tagsOut.tag_IN_Rad = [...
+                        'SW_IN_1_1_1,'...
+                        'LW_IN_1_1_1,'...
+                        'PPFD_IN_1_1_1,'...
+                        'PPFD_IN_1_2_1,'...
+                        ];
+
+%% Fluxes
+tagsOut.tag_EC_fluxes =  [...
+                            'tag_CO2_HF,'...
+                            'tag_H2O_HF,'...
+                            'H,'...
+                            'USTAR,'...
+                            'TAU',...
+                            ];
 
 %% LI-7200/LI-7500
 

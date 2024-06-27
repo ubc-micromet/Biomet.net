@@ -4,12 +4,15 @@ function repeatTraces = findNonUniqueTraces(yearIn,siteID,stageIn,flagVerbose)
 %
 %
 % Zoran Nesic               File created:       Mar 26, 2024
-%                           Last modification:  Mar 26, 2024
+%                           Last modification:  Jun  3, 2024
 
 % Revisions:
 %
+% Jun 3, 2024 (Zoran)
+%   - Improved text output.
 
 arg_default('flagVerbose',0);
+
 try
     trace_str = readIniFileDirect(yearIn,siteID,stageIn);
 catch ME
@@ -21,11 +24,13 @@ allNames={trace_str(:).variableName};
 indReps = setdiff(1:numel(allNames),indUnique);
 if ~isempty(indReps)
     if flagVerbose ~=0 
-        fprintf('Repeats:\n');
+        fprintf('\nRepeats:\n');
         for cntReps = indReps
             fprintf('%4d - %30s\n',cntReps,allNames{cntReps});
         end
     end
     repeatTraces = {allNames{indReps}};
 else
+    fprintf('\nAll traces are unique. Done...\n');
+    repeatTraces = [];
 end

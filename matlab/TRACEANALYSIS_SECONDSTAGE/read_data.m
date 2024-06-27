@@ -78,6 +78,14 @@ bgc = [0 0.36 0.532];
 yearNow = year(datetime);
 arg_default('yearIn',yearNow)
 
+% Added by June Skeeter to read SiteID_config.yml files
+fn = fullfile(db_pth_root,"Calculation_Procedures/TraceAnalysis_ini",SiteID,strcat(SiteID,"_config.yml"));
+if isfile(fn)
+    configYAML = yaml.loadFile(fn);
+else
+    configYAML.Metadata = NaN;
+end
+
 ini_file_default = biomet_path('Calculation_Procedures\TraceAnalysis_ini',SiteID);
 ini_file_default = setFolderSeparator(fullfile(ini_file_default,[SiteID '_FirstStage.ini']));
 arg_default('ini_file',ini_file_default)

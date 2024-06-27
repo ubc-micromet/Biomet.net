@@ -10,7 +10,7 @@
 #   This template would produce two .csv files
 
 EP_biomet:
-  stage: Clean/SecondStage/
+  stage: Second
   formatting:
     units_in_header: True
     na_value: -9999
@@ -40,7 +40,7 @@ EP_biomet:
       output_name: Ta_1_1_1
 
 EP_dynamic_metadata:
-  stage: Clean/SecondStage/
+  stage: Second
   traces:
     canopy_height:
       units: m
@@ -62,7 +62,7 @@ EP_dynamic_metadata:
         units: HH:MM
 
 Soil_climate:
-  stage: Clean/ThirdStage/
+  stage: Third
   traces:
     TS_1_1_1:
       units: degC

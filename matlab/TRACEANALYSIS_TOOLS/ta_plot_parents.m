@@ -19,10 +19,13 @@ function ax = ta_plot_parents(figNum,trace_str,trace_name)
 %
 %       
 % Zoran Nesic                       File created:       Apr 17, 2024
-%                                   Last modification:  Apr 17, 2024
+%                                   Last modification:  Jun  3, 2024
 %
 
 % Revisions:
+%
+% Jun 3, 2024 (Zoran)
+%   - adjusted the figure size 
 %
 
     if ~exist('figNum') || isempty(figNum)
@@ -48,8 +51,17 @@ function ax = ta_plot_parents(figNum,trace_str,trace_name)
     tvd = datetime(trace_str(indParents(cParent)).timeVector,'convertfrom','datenum');
     minMax = trace_str(indTraceName).ini.minMax;
 
+    % Position the figure to be about 1/2 of screen height and stretched almost all the width
+    sSize = get(0,'ScreenSize');
+    sSize(4) = sSize(4)-30;     % account for the Windows toolbar at the bottom
+    sLength = sSize(3)-100;
+    sHeight = round(sSize(4)/2);
+    sXpos = 50;
+    sYpos = round(sSize(4)/2-100);
+    figure(figNum)
+    set(figNum,'outerpos',[sXpos sYpos sLength sHeight]);
 
-    figure(figNum);
+    
     x = [trace_str(indTraceName).data_old trace_str(indTraceName).data] ;
     x(x==-9999) = NaN;
     tiledlayout(2,1,"TileSpacing","none")
