@@ -1,4 +1,4 @@
-function data=run_std_dev(data,clean_tv,wlen,thres,verbose)
+function [data, mov_avg, upper_lim, lower_lim]=run_std_dev(data,clean_tv,wlen,thres,verbose)
 
 % This function is designed for removing spikes in the time series.
 
@@ -10,6 +10,8 @@ function data=run_std_dev(data,clean_tv,wlen,thres,verbose)
 
 % Revision: 
 % 
+% Jun 5, 2024 (Paul)
+% - outliers were only removed if verbose~=0
 % May 2, 2023 (June)
 %     nanstd and nanmean are depreciated
 %     switched to std(__,'omitnan')
@@ -42,11 +44,24 @@ gavg=mean(g,2,"omitnan");
 g_low=gavg-thres*gstd; % lower bound of the group
 g_up=gavg+thres*gstd;  % upper bound of the group
 rj=target_p(target<g_low| target>g_up); % find positions of data outside the range in the original array
-if ~isempty(rj) && verbose~=0
+if ~isempty(rj) % Originally had && verbose~0 which meant that the default arg would prevent outliers being removed
     data(rj)=NaN;
-    fprintf(1,'- %s: [run_std_dev] total=%d\n',s,length(rj));
-    fprintf(1,' 。%s ',string(datestr(clean_tv(rj),TF)));
-    fprintf(1, '\n');    
+
+    if verbose~=0
+        fprintf(1,'- %s: [run_std_dev] total=%d\n',s,length(rj));
+        fprintf(1,' 。%s ',string(datestr(clean_tv(rj),TF)));
+        fprintf(1, '\n');
+    end
 end
 
+% Upper limit
+upper_lim = nan(size(data));
+upper_lim(target_p) = g_up;
 
+% Lower limit
+lower_lim = nan(size(data));
+lower_lim(target_p) = g_low;
+
+% Moving average
+mov_avg = nan(size(data));
+mov_avg(target_p) = gavg;
