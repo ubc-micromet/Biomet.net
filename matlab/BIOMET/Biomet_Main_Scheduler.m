@@ -138,7 +138,7 @@ cd('d:\')
 
     %------------------------
     %  MBP1 site: data processing
-    if ismember(hourX,[16 20]) && minuteX == 12
+    if ismember(hourX,[15 19]) && minuteX == 22
         fprintf(fid,'======= MPB1 data processing (%s) ========\n',datetime);
         fprintf(fid,'%s\n',datetime);
         run_MPB_db_update;
