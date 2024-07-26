@@ -6,12 +6,14 @@ function [t,x] = BB_pl(ind, year, siteID, select, fig_num_inc,flgPause)
 %   the UBC data-base formated files.
 %
 % (c) c) Nesic Zoran         File created:       May 11, 2021      
-%                            Last modification:  Jan  5, 2024
+%                            Last modification:  Jul 16, 2024
 %           
 %
 
 % Revisions:
 %
+% Jul 16, 2024 (Zoran)
+%   - Added Precip plots
 % Jan 5, 2024 (Zoran)
 %   - tried to find a proper 24V battery voltage measurement for Manitoba sites but, given
 %     the specifics of that system, there isn't a good way to do this. EddyPro does not
@@ -152,6 +154,57 @@ trace_units = 'RH (%)';
 y_axis      = [];
 fig_num = fig_num + fig_num_inc;
 x = plt_msig( trace_path, ind, trace_name, trace_legend, year, trace_units, y_axis, t, fig_num );
+indAxes = indAxes+1; allAxes(indAxes) = gca;
+
+%----------------------------------------------------------
+% Rain gauges
+%----------------------------------------------------------
+trace_name  = sprintf('%s: %s',siteID,'Precipitation');
+switch siteID
+    case {'HOGG','YOUNG','OHM'}
+        trace_path  = char(fullfile(pthSite,'flux','P_RAIN_1_1_1'));
+        trace_legend = char('MET','LI-7500');
+        unitMult = 1000;
+    otherwise
+        trace_path  = char(fullfile(pthSite,'MET','MET_RainTips_Tot'));
+        trace_legend = [];
+        unitMult = 1;
+end
+
+trace_units = 'Precipitation (mm/30-min)';
+y_axis      = [];
+fig_num = fig_num + fig_num_inc;
+x = plt_msig( trace_path, ind, trace_name, trace_legend, year, trace_units, y_axis, t, fig_num,unitMult );
+indAxes = indAxes+1; allAxes(indAxes) = gca;
+% remember xlim, you'll need it to rescale cumulative rain
+originalXlim = xlim;
+
+%----------------------------------------------------------
+% Cumulative rain
+%----------------------------------------------------------
+% *** in case of multiple-year plots it plots only the last year
+indx = find( t_all >= 1 & t_all <= ed );                    % extract the period from
+tx = t_all(indx);                                           % the beginning of the last year
+indNew = [1:length(indx)]+round(GMTshift*48);               % use GMTshift to align the data with time vector
+
+
+trace_name  = sprintf('%s: %s',siteID,'Cumulative Rain (current year only)');
+switch siteID
+    case {'HOGG','YOUNG','OHM'}
+        trace_path  = char(fullfile(pthSite,'flux','P_RAIN_1_1_1'));
+        trace_legend = char('MET','LI-7500');
+    otherwise
+        trace_path  = char(fullfile(pthSite,'MET','MET_RainTips_Tot'));
+        trace_legend = [];
+end
+
+trace_units = 'Precipitation (mm)';
+[x1,tx_new] = read_sig(trace_path(1,:), indNew,year, tx,0); %#ok<*ASGLU>
+x1(isnan(x1)) = 0; % replace NaNs with 0 so that cumsum can work
+y_axis      = [];
+fig_num = fig_num + fig_num_inc;
+x = plt_msig( cumsum(x1), ind, trace_name, trace_legend, year, trace_units, y_axis, t, fig_num,unitMult );
+xlim(originalXlim);
 indAxes = indAxes+1; allAxes(indAxes) = gca;
 
 %----------------------------------------------------------
