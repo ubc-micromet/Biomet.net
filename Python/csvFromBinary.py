@@ -37,13 +37,11 @@ def makeCSV(siteID,**kwargs):
     
     # Apply defaults where not defined
     kwargs = defaultKwargs | kwargs
-    
     tasks = kwargs['tasks']
+    
     config = rCfg.set_user_configuration(tasks)
-
     # Use default if user does not provide alternative
     if kwargs['outputPath'] is None:
-        print(config)
         outputPath = config['rootDir']['Outputs']
     else: outputPath = kwargs['outputPath']
 
