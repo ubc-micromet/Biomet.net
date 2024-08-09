@@ -23,6 +23,7 @@ class writeTraces():
             'mode':'nafill',
             'stage':'Flux',
             'tag':''
+            'verbose':True
             }
         # Apply defaults where not defined
         self.kwargs = defaultKwargs | kwargs
@@ -32,7 +33,7 @@ class writeTraces():
             self.config['database'] = self.kwargs['database']
         if self.kwargs['stage'] in self.config['stage'].keys():
             self.kwargs['stage'] = self.config['stage'][self.kwargs['stage']]
-        if 'parse_dates' in inputFileMetaData:
+        if 'parse_dates' in inputFileMetaData and type(inputFileMetaData['parse_dates'])==list:
             val = inputFileMetaData['parse_dates']
             key = tuple(['TIMESTAMP']+['' for i in range(len(inputFileMetaData['header'])-1)])
             inputFileMetaData['parse_dates'] = {key:val}
@@ -85,9 +86,11 @@ class writeTraces():
             tracePath = f"{db}{traceName}"
             if os.path.isfile(tracePath):
                 trace = np.fromfile(tracePath,dt)
-                print(f'{tracePath} exists, {self.kwargs["mode"]} existing file')
+                if kwargs['verbose'] == True:
+                    print(f'{tracePath} exists, {self.kwargs["mode"]} existing file')
             else:
-                print(f'{tracePath} does not exist, writing new file')
+                if kwargs['verbose'] == True:
+                    print(f'{tracePath} does not exist, writing new file')
                 trace = np.empty(self.Year.shape[0],dtype=dt)
                 trace[:] = np.nan
             if self.kwargs['mode'].lower() == 'nafill':
