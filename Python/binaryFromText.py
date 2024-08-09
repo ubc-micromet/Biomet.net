@@ -22,7 +22,7 @@ class writeTraces():
             'excludeCols':[],
             'mode':'nafill',
             'stage':'Flux',
-            'tag':''
+            'tag':'',
             'verbose':True
             }
         # Apply defaults where not defined
