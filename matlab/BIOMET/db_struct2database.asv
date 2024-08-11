@@ -43,17 +43,33 @@ function [structIn,dbFileNames, dbFieldNames,errCode] = db_struct2database(struc
 %
 %
 % (c) Zoran Nesic               File created:       Sep 28, 2023
-%                               Last modification:  Mar 11, 2024
+%                               Last modification:  Aug 11, 2024
 
 % Revisions:
 % 
+% Aug 11, 2024 (Zoran)
+%   - Fixed bug: clean_tv file should have been treated the same way as sample_tv 
+% and other time traces
+% May 9, 2024 (Zoran)
+%   - Bug fix. This line was wrong because it worked only for 30-minute tables: 
+%       currentTv = fr_round_time(datetime(currentYear,1,1,0,30,0):fr_timestep(timeUnit):datetime(currentYear+1,1,1,0,0,0))';
+%     correct line is:
+%     currentTv = fr_round_time(datetime(currentYear,1,1,0,0,0)+fr_timestep(timeUnit):fr_timestep(timeUnit):datetime(currentYear+1,1,1,0,0,0),timeUnit)';
+% Mar 22, 2024 (Zoran)
+%   - Bug fix: when the output folder contained ".DS_Store" file saveAll would
+%     crash. Added this line: "&& ~contains(allFiles(cntAllFiles).name,'.DS_Store') ..."
 % Mar 11, 2024 (Zoran)
 %   - found a bug. The program was not dealing with the duplicate time-vector entries
 %     properly (actually, not at all). 
 %     It was testing: 
-%            [tmp_new_tv,IA]=unique(new_tv);
-    if length(tmp_new_tv) ~= length(new_tv)
-        
+%            [new_tv,IA]=unique(new_tv);
+%            if length(tmp_new_tv) ~= length(new_tv)
+%     but this was never true IA and new_tv were always of the same size.
+%     Changed to:
+%           [tmp_new_tv,IA]=unique(new_tv,'last');
+%           if length(tmp_new_tv) ~= length(new_tv)
+%     The parameter 'last' in unique specifies that last duplicate entry should be kept.
+%
 % Jan 17, 2024 (Zoran)
 %  - added forceFullDB flag. The program now defaults to a full data base (for 30min data that means 17520 points)
 % Jan 12, 2024 (Zoran)
@@ -136,11 +152,9 @@ function [structIn,dbFileNames, dbFieldNames,errCode] = db_struct2database(struc
     end
     
     % Make sure there are no duplicate entries.
-    [tmp_new_tv,IA]=unique(new_tv);
-    if length(tmp_new_tv) ~= length(new_tv)
-        % If there are duplicate entries, keep the first one
-        % (Note: it would probably be better to keep the last one.
-        %        Deal with it later, if needed. )
+    % If there are duplicate entries, keep the last one
+    [tmp_new_tv,IA]=unique(new_tv,'last');
+    if length(tmp_new_tv) ~= length(new_tv)               
         if structType == 0
             structIn = structIn(IA);
         else
@@ -232,7 +246,7 @@ function [structIn,dbFileNames, dbFieldNames,errCode] = db_struct2database(struc
 
         % First check if working with a full data base (17,520 samples for 365 day in case of 30-min sampling)
         if forceFullDB == 1
-            currentTv = fr_round_time(datetime(currentYear,1,1,0,30,0):fr_timestep(timeUnit):datetime(currentYear+1,1,1,0,0,0))';
+            currentTv = fr_round_time(datetime(currentYear,1,1,0,0,0)+fr_timestep(timeUnit):fr_timestep(timeUnit):datetime(currentYear+1,1,1,0,0,0),timeUnit)';
             % to prevent mistakently overwriting a sparse database, check if TimeVector already exists and it's of
             % different size that currentTv
             if ~(isempty(currentTvfile) | ...
@@ -363,7 +377,9 @@ function errCode = saveAll(statsNew,fileNamesIn,fieldNamesIn,currentTv,inputTv,m
                             if ~isempty(newDataInd)
                                 dataOut(newDataInd) = dataIn;
                             end                    
-                            if contains(fileName,'RecalcTime')  || contains(fileName,'sample_tv')
+                            if contains(fileName,'RecalcTime') ...
+                                      || contains(fileName,'sample_tv')...
+                                      || contains(fileName,'clean_tv')
                                 save_bor(fileName,8,dataOut);
                             else
                                 save_bor(fileName,1,dataOut);
@@ -377,7 +393,8 @@ function errCode = saveAll(statsNew,fileNamesIn,fieldNamesIn,currentTv,inputTv,m
         
                         if contains(fileName,'RecalcTime') ...
                                 || contains(fileName,'TimeVector') ...
-                                || contains(fileName,'sample_tv')
+                                || contains(fileName,'sample_tv') ...
+                                || contains(fileName,'clean_tv')
                             oldTrace = read_bor(fileName,8);
                         else                    
                             oldTrace = read_bor(fileName);
@@ -393,7 +410,8 @@ function errCode = saveAll(statsNew,fileNamesIn,fieldNamesIn,currentTv,inputTv,m
                         % Save the new combined trace
                         if contains(fileName,'RecalcTime') ...
                                 || contains(fileName,'TimeVector') ...
-                                || contains(fileName,'sample_tv')
+                                || contains(fileName,'sample_tv')...
+                                || contains(fileName,'clean_tv')
                             save_bor(fileName,8,dataOut);
                         else
                             save_bor(fileName,1,dataOut);
@@ -429,7 +447,9 @@ function errCode = saveAll(statsNew,fileNamesIn,fieldNamesIn,currentTv,inputTv,m
             if ~allFiles(cntAllFiles).isdir ...
                && ~strcmpi(allFiles(cntAllFiles).name,'TimeVector') ...
                && ~contains(allFiles(cntAllFiles).name,'.mat','IgnoreCase',true) ...
-               && ~strcmpi(allFiles(cntAllFiles).name,'clean_tv')
+               && ~contains(allFiles(cntAllFiles).name,'.DS_Store') ...
+               && ~contains(allFiles(cntAllFiles).name,'clean_tv')
+                
                 foundFile = false;                      % Default: the file does not exist in fileNamesIn  
                 % search for fileName in fileNamesIn
                 for cntAllFields = 1:length(fileNamesIn)
@@ -447,7 +467,8 @@ function errCode = saveAll(statsNew,fileNamesIn,fieldNamesIn,currentTv,inputTv,m
                     % Start by loading the file up                  
                     if contains(fileName,'RecalcTime') ...
                             || contains(fileName,'TimeVector') ...
-                            || contains(fileName,'sample_tv')
+                            || contains(fileName,'sample_tv') ...
+                            || contains(fileName,'clean_tv')
                         oldTrace = read_bor(fileName,8);
                     else
                         oldTrace = read_bor(fileName);
@@ -460,7 +481,8 @@ function errCode = saveAll(statsNew,fileNamesIn,fieldNamesIn,currentTv,inputTv,m
                     % Save the new combined trace
                     if contains(fileName,'RecalcTime') ...
                             || contains(fileName,'TimeVector') ...
-                            || contains(fileName,'sample_tv')
+                            || contains(fileName,'sample_tv') ...
+                            || contains(fileName,'clean_tv')
                         save_bor(fileName,8,dataOut);
                     else
                         save_bor(fileName,1,dataOut);
