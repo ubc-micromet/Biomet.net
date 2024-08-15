@@ -86,10 +86,10 @@ class writeTraces():
             tracePath = f"{db}{traceName}"
             if os.path.isfile(tracePath):
                 trace = np.fromfile(tracePath,dt)
-                if kwargs['verbose'] == True:
+                if self.kwargs['verbose'] == True:
                     print(f'{tracePath} exists, {self.kwargs["mode"]} existing file')
             else:
-                if kwargs['verbose'] == True:
+                if self.kwargs['verbose'] == True:
                     print(f'{tracePath} does not exist, writing new file')
                 trace = np.empty(self.Year.shape[0],dtype=dt)
                 trace[:] = np.nan
