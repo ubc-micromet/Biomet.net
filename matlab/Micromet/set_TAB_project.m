@@ -1,11 +1,29 @@
 function structProject = set_TAB_project(projectPath,flagSetUserData,localPath)
 % Entry point for all Trace Analysis Biomet (TAB) data projects
+% set_TAB_project ('p:\')  - sets Biomet.net toolbox on p: drive that has R/W access 
+%                            to the folder: p:\Database, p:\Sites,p:\Matlab
 %
-% 
-% NOTE: This is beta concept testing.
+% set_TAB_project('v:\',[],'c:\temp') sets Biomet.net to run on v:\ drive with R/O access
+%                                     It uses 'c:\temp' for writing temp files.
+%
+% Inputs:
+%   projectPath         - path to the main project folder (parent of Database and Sites folders)
+%   flagSetUserData     - 0 (default) do nothing, 1 - store structProject into figure(0) UserData.
+%   localPath           - [] (default) - the current Matlab window will be set to projectPath/Matlab
+%                                        and biomet_database_default and biomet_sites_default files
+%                                        will be saved there.
+%                         localPath    - the current Matlab window will be set to localPath and the
+%                                        default files will go there. To be used when the user
+%                                        has Read Only permissions for the projectPath.
+% Output:
+%   structProject       - a structure that keeps all the info about a project.
+%
+%
+%
+% NOTE: 
 %       This file calls pretend_configYAML which is now 
 %       a Matlab function but it will be replaced by:
-%       yaml.loadfile('project_config.yml') once
+%       yaml.loadfile('projectName_config.yml') once
 %       we finalize the format of structProject.
 %
 % Zoran Nesic           File created:       May 15, 2024
@@ -17,6 +35,7 @@ function structProject = set_TAB_project(projectPath,flagSetUserData,localPath)
 %   - added input option localPath. When accessing a read-only project folder remotely,
 %     creating biomet_sites_ and dabase_default would not work. In that case
 %     user should point localPath to the folder where they have write priviledges. 
+%   - Added more comments
 % Aug 8, 2024 (Zoran)
 %   - Fixed a bug where if projectPath was a string and not a char the 
 %     biomet_database_default.m creation would fail. Made sure that the projectPath
@@ -63,7 +82,7 @@ if flagSetUserData == 1
 end
 
 % to keep compatibility with the legacy code, this function
-% will now create the following Matlab functions in the projectPath folder:
+% will now create the following Matlab functions in the current folder:
 % - biomet_database_default.m
 % - biomet_sites_default.m
 fid = fopen('biomet_database_default.m','w');
