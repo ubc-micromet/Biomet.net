@@ -55,7 +55,7 @@ def makeCSV(siteID,**kwargs):
     else:
         Range_index = pd.DatetimeIndex(defaultDateRange)
 
-    print(f'Initializing tasks for {siteID} over:', f"{Range_index.strftime(date_format='%Y-%m-%d %H:%M').values}") 
+    print(f'Generating requested files tasks for {siteID} over:', f"{Range_index.strftime(date_format='%Y-%m-%d %H:%M').values}") 
     
     # Years to process
     Years = range(Range_index.year.min(),Range_index.year.max()+1)
@@ -146,7 +146,6 @@ def makeCSV(siteID,**kwargs):
 
         print(f'See output: {dout}')
         results[name]=dout
-    print('All tasks completed successfully')
     return(results)
 
 # If called from command line ...
