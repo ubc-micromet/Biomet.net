@@ -1,4 +1,4 @@
-function structProject = set_TAB_project(projectPath,flagSetUserData)
+function structProject = set_TAB_project(projectPath,flagSetUserData,localPath)
 % Entry point for all Trace Analysis Biomet (TAB) data projects
 %
 % 
@@ -9,10 +9,14 @@ function structProject = set_TAB_project(projectPath,flagSetUserData)
 %       we finalize the format of structProject.
 %
 % Zoran Nesic           File created:       May 15, 2024
-%                       Last modification:  Aug  8, 2024
+%                       Last modification:  Aug 20, 2024
 
 % Revisions
 %
+% Aug 20, 2024 (Zoran)
+%   - added input option localPath. When accessing a read-only project folder remotely,
+%     creating biomet_sites_ and dabase_default would not work. In that case
+%     user should point localPath to the folder where they have write priviledges. 
 % Aug 8, 2024 (Zoran)
 %   - Fixed a bug where if projectPath was a string and not a char the 
 %     biomet_database_default.m creation would fail. Made sure that the projectPath
@@ -24,6 +28,7 @@ function structProject = set_TAB_project(projectPath,flagSetUserData)
 %   - Created an external, project-specific function: pretend_configYAML()
 
 arg_default('flagSetUserData',0);
+arg_default('localPath',[]);
 
 % Make sure the file separators are set properly for 
 % Windows and macOS
@@ -35,7 +40,14 @@ if ~exist(projectPath,'dir')
 end
 
 % set the Matlab current path to projectPath/Matlab
-cd(fullfile(projectPath,'Matlab'))
+if isempty(localPath)
+    cd(fullfile(projectPath,'Matlab'));
+elseif exist(localPath,'dir')
+    addpath(fullfile(projectPath,'Matlab'))
+    cd(localPath)
+else
+    error (sprintf('Path: %s does not exist!',localPath));
+end
 
 % ----------------------------------------
 % load yaml file into structProject here
