@@ -19,6 +19,10 @@ for y = startY:endY
     [PARin,clean_tv] = read_db([y], siteID,'Met','MET_PARin_Avg');
     H(H <= -1000)=NaN;
     H_reproc(H_reproc <= -1000)=NaN;
+    fprintf('%.7f\n',length(clean_tv))
+    fprintf('%.7f\n',min(clean_tv))
+    fprintf('%.7f\n',length(clean_tv2))
+    fprintf('%.7f\n',min(clean_tv2))
     PARin(PARin <= -9999)=NaN;
     DT = datetime(clean_tv,"ConvertFrom","datenum");
     DT2 = datetime(clean_tv2,"ConvertFrom","datenum");

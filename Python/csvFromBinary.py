@@ -25,6 +25,7 @@ defaultDateRange = [date(datetime.now().year,1,1),datetime.now()]
 
 # Default arguments
 defaultArgs = {
+    'siteID':'BB',
     'dateRange':[date(datetime.now().year,1,1).strftime("%Y-%m-%d"),datetime.now().strftime("%Y-%m-%d")],
     'database':'None',
     'outputPath':'None',
@@ -35,16 +36,17 @@ defaultArgs = {
 
 # Create the csv
 # args with "None" value provide option to overwrite default
-def makeCSV(siteID,**kwargs):
+def makeCSV(**kwargs):
     
     # Apply defaults where not defined
     kwargs = defaultArgs | kwargs
     tasks = kwargs['tasks']
+    siteID = kwargs['siteID']
     
     config = rCfg.set_user_configuration(tasks)
     # Use default if user does not provide alternative
     if kwargs['outputPath'] == 'None':
-        outputPath = config['rootDir']['Outputs']
+        outputPath = config['rootDir']['outputs']
     else: outputPath = kwargs['outputPath']
 
     # Root directory of the database
@@ -64,7 +66,7 @@ def makeCSV(siteID,**kwargs):
 
         if kwargs['stage'] != 'None':
             task['stage']=config['stage'][kwargs['stage']]
-        else:
+        elif task['stage'] in config['stage'].keys():
             task['stage']=config['stage'][task['stage']]
         # Create a dict of traces
         traces={}
@@ -174,4 +176,4 @@ if __name__ == '__main__':
     kwargs = vars(args)
     for d in dictArgs:
         kwargs[d] = json.loads(kwargs[d])
-    makeCSV(args.siteID,**kwargs)
+    makeCSV(**kwargs)
