@@ -21,16 +21,18 @@ function structProject = set_TAB_project(projectPath,flagSetUserData,localPath)
 %
 %
 % NOTE: 
-%       This file calls pretend_configYAML which is now 
-%       a Matlab function but it will be replaced by:
+%       This file calls get_TAB_project_configuration which is now 
+%       a Matlab function. In the final verson it will call
 %       yaml.loadfile('projectName_config.yml') once
 %       we finalize the format of structProject.
 %
 % Zoran Nesic           File created:       May 15, 2024
-%                       Last modification:  Aug 20, 2024
+%                       Last modification:  Aug 22, 2024
 
 % Revisions
 %
+% Aug 22, 2024 (Zoran)
+%   - changed the name of the function that loads yaml file to get_TAB_project_configuration.
 % Aug 20, 2024 (Zoran)
 %   - added input option localPath. When accessing a read-only project folder remotely,
 %     creating biomet_sites_ and dabase_default would not work. In that case
@@ -71,7 +73,7 @@ end
 % ----------------------------------------
 % load yaml file into structProject here
 % ----------------------------------------
-structProject = pretend_configYAML(projectPath);
+structProject = get_TAB_project_configuration(projectPath);
 
 % if required, save data under UserData so it's visible 
 % to all Matlab functions.
