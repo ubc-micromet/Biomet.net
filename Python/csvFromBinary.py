@@ -11,6 +11,7 @@
 # Setup the config files for your environment accordingly before running
 
 import os
+import sys
 import json
 import argparse
 import numpy as np
@@ -37,7 +38,6 @@ defaultArgs = {
 # Create the csv
 # args with "None" value provide option to overwrite default
 def makeCSV(**kwargs):
-    
     # Apply defaults where not defined
     kwargs = defaultArgs | kwargs
     tasks = kwargs['tasks']
@@ -54,7 +54,7 @@ def makeCSV(**kwargs):
         root = config['rootDir']['database']
     else: root = kwargs['database']
 
-    Range_index = pd.DatetimeIndex(defaultDateRange)
+    Range_index = pd.DatetimeIndex(kwargs['dateRange'])
 
     print(f'Generating requested files tasks for {siteID} over:', f"{Range_index.strftime(date_format='%Y-%m-%d %H:%M').values}") 
     
@@ -80,8 +80,19 @@ def makeCSV(**kwargs):
         tv = np.concatenate(
             [np.fromfile(f"{root}{YYYY}/{file}",config['dbase_metadata']['timestamp']['dtype']) for YYYY in Years],
             axis=0)
+        
         DT = pd.to_datetime(tv-config['dbase_metadata']['timestamp']['base'],unit=config['dbase_metadata']['timestamp']['base_unit']).round('S')
-
+        differences = DT.to_series().diff()
+        expected_difference = pd.Timedelta(config['dbase_metadata']['timestamp']['resolution'])
+        anomalies = ((differences != expected_difference)&(pd.isnull(differences) == False))
+        if anomalies.sum()>1:
+            ipt = input(f'Warning: timestamp file {file} appears to be corrupted.  Attempt to coerce Y/N')
+            if ipt.lower() == 'y':
+                DT_s = DT.to_series()
+                DT_s[anomalies] = pd.NaT
+                DT = pd.DatetimeIndex(DT_s.interpolate())
+            elif ipt.lower() != 'n':
+                sys.exit()
         for time_trace,formatting in task['formatting']['time_vectors'].items():
             traces[time_trace] = DT.floor('Min').strftime(formatting['fmt'])
             # Add name-unit pairs to column header list
