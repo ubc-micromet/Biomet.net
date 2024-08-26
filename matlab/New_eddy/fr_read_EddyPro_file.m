@@ -16,11 +16,17 @@ function [EngUnits, Header,tv,outStruct] = fr_read_EddyPro_file(fileName,assign_
 %
 %
 % (c) Zoran Nesic                   File created:       Aug 25, 2022
-%                                   Last modification:  Feb 16, 2024
+%                                   Last modification:  Aug 25, 2024
 %
 
 % Revisions (last one first):
 %
+% Aug 25, 2024 (Zoran)
+%   - For full_output files, changed from:
+%        colToKeep = [2 Inf];
+%      to:
+%        colToKeep = [5 Inf];
+%      That removed some input columns that were always set to NaN (time,date,filename).
 % Feb 16, 2024 (Zoran)
 %   - Fixed handling of flags with NaN values. dec2base does not like NaNs.
 % Feb 14, 2024 (Zoran)
@@ -83,7 +89,7 @@ function [EngUnits, Header,tv,outStruct] = fr_read_EddyPro_file(fileName,assign_
         elseif strcmpi(flagFileType,'summary')
             timeInputFormat = {[],'HH:mm:ss'};
             dateColumnNum = [3 4];
-            colToKeep = [2 Inf];
+            colToKeep = [5 Inf];
             structType = 1;
             inputFileType = 'delimitedtext';
             modifyVarNames=0;
