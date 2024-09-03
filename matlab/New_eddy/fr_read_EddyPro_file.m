@@ -1,4 +1,4 @@
-function [EngUnits, Header,tv,outStruct] = fr_read_EddyPro_file(fileName,assign_in,varName)
+function [EngUnits, Header,tv,outStruct] = fr_read_EddyPro_file(fileName,assign_in,varName,optionsFileRead)
 %  fr_read_EddyPro_file - reads EddyPro _full_output and _biomet_ files
 %
 % 
@@ -13,14 +13,20 @@ function [EngUnits, Header,tv,outStruct] = fr_read_EddyPro_file(fileName,assign_
 %                         for the output variables. If
 %                         empty the default name will be 'LGR' (LGR.tv,
 %                         LGR.CH4_ppm...)
+%   optionsFileRead     - Structure that can contail any of the input
+%                         options for fr_read_generic_file. Any field that
+%                         exists in this structure overwrites the default
+%                         values used in this function. 
 %
 %
 % (c) Zoran Nesic                   File created:       Aug 25, 2022
-%                                   Last modification:  Feb 16, 2024
+%                                   Last modification:  Sep  2, 2024
 %
 
 % Revisions (last one first):
 %
+% Sep 2, 2024
+%   - Added a new input parameter: optionsFileRead 
 % Feb 16, 2024 (Zoran)
 %   - Fixed handling of flags with NaN values. dec2base does not like NaNs.
 % Feb 14, 2024 (Zoran)
@@ -52,6 +58,7 @@ function [EngUnits, Header,tv,outStruct] = fr_read_EddyPro_file(fileName,assign_
     try
         arg_default('assign_in',[]);
         arg_default('varName','Stats');
+        arg_default('optionsFileRead',[])
         
         if strcmpi(flagFileType,'fulloutput')
             timeInputFormat = {[],'HH:mm'}; 
@@ -60,7 +67,20 @@ function [EngUnits, Header,tv,outStruct] = fr_read_EddyPro_file(fileName,assign_
             structType = 1;
             inputFileType = 'delimitedtext';
             modifyVarNames=0;
-            VariableNamesLine = 2;         
+            VariableNamesLine = 2;       
+            if ~isempty(optionsFileRead)
+                fNames = fieldnames(optionsFileRead);
+                for cntFields = 1:length(fNames)
+                    cName = char(fNames(cntFields));
+                    sCMD = [char(cName) ' = optionsFileRead.(cName);'];
+                    try
+                        eval(sCMD);
+                    catch ME
+                        disp ME
+                    end
+                end
+            end
+
             % [EngUnits, Header,tv,outStruct] = fr_read_generic_data_file(fileName,...
             %                                                '',...
             %                                                 [], [2 3],timeInputFormat,[4 Inf],1,'delimitedtext',0,2);           
@@ -74,7 +94,19 @@ function [EngUnits, Header,tv,outStruct] = fr_read_EddyPro_file(fileName,assign_
             structType = 1;
             inputFileType = 'delimitedtext';
             modifyVarNames=0;
-            VariableNamesLine = 1;         
+            VariableNamesLine = 1;        
+            if ~isempty(optionsFileRead)
+                fNames = fieldnames(optionsFileRead);
+                for cntFields = 1:length(fNames)
+                    cName = char(fNames(cntFields));
+                    sCMD = [char(cName) ' = optionsFileRead.(cName);'];
+                    try
+                        eval(sCMD);
+                    catch ME
+                        disp ME
+                    end
+                end
+            end            
             [EngUnits,Header,tv,outStruct] = fr_read_generic_data_file(fileName,...
                                                              [],[], dateColumnNum, timeInputFormat,colToKeep,structType,...
                                                              inputFileType,modifyVarNames,VariableNamesLine);            
