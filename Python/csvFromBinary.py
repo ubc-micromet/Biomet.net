@@ -11,6 +11,7 @@
 # Setup the config files for your environment accordingly before running
 
 import os
+import json
 import argparse
 import numpy as np
 import pandas as pd
@@ -20,43 +21,40 @@ from datetime import datetime,date
 os.chdir(os.path.split(__file__)[0])
 
 template = 'config_files/csv_from_binary.yml'
+defaultDateRange = [date(datetime.now().year,1,1),datetime.now()]
+
+# Default arguments
+defaultArgs = {
+    'dateRange':[date(datetime.now().year,1,1).strftime("%Y-%m-%d"),datetime.now().strftime("%Y-%m-%d")],
+    'database':'None',
+    'outputPath':'None',
+    'tasks':[template],
+    'stage':'None',
+    'nameTimeStamp':True
+    }
 
 # Create the csv
 # args with "None" value provide option to overwrite default
-# def makeCSV(siteID,dateRange=None,tasks=[template],stage=None,outputPath=None):
 def makeCSV(siteID,**kwargs):
-    # Default arguments
-    defaultKwargs = {
-        'dateRange':None,
-        'Database':None,
-        'outputPath':None,
-        'tasks':[template],
-        'stage':None
-        }
     
     # Apply defaults where not defined
-    kwargs = defaultKwargs | kwargs
-    
+    kwargs = defaultArgs | kwargs
     tasks = kwargs['tasks']
+    
     config = rCfg.set_user_configuration(tasks)
-
     # Use default if user does not provide alternative
-    if kwargs['outputPath'] is None:
-        print(config)
+    if kwargs['outputPath'] == 'None':
         outputPath = config['rootDir']['Outputs']
     else: outputPath = kwargs['outputPath']
 
     # Root directory of the database
-    if kwargs['Database'] is None:
-        root = config['rootDir']['Database']
-    else: root = kwargs['Database']
+    if kwargs['database'] == 'None':
+        root = config['rootDir']['database']
+    else: root = kwargs['database']
 
-    if kwargs['dateRange'] is not None:
-        Range_index = pd.DatetimeIndex(kwargs['dateRange'])
-    else:
-        Range_index = pd.DatetimeIndex([date(datetime.now().year,1,1),datetime.now()])
+    Range_index = pd.DatetimeIndex(defaultDateRange)
 
-    print(f'Initializing tasks for {siteID} over:', f"{Range_index.strftime(date_format='%Y-%m-%d %H:%M').values}") 
+    print(f'Generating requested files tasks for {siteID} over:', f"{Range_index.strftime(date_format='%Y-%m-%d %H:%M').values}") 
     
     # Years to process
     Years = range(Range_index.year.min(),Range_index.year.max()+1)
@@ -64,7 +62,7 @@ def makeCSV(siteID,**kwargs):
     results = {}
     for name,task in config['tasks'].items():
 
-        if kwargs['stage'] is not None:
+        if kwargs['stage'] != 'None':
             task['stage']=config['stage'][kwargs['stage']]
         else:
             task['stage']=config['stage'][task['stage']]
@@ -139,7 +137,10 @@ def makeCSV(siteID,**kwargs):
 
         # Format filename and save output
         dates = Range_index.strftime('%Y%m%d%H%M')
-        fn = f"{siteID}_{name}_{dates[0]}_{dates[1]}"
+        if kwargs['nameTimeStamp'] == True:
+            fn = f"{siteID}_{name}_{dates[0]}_{dates[1]}"
+        else:
+            fn = f"{siteID}_{name}"
         if os.path.isdir(outputPath) == False:
             os.makedirs(outputPath)
         dout = f"{outputPath}/{fn}.csv"
@@ -147,7 +148,6 @@ def makeCSV(siteID,**kwargs):
 
         print(f'See output: {dout}')
         results[name]=dout
-    print('All tasks completed successfully')
     return(results)
 
 # If called from command line ...
@@ -155,36 +155,23 @@ if __name__ == '__main__':
     
     CLI=argparse.ArgumentParser()
     
-    CLI.add_argument(
-        "--siteID", 
-        nargs="?",# Use "?" to limit to one argument instead of list of arguments
-        type=str,
-        default='BB',
-        )
-
-    CLI.add_argument(
-        "--dateRange", 
-        nargs='+', # 1 or more values expected => creates a list
-        type=str,
-        default=[(pd.Timestamp.now()-pd.Timedelta(days=30)).strftime('%Y%m%d'),
-                pd.Timestamp.now().strftime('%Y%m%d')],
-        )
+    dictArgs = []
+    for key,val in defaultArgs.items():
+        dt = type(val)
+        nargs = "?"
+        if dt == type({}):
+            dictArgs.append(key)
+            dt = type('')
+            val = '{}'
+        elif dt == type([]):
+            nargs = '+'
+            dt = type('')
         
-    CLI.add_argument(
-        "--tasks", 
-        nargs='+',
-        type=str,
-        default=[template],
-        )
-      
-    CLI.add_argument(
-        "--outputPath", 
-        nargs='?',
-        type=str,
-        default=None,
-        )
+        CLI.add_argument(f"--{key}",nargs=nargs,type=dt,default=val)
 
-    # Parse the args and make the call
+    # parse the command line
     args = CLI.parse_args()
-
-    makeCSV(args.siteID,args.dateRange,args.tasks,args.outputPath)
+    kwargs = vars(args)
+    for d in dictArgs:
+        kwargs[d] = json.loads(kwargs[d])
+    makeCSV(args.siteID,**kwargs)

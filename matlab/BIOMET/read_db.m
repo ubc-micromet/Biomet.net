@@ -1,5 +1,6 @@
 function [data,tv, loadError] = read_db(Years,SiteId,pth_subdir,var_name,warn_flag)
 
+
 % read_db reads half hourly data for a single variable from multiple 
 %         years into a single column vector ('data')and creates a time 
 %         vector of identical length ('tv')whose elements correspond to the times 
@@ -38,6 +39,7 @@ function [data,tv, loadError] = read_db(Years,SiteId,pth_subdir,var_name,warn_fl
 % Jul 29, 2024 (P.Moore)
 %   - Added an additional function output (loadError) so that the 
 %       information could be passed to the calling function when the 
+
 %       try-catch statement in the sub-function encounters an error.
 % Nov 25, 2022 (Zoran)
 %   - Under 3. Prepend subdir name to time vector names
@@ -185,6 +187,7 @@ if mean(diff(tv_db)) > 1/48-1/86400 & mean(diff(tv_db)) < 1/48+1/86400 %takes ca
         % When try-catch subfunction can't find trace
         %--> Generating an empty variable causes unwanted behaviour with
         %    #include of EddyPro variables.
+
         loadError = 1;
     end
     

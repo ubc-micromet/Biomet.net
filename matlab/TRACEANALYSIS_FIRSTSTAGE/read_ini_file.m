@@ -34,6 +34,13 @@ function trace_str_out = read_ini_file(fid,yearIn,fromRootIniFile)
 
 % Revisions
 %
+% Sep 2, 2024 (Zoran)
+%   - Improved error reporting. The function now shows which ini file
+%     has an error in it.
+%   - Error messages are now in red color
+% Aug 14, 2024 (Zoran)
+%   - Saved globalVars.other under the field .ini.globalVars.other. That way the globalVars can be used in
+%     other parts of the program if needed. One example would be globalVars.other.singlePointInterpolation = 'on'.
 % June 7/8, 2024 (Zoran)
 %   - Removed the warning message saying that the first stage ini file should be second stage.
 %     This warning/error was introduced when "Evaluate" option was added to the first stage.
@@ -384,7 +391,8 @@ try
                             %eval(['temp_var.' curr_line ';']);
                         catch ME
                             %Any error's are caught in the try-catch block:
-                            disp(['Error in trace #' num2str(countTraces) ' on line number: ' num2str(countLines) '!']);
+                            fprintf(2,'Error in trace #%d on line number: %d!\n', countTraces,countLines);
+                            fprintf(2,'In file: %s\n',iniFileName)
                             disp(ME);
                             trace_str_out='';
                             return
@@ -558,6 +566,10 @@ if ~flagRecursiveCall
                     end
                 end                    
             end
+        end
+        % if globalVars.other exist, store them under the ini.globalVars.other field
+        if exist('globalVars','var') && isfield(globalVars,'other')
+            trace_str(cntTrace).ini.globalVars.other = globalVars.other;
         end
     end
     
