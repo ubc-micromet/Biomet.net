@@ -163,7 +163,7 @@ trace_in.DOY        = timeVector - datenum(Year,1,0);
 trace_in.DOY        = trace_in.DOY - time_shift/24;
 trace_in.timeVector = timeVector;
 trace_in.data_old   = trace_in.data;
-trace_in.Error	    = loadError; % Added 2024-07-29 (P.Moore)
+trace_in.Error      = loadError; % Added 2024-07-29 (P.Moore)
 trace_out           = trace_in;
 
 
