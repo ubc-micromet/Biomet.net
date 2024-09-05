@@ -30,7 +30,7 @@ class writeTraces():
         self.siteID = siteID
         self.config = rCfg.set_user_configuration()
         if self.kwargs['database'] is not None:
-            self.config['database'] = self.kwargs['database']
+            self.config['rootDir']['database'] = self.kwargs['database']
         if self.kwargs['stage'] in self.config['stage'].keys():
             self.kwargs['stage'] = self.config['stage'][self.kwargs['stage']]
         if 'parse_dates' in inputFileMetaData and type(inputFileMetaData['parse_dates'])==list:
