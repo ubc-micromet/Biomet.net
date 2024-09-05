@@ -19,23 +19,27 @@ function ax = ta_plot_parents(figNum,trace_str,trace_name)
 %
 %       
 % Zoran Nesic                       File created:       Apr 17, 2024
-%                                   Last modification:  Jun  3, 2024
+%                                   Last modification:  Sep  5, 2024
 %
 
 % Revisions:
 %
+% Sep 5, 2024 (Zoran)
+%   - Bug fix: it wouldn't plot traces with no parents because tv trace was
+%     indexed improperly.
+%   - removed an orphaned "clear" statement
+%   - added 'var' to exist statement
 % Jun 3, 2024 (Zoran)
 %   - adjusted the figure size 
 %
 
-    if ~exist('figNum') || isempty(figNum)
+    if ~exist('figNum','var') || isempty(figNum)
         figNum = figure;
     end
     
     % 
     [~,indTraceName,indParents] = findParents(trace_str,trace_name);
     
-    clear allParents;
     %indTraceName = find_trace(trace_str,trace_name);
     sLegend = {['  0 - SELF (' trace_name ')']};
     %allParents = [];
@@ -48,7 +52,7 @@ function ax = ta_plot_parents(figNum,trace_str,trace_name)
         allParents(~isnan(trace_str(indParents(cParent)).data),cParent+1) = NaN;
         sLegend{cParent+1} = sprintf('%3d - %s',cParent,trace_str(indParents(cParent)).variableName);
     end
-    tvd = datetime(trace_str(indParents(cParent)).timeVector,'convertfrom','datenum');
+    tvd = datetime(trace_str(indTraceName).timeVector,'convertfrom','datenum');
     minMax = trace_str(indTraceName).ini.minMax;
 
     % Position the figure to be about 1/2 of screen height and stretched almost all the width
