@@ -43,7 +43,7 @@ def makeCSV(**kwargs):
     tasks = kwargs['tasks']
     siteID = kwargs['siteID']
     
-    config = rCfg.set_user_configuration(tasks)
+    config = rCfg.set_user_configuration({'tasks':tasks})
     # Use default if user does not provide alternative
     if kwargs['outputPath'] == 'None':
         outputPath = config['rootDir']['outputs']
@@ -60,7 +60,6 @@ def makeCSV(**kwargs):
     
     # Years to process
     Years = range(Range_index.year.min(),Range_index.year.max()+1)
-
     results = {}
     for name,task in config['tasks'].items():
 
@@ -75,7 +74,6 @@ def makeCSV(**kwargs):
         columns_tuple = []
         # Create a blank dataframe
         df = pd.DataFrame()
-        
         file = f"{siteID}/{task['stage']}/{config['dbase_metadata']['timestamp']['name']}"
         tv = np.concatenate(
             [np.fromfile(f"{root}{YYYY}/{file}",config['dbase_metadata']['timestamp']['dtype']) for YYYY in Years],
@@ -117,14 +115,12 @@ def makeCSV(**kwargs):
         df = pd.DataFrame(data=traces,index=DT)
         # limit to requested timeframe
         df = df.loc[((df.index>=Range_index.min())&(df.index<= Range_index.max()))]
-
         # Apply optional resampling 
         # Add units to header (preferred) or exclude (dangerous)
         if task['formatting']['units_in_header'] == True:
             df.columns = pd.MultiIndex.from_tuples(columns_tuple)
         else:
             df.columns = [c[0] for c in columns_tuple]
-
         if 'resample' in task['formatting']:
             ### Finish stuff here
             aggregation = task['formatting']['resample']['agg'].split(',')
