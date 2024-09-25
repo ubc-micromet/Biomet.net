@@ -115,17 +115,6 @@ else
     end
 end
 
-% tmpPath = fullfile(projectPath,'Database','Calculation_Procedures','TraceAnalysis_ini');
-% if ~exist(tmpPath,'dir')
-%     mkdir(tmpPath);
-% else
-%     % For repo to be downloaded the folder needs to be empty so first remove it
-%     rmdir(tmpPath,"s");
-%     mkdir(tmpPath);    
-% end
-% url1 = 'https://github.com/CANFLUX/TAB_include_files.git';
-% gitclone(url1,tmpPath,Depth=1);
-
 tmpPath = fullfile(projectPath,'Database','Calculation_Procedures','TraceAnalysis_ini',siteID);
 if ~exist(tmpPath,'dir')
     mkdir(tmpPath);
@@ -155,4 +144,24 @@ end
 tmpPath = fullfile(projectPath,'Matlab');
 if ~exist(tmpPath,'dir')
     mkdir(tmpPath);
+end
+
+% For a TAB project to function it also needs a get_TAB_project_configuration.m file
+% The following code creates the bare minimum version of this file (if it doesn't already exist)
+fileName = fullfile(projectPath,'Matlab','get_TAB_project_configuration.m');
+if exist(fileName,'file')
+    fprintf(2,'get_TAB_project_configuration.m already exists. Leaving it as is...\n');
+else
+    fid = fopen(fileName,'w');
+    if fid > 0
+        fprintf(fid,'%s\n','function structProject = get_TAB_project_configuration(projectPath)');
+        fprintf(fid,'%%This file is generated automatically by create_TAB_ProjectFolders.m\n');
+        fprintf(fid,'%s\n','projectName = '''';');
+        fprintf(fid,'%s\n','structProject.projectName   = projectName;');
+        fprintf(fid,'%s\n','structProject.path          = fullfile(projectPath);');
+        fprintf(fid,'%s\n','structProject.databasePath  = fullfile(structProject.path,''Database'');');
+        fprintf(fid,'%s\n','structProject.sitesPath     = fullfile(structProject.path,''Sites'');');
+        fprintf(fid,'%s\n','structProject.matlabPath    = fullfile(structProject.path,''Matlab'');');
+        fclose(fid);
+    end
 end
