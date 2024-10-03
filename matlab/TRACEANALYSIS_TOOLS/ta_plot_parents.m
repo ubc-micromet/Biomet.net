@@ -24,6 +24,12 @@ function ax = ta_plot_parents(figNum,trace_str,trace_name)
 
 % Revisions:
 %
+% Oct 10, 2024 (Paul)
+%   - Asthetic changes. For plots with many parents, the use of 1/2 screen
+%       height made the figure really bunched up. Figure size is now
+%       dependent on the number of parents.
+%   - To highlight where parents don't overlap with missing data in the
+%       dependent, two different point sizes have been implemented.
 % Sep 5, 2024 (Zoran)
 %   - Bug fix: it wouldn't plot traces with no parents because tv trace was
 %     indexed improperly.
@@ -55,13 +61,21 @@ function ax = ta_plot_parents(figNum,trace_str,trace_name)
     tvd = datetime(trace_str(indTraceName).timeVector,'convertfrom','datenum');
     minMax = trace_str(indTraceName).ini.minMax;
 
-    % Position the figure to be about 1/2 of screen height and stretched almost all the width
+    % Position the figure to be 1/2 to 3/4 of screen height and stretched almost all the width
     sSize = get(0,'ScreenSize');
     sSize(4) = sSize(4)-30;     % account for the Windows toolbar at the bottom
     sLength = sSize(3)-100;
-    sHeight = round(sSize(4)/2);
+    
+    if length(indParents)<=10
+        devisor = 2;
+    elseif length(indParents)<=20
+        devisor = 1.5;
+    else
+        devisor = 1.25;
+    end
+    sHeight = round(sSize(4)/devisor);
     sXpos = 50;
-    sYpos = round(sSize(4)/2-100);
+    sYpos = 100;
     figure(figNum)
     set(figNum,'outerpos',[sXpos sYpos sLength sHeight]);
 
@@ -84,7 +98,18 @@ function ax = ta_plot_parents(figNum,trace_str,trace_name)
     ylabel(trace_str(indTraceName).ini.units)
     nexttile
 
-    plot(tvd,allParents(:,end:-1:1),'.','MarkerSize',20)
+    % plot(tvd,allParents(:,end:-1:1),'.','MarkerSize',20)
+    ph1 = plot(tvd(~indMissingPoints),allParents(~indMissingPoints,end:-1:1),'.','MarkerSize',20);
+    hold on; box on
+    % plot(tvd,allParents(:,1),'.','MarkerSize',20)
+    ph2 = plot(tvd(indMissingPoints),allParents(indMissingPoints,end:-1:1),'.','MarkerSize',10);
+    for i=1:length(ph1)
+        set(ph2(i),'color',ph1(i).Color)
+        if i==length(ph1)
+            set(ph2(i),'MarkerSize',20)
+        end
+    end
+    hold off
     ax(2)=gca;
     ylabel([trace_name ' - parents'],'Interpreter','none')
     legend(sLegend(end:-1:1),"Interpreter","none",'Location','eastoutside')
