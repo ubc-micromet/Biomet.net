@@ -3,11 +3,13 @@ function result = simplify_FirstStageIni(iniFileName)
 %
 %
 % Zoran Nesic           File created:       Sep 14, 2024
-%                       Last modification:  Sep 14, 2024
+%                       Last modification:  Oct  2, 2024
 
 % 
 % Revisions
 %
+% Oct 2, 2024 (Zoran)
+%  - Bug fix: originalVariable was spelled OriginalVariable
 
 if ~exist(iniFileName,'file')
     fprintf(2,'File %s does not exist!\n',iniFileName);
@@ -30,7 +32,7 @@ if fidIn > 0
                 insideTrace = false;
             end
             if insideTrace
-                if ~(startsWith(strtrim(oneLine),'OriginalVariable') ...
+                if ~(startsWith(strtrim(oneLine),'originalVariable') ...
                         || startsWith(strtrim(oneLine),'calibrationDates') ...
                         || startsWith(strtrim(oneLine),'tags') ...
                         || isempty(strtrim(oneLine)))
