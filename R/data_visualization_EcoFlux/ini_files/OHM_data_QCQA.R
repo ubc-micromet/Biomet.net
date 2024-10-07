@@ -3,9 +3,8 @@
 ## @knitr LoadData
 
 # load all necessary functions
-#fx_path <- paste0(args[1],'data_visualization',sep ="")
-p <- sapply(list.files(path = paste0(args[1],"data_visualization",sep = ""),pattern="*.R$", full.names=TRUE), source)
-#p <- sapply(list.files(pattern="*.R$", full.names=TRUE), source)
+fx_path <- paste0(args[1],'data_visualization',sep ="")
+p <- sapply(list.files(pattern="*.R$", full.names=TRUE), source)
 
 # Load functions from 'database_functions' folder - UPDATE AS TO NOT DUPLICATE
 source(paste0(args[1],"database_functions/read_database.R",sep = ""))
@@ -15,8 +14,8 @@ opts_knit$set(root.dir = paste0(args[1],"data_visualization",sep = "")) # Specif
 
 basepath <- args[2]
 #basepath <- paste0(args[1],"data_visualization/Database",sep = "")
-yrs <- c(2021:2023) # Make sure to include the most recent year
-site <- "YOUNG"
+yrs <- c(2023) # Make sure to include the most recent year
+site <- "OHM"
 
 # Specify variables of interest in Clean/SecondStage and Flux/clean
 export <- 0 # 1 to save a csv file of the data, 0 otherwise
