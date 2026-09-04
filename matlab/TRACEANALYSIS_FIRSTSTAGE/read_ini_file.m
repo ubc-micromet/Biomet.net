@@ -34,6 +34,11 @@ function trace_str_out = read_ini_file(fid,yearIn,fromRootIniFile)
 
 % Revisions
 %
+% Sep 4, 2026 (Zoran)
+%   - Bug fix: The pipeline did not work properly when Timezone parameter was not set
+%     in the ini file. The program assumed that the Timezone = 0 which only worked for
+%     the sites that had clean_tv in GMT time zone. Now the lack of Timezone causes errors
+%              
 % Nov 18, 2025 (Zoran)
 %   - Improvements: 
 %         - When an error in ini file is found, the function now shows the actual line that caused the error.
@@ -152,12 +157,6 @@ else
         globalVars = fromRootIniFile.globalVars;
     end    
 end
-
-% Legacy issue. The old ini files didn't have Timezone parameter and it was assumed that
-% data base is always kept in GMT/UTC. So, just in case, set Timezone to 0.
-% All the new ini files will have this parameters included so this value will
-% be overwriten
-Timezone = 0;
 
 iniFileName = char(arrayfun(@fopen, fid, 'UniformOutput', 0));
 % Extract the ini file type ('first','second','third')
@@ -553,7 +552,14 @@ try
             switch trace_str(countTraces).stage
                 case 'first'
                     trace_str(countTraces).Diff_GMT_to_local_time = Difference_GMT_to_local_time;
-                    trace_str(countTraces).Timezone = Timezone;
+                    if ~exist('Timezone','var')
+                        % If the parameter Timezone is missing in the ini file
+                        % that is going to cause an error (new feature 2026-09-04, Zoran)
+                        msgMissingTimeZone;
+                        error('Error: Missing Timezone!')
+                    else
+                        trace_str(countTraces).Timezone = Timezone;
+                    end
                     trace_str(countTraces).Last_Updated = char(datetime("now"));
 
                 case 'second'
@@ -837,3 +843,14 @@ end
 fprintf('   %d traces read from the ini file. \n',length(trace_str));
 fprintf('   %d traces exist in the year %d.\n',cntGoodTrace,yearIn);
 fprintf('   %d unique traces are kept for processing\n',length(trace_str_out));
+
+function msgMissingTimeZone
+    fprintf(2,'\n\nError: Missing Timezone in the ini file!\n');
+    fprintf(2,'Timezone needs to be defined in this ini file.\n');
+    fprintf(2,'Suggested solution:\n');
+    fprintf(2,'If your data is recorded in Pacific Standard Time you should have this: \n');
+    fprintf(2,'   Difference_GMT_to_local_time = 8    %% hours (GMT - PST)\n');
+    fprintf(2,'   Timezone = 8                        %% hours \n')
+    fprintf(2,'If your data is recorded in GMT but you are in PST zone you should have this: \n');
+    fprintf(2,'   Difference_GMT_to_local_time = 8    %% hours (GMT - PST)\n');
+    fprintf(2,'   Timezone = 0                        %% hours \n\n')
