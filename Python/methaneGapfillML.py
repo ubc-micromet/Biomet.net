@@ -27,7 +27,7 @@ TIMESTAMP_COLUMNS = ['TIMESTAMP_START', 'TIMESTAMP_END']
 
 def main(args):
     # so you don't have to install pyyaml manually
-    import_pyyaml() 
+    import_pyyaml()
 
     db_path = Path(args.db_path)
     config = create_config(args)
@@ -94,7 +94,7 @@ def main(args):
             flux_f_u.tofile(ml_dir / f'{flux_label}_ML_{model.upper()}_UNCERTAINTY')
 
             # Gapfilled output: measured values with gaps filled by the model prediction
-            
+
             raw_df = dfs_by_year[args.year]
             flux_measured = raw_df[flux_label].values.astype(dtype)
             is_gap = np.isnan(flux_measured)
@@ -103,6 +103,10 @@ def main(args):
             flux_filled.tofile(ml_dir / f'{flux_label}_F_ML_{model.upper()}')
 
         print(f"{'-'*(len(flux_name)+12)}")
+
+    # Combined summary of training/validation and test metrics across every
+    # flux and model processed above, written once per run.
+    write_combined_results(db_path, args.site, config)
 
 
 def import_pyyaml():
@@ -160,6 +164,66 @@ def get_site_path(db_path, site, flux_name):
     return db_path / 'methane_gapfill_ml' / site / flux_name
 
 
+def collect_combined_metrics(db_path, site, config):
+    """Reads val_metrics.csv / test_metrics.csv for every flux+model that has
+    been trained/tested so far, and returns two combined DataFrames tagged
+    with 'flux' and 'model' columns (training results, test results)."""
+    train_rows = []
+    test_rows = []
+
+    for flux_name, flux_config in config['fluxes'].items():
+        if flux_config is None:
+            continue
+
+        flux_label = flux_name.upper()
+        site_path = get_site_path(db_path, site, flux_name)
+
+        for model in flux_config.get('models', []):
+            model_dir = site_path / 'models' / model
+
+            val_path = model_dir / 'val_metrics.csv'
+            if val_path.exists():
+                df = pd.read_csv(val_path)
+                df.insert(0, 'model', model)
+                df.insert(0, 'flux', flux_label)
+                train_rows.append(df)
+            else:
+                print(f"  (no val_metrics.csv found for {flux_label}/{model}; "
+                      f"skipping it in training_results.csv)")
+
+            test_path = model_dir / 'test_metrics.csv'
+            if test_path.exists():
+                df = pd.read_csv(test_path)
+                df.insert(0, 'model', model)
+                df.insert(0, 'flux', flux_label)
+                test_rows.append(df)
+            else:
+                print(f"  (no test_metrics.csv found for {flux_label}/{model}; "
+                      f"skipping it in test.csv)")
+
+    train_df = pd.concat(train_rows, axis=0, ignore_index=True) if train_rows else pd.DataFrame()
+    test_df = pd.concat(test_rows, axis=0, ignore_index=True) if test_rows else pd.DataFrame()
+    return train_df, test_df
+
+
+def write_combined_results(db_path, site, config):
+    """Writes one combined training_results.csv and one combined test.csv,
+    covering every flux/model in this run, into the site's ML output root."""
+    site_path_root = db_path / 'methane_gapfill_ml' / site
+    os.makedirs(site_path_root, exist_ok=True)
+
+    train_df, test_df = collect_combined_metrics(db_path, site, config)
+
+    train_out = site_path_root / 'training_results.csv'
+    test_out = site_path_root / 'test.csv'
+
+    train_df.to_csv(train_out, index=False)
+    test_df.to_csv(test_out, index=False)
+
+    print(f"\nWrote combined training results -> {train_out}")
+    print(f"Wrote combined test results -> {test_out}")
+
+
 def has_complete_indices(site_path, num_splits):
     if not (site_path / 'indices' / 'test.npy').exists():
         return False
@@ -194,7 +258,7 @@ def create_config(args) -> dict:
                     f'No predictors listed in {site_config_path.name} file '
                     f'(flux: "{flux_name}").'
                 )
-                
+
     config['mode'] = args.mode
     return config
 
@@ -247,7 +311,7 @@ def get_stages_to_run(site_path, dfs_by_year, flux_config, flux_label, mode) -> 
 
         return [GAPFILL]
 
-    elif mode == 'full': 
+    elif mode == 'full':
         valid_stages = [PREPROCESS, TRAIN, TEST, GAPFILL]
         # --- Preprocess ---
         try:
@@ -368,7 +432,7 @@ def read_database_trace_by_year(db_path, year, config, flux_name, flux_config) -
     # Target flux
     flux_values = np.fromfile(db_path / year / config['site'] / 'Clean' / Path(flux_config['trace']), dtype=trace_dtype)
     df[flux_name.upper()] = flux_values
-    return df 
+    return df
 
 
 if __name__ == "__main__":
@@ -380,5 +444,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main(args)
-
- 
