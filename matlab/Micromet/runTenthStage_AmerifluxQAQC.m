@@ -12,8 +12,15 @@ rootDatabasePath = findDatabasePath;
 % Path where Ameriflux formatted csv is stored
 pthDatabase = fullfile(rootDatabasePath,yy_str,siteID,'Clean','Ameriflux');
 
+% For general use case, this shouldn't have the 'CA-' prefix, but not sure
+%   how this should be addressed (P.Moore - 2026-09-08).
+ameriflux_siteID = char(['CA-' siteID]);
+
+% Temporary path for csv created by sw_in_pot_[]_multi
+pth_sw_in_pot = fullfile(pthDatabase,'temp',char([ameriflux_siteID '_' yy_str '.csv']));
+
 % Temporary path used by "sw_in_pot_[]_multi"
-if length(pthDatabase)<64
+if length(pth_sw_in_pot)<64
     tmpPath = pthDatabase;
 else
     if ~ispc
@@ -70,7 +77,7 @@ CLI_args = sprintf('"%s" --vanilla "%s" "%s" "%s" "%s" "%s" %2.4f %2.4f %i',...
     fullfile(biometRpath,'ameriflux_qaqc','R','amf_chk_run.R'),...
     strrep(fullfile(biometRpath,'ameriflux_qaqc'),'\','/'),...
     strrep(pthDatabase,'\','/'),...
-    char(['CA-' siteID]), ...
+    ameriflux_siteID, ...
     strrep(tmpPath,'\','/'),...
     yml_data.Metadata.lat,...
     yml_data.Metadata.long,...
@@ -85,16 +92,18 @@ if statusR~=0
     qaqc_log = fullfile(pthDatabase,'QAQC','output');
     fprintf('\n *** Failed running amerifluxqaqc.R ***\n To see roughly where the problem occurred, check the log in the latest folder here:\n %s\n\n',qaqc_log)
     fprintf('Below is the console window output from R\n %s\n',cmdOutput);
+else
+    % Delete temporary directory created by amerifluxqaqc.R
+    rmdir(fullfile(tmpPath,'temp'),'s')
 end
+
 % When R is finished, print cmdOutput
 fprintf('%s\n',cmdOutput)
-
-% Delete temporary directory created by amerifluxqaqc.R
-rmdir(fullfile(tmpPath,'temp'),'s')
 
 % Remove temporary mapped drive -- PC
 if exist("tmpDrive","var")
     system(sprintf('subst %s /d',tmpDrive));
+    disp('Removed temporary mapped drive')
 end
 
 % Remove temporary folder -- Mac

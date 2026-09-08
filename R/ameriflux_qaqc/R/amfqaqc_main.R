@@ -14,9 +14,11 @@ require("lmodel2")
 require("amerifluxr")
 require("pracma")
 require("colorspace")
+require("devtools")
+require("remotes")
 
 # Package names
-packages <- c("zoo", "httr", "jsonlite", "lmodel2", "pracma", "colorspace", "devtools")
+packages <- c("zoo", "httr", "jsonlite", "lmodel2", "pracma", "colorspace", "devtools","remotes")
 
 # Install packages not yet installed
 installed_packages <- packages %in% rownames(installed.packages())
@@ -32,6 +34,7 @@ packages <- "amerifluxr"
 installed_packages <- packages %in% rownames(installed.packages())
 if (installed_packages == FALSE) {
   devtools::install_github("chuhousen/amerifluxr")
+  #pak::pak("chuhousen/amerifluxr")
 }
 
 ################################################################################
@@ -252,6 +255,7 @@ for (i1 in 1:length(target.site)) {
     comb.list.tmp
 
   ## parse time resolution from filename
+  # NOTE: consider updating to use ameriflux site ID argument args[3] to parse file name instead of fixed position (P.Moore 2026-09-08)
   target.res <- substr(comb.list, 8, 9)
   if(!target.res %in% c("HH", "HR")){
     target.res <- "HH"
