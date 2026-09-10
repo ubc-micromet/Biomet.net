@@ -13,11 +13,14 @@ function [EngUnits,Header,tv,dataOut,structConfig] = fr_read_GHG_file(pathToGHGf
 %
 %
 % (c) Zoran Nesic                   File created:       Jan 20, 2022
-%                                   Last modification:  Jul 14, 2026
+%                                   Last modification:  Sep 10, 2026
 %
 
 % Revisions (last one first):
 %
+% Sep 10, 2026 (Zoran)
+%   - Added variable structConfig.numOfRecords that represents the number of records
+%     in the GHG data file.
 % July 14, 2026 (Zoran)
 %   - Added extractin of the instrument serial numbers. Works with 7200, 7700 and SmartFlux
 % Feb 27, 2026 (Zoran)
@@ -105,6 +108,8 @@ try
 catch
     fprintf(2,'Error reading: %s\n',configFileName);
 end
+% Add the number of records collected
+structConfig.numOfRecords = length(dataOut.TimeVector);
 % The TimeVector is based on the last point in HF data rounded up
 structConfig.TimeVector = fr_round_time(dataOut.TimeVector(end),'30MIN',2);
 % this could be an alternative option (it would need to be rounded up):
